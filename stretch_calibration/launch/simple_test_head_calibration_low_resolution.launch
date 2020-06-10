@@ -1,0 +1,58 @@
+<launch>
+
+  <arg name="urdf_file" value="$(find stretch_description)/urdf/stretch.urdf"/>
+  <arg name="controller_yaml_file" value="$(find stretch_core)/config/controller_calibration_head.yaml"/>
+  <arg name="calibration_directory" value="$(env HELLO_FLEET_PATH)/$(env HELLO_FLEET_ID)/calibration_ros/"/>
+  
+  <!-- REALSENSE D435i -->
+  <include file="$(find stretch_core)/launch/d435i_low_resolution.launch"></include>
+  <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen">
+    <param name="initial_mode" type="string" value="High Accuracy"/>
+  </node>
+  <!-- -->
+
+  <!-- STRETCH DRIVER -->
+  <param name="robot_description"
+	 textfile="$(arg urdf_file)"/>
+  
+  <node
+      name="joint_state_publisher"
+      pkg="joint_state_publisher"
+      type="joint_state_publisher" >
+    <param name="rate" value="15.0"/>
+    <param name="use_gui" value="False"/>
+    <rosparam param="source_list">
+      [/stretch/joint_states]
+    </rosparam>
+  </node>
+
+  <node
+      name="robot_state_publisher"
+      pkg="robot_state_publisher"
+      type="state_publisher" >
+    <param name="publish_frequency" value="15.0"/>
+  </node>
+  
+  <node name="stretch_driver" pkg="stretch_core" type="stretch_driver" output="screen">
+    <param name="rate" type="double" value="25.0"/>
+    <param name="timeout" type="double" value="0.5"/>
+    <remap from="cmd_vel" to="/stretch/cmd_vel" />
+    <remap from="joint_states" to="/stretch/joint_states" />
+    <param name="controller_calibration_file" type="string" value="$(arg controller_yaml_file)"/>
+  </node>
+  <!-- -->
+
+  <!-- ARUCO MARKER DETECTOR -->
+  <include file="$(find stretch_core)/launch/stretch_aruco.launch"></include>
+  <!-- -->
+
+  <!-- KEYBOARD TELEOP -->
+  <node name="keyboard_teleop" pkg="stretch_core" type="keyboard_teleop" output="screen" args=''/>
+  <!-- -->
+
+  <!-- VISUALIZE -->
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_core)/rviz/stretch_simple_test.rviz">
+  </node>
+  <!-- -->
+  
+</launch>

@@ -1,0 +1,81 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+import rospy
+import dynamic_reconfigure.client
+from std_srvs.srv import Trigger, TriggerResponse
+import threading
+
+class D435iConfigureNode:
+    def __init__(self):
+        self.rate = 1.0
+        self.visual_preset = None
+        self.mode_lock = threading.Lock()
+        
+    def turn_on_default_mode(self):
+        with self.mode_lock: 
+            self.locked_mode_id = 1
+            self.locked_mode_name = 'Default'
+            self.parameter_client.update_configuration({'visual_preset' : self.locked_mode_name})
+            rospy.loginfo("Set D435i to {0} mode".format(self.locked_mode_name))
+        
+    def turn_on_high_accuracy_mode(self):
+        with self.mode_lock: 
+            self.locked_mode_id = 3
+            self.locked_mode_name = 'High Accuracy'
+            self.parameter_client.update_configuration({'visual_preset' : self.locked_mode_name})
+            rospy.loginfo("Set D435i to {0} mode".format(self.locked_mode_name))
+        
+    def default_mode_service_callback(self, request):
+        self.turn_on_default_mode()
+        return TriggerResponse(
+            success=True,
+            message='Default mode enabled.'
+            )
+
+    def high_accuracy_mode_service_callback(self, request):
+        self.turn_on_high_accuracy_mode()
+        return TriggerResponse(
+            success=True,
+            message='High Accuracy mode enabled.'
+            )
+
+    def main(self):
+        rospy.init_node('configure_d435i')
+        self.node_name = rospy.get_name()
+        rospy.loginfo("{0} started".format(self.node_name))
+        self.parameter_client = dynamic_reconfigure.client.Client('/camera/stereo_module/')
+
+        self.switch_to_manipulation_mode_service = rospy.Service('/camera/switch_to_default_mode',
+                                                                 Trigger,
+                                                                 self.default_mode_service_callback)
+
+        self.switch_to_navigation_mode_service = rospy.Service('/camera/switch_to_high_accuracy_mode',
+                                                               Trigger,
+                                                               self.high_accuracy_mode_service_callback)
+
+        initial_mode = rospy.get_param('~initial_mode')
+        
+        rospy.loginfo("initial_mode = {0}".format(initial_mode))
+
+        if initial_mode == 'High Accuracy':
+            self.turn_on_high_accuracy_mode()
+        elif initial_mode == 'Default':
+            self.turn_on_default_mode()
+        else:
+            error_string = 'initial_mode = {0} not recognized. Setting to D435i to Default mode.'.format(initial_mode)
+            rospy.logerr(error_string)
+            self.turn_on_default_mode()
+        
+        rate = rospy.Rate(self.rate)
+        while not rospy.is_shutdown():
+            rate.sleep()
+
+            
+if __name__ == '__main__':
+    try: 
+        node = D435iConfigureNode()
+        node.main()
+    except KeyboardInterrupt:
+        print('interrupt received, so shutting down')

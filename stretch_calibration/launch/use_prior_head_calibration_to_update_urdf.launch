@@ -1,0 +1,16 @@
+<launch>
+
+  <arg name="calibration_directory" value="$(env HELLO_FLEET_PATH)/$(env HELLO_FLEET_ID)/calibration_ros/"/>
+  <arg name="uncalibrated_controller_calibration_filename" value="$(find stretch_core)/config/controller_calibration_head_factory_default.yaml"/>
+  <arg name="uncalibrated_urdf_filename" value="$(find stretch_description)/urdf/stretch_uncalibrated.urdf"/>
+  
+  <!-- PROCESS CALIBRATION DATA -->
+  <rosparam command="load" file="$(find stretch_calibration)/config/head_calibration_options.yaml" />
+  <node name="process_head_calibration_data" pkg="stretch_calibration" type="process_head_calibration_data" output="screen" args="--no_vis --load_prev">
+    <param name="calibration_directory" type="string" value="$(arg calibration_directory)"/>
+    <param name="uncalibrated_controller_calibration_filename" type="string" value="$(arg uncalibrated_controller_calibration_filename)"/>
+    <param name="uncalibrated_urdf_filename" type="string" value="$(arg uncalibrated_urdf_filename)"/>
+  </node>
+  <!-- -->
+  
+</launch>

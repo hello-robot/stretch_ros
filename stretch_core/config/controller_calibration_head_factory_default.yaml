@@ -1,0 +1,6 @@
+pan_angle_offset: 0.0
+tilt_angle_offset: 0.0
+pan_looked_left_offset: 0.0
+tilt_looking_up_offset: 0.0
+arm_retracted_offset: 0.0
+tilt_angle_backlash_transition: -0.4

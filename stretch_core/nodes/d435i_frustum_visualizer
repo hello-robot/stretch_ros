@@ -1,0 +1,207 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+import rospy
+import numpy as np
+
+import message_filters
+from std_msgs.msg import Header
+from visualization_msgs.msg import Marker
+from visualization_msgs.msg import MarkerArray
+from geometry_msgs.msg import Transform, Pose, Vector3, Quaternion, Point
+from sensor_msgs.msg import CameraInfo
+
+    
+class FrustumNode:
+    def __init__(self):
+        self.color_count = 0
+        self.depth_count = 0
+        self.camera_types = ['depth', 'color']
+        # only publish a single frustum for every N camera info
+        # messages received
+        self.skip_publishing = 5 
+        
+        # minimum-Z depth for D435i
+        # 1280x720 0.28  m
+        # 848x480  0.195 m
+        # 640x480  0.175 m
+        # 640x360  0.15  m
+        # 480x270  0.12  m
+        # 424x240  0.105 m
+        self.min_z_dict = {1280:0.28,
+                           848:0.195,
+                           640:0.175,
+                           640:0.15,
+                           480:0.12,
+                           424:0.105}
+        # This default value seems too large in practice. It would
+        # probably be better to set a smaller value and clip the point
+        # cloud (i.e., remove points that are farther away than the
+        # specified number).
+        self.max_z = 10.0
+
+    def depth_camera_info_callback(self, camera_info):
+        if (self.depth_count % self.skip_publishing) == 0:
+            self.camera_info_callback(camera_info, camera_type='depth')
+        self.depth_count = self.depth_count + 1
+        
+    def color_camera_info_callback(self, camera_info):
+        if (self.color_count % self.skip_publishing) == 0:
+            self.camera_info_callback(camera_info, camera_type='color')
+        self.color_count = self.color_count + 1
+        
+    def camera_info_callback(self, camera_info, camera_type=None):
+        if camera_type not in self.camera_types:
+            print('WARNING: FrustumNode camera_info_callback camera_type = {0} unrecognized. Valid types = {1}.'.format(camera_type, self.camera_types))
+            return
+        camera_matrix = np.reshape(camera_info.K, (3,3))
+        # Decompose the camera matrix.
+        f_x = camera_matrix[0,0]
+        c_x = camera_matrix[0,2]
+        f_y = camera_matrix[1,1]
+        c_y = camera_matrix[1,2]
+        frame_id = camera_info.header.frame_id
+        timestamp = camera_info.header.stamp
+        distortion_coefficients = np.array(camera_info.D)
+        height = camera_info.height
+        width = camera_info.width
+        min_z = self.min_z_dict[width]
+        max_z = self.max_z
+
+        # use 0.5 to account for the edges of the pixels (-0.5 for
+        # first pixel, +0.5 for last pixel)
+        frustum_corners_whz = {'near_top_left': (-0.5, -0.5, min_z),
+                               'near_top_right': (width-0.5, -0.5, min_z),
+                               'near_bottom_left': (-0.5, height-0.5, min_z),
+                               'near_bottom_right': (width-0.5, height-0.5, min_z),
+                               'far_top_left': (-0.5, -0.5, max_z),
+                               'far_top_right': (width-0.5, -0.5, max_z),
+                               'far_bottom_left': (-0.5, height-0.5, max_z),
+                               'far_bottom_right': (width-0.5, height-0.5, max_z)}
+
+        def corner_id_to_faces(corner_id):
+            faces = []
+            faces.append('near' in corner_id)
+            faces.append('top' in corner_id)
+            faces.append('left' in corner_id)
+            return faces
+
+        frustum_corners_xyz = {}
+        for k in frustum_corners_whz.keys():
+            w, h, z = frustum_corners_whz[k]
+
+            # Convert the depth image points to 3D points in meters
+            # using the camera matrix.
+            x = ((w - c_x) / f_x) * z
+            y = ((h - c_y) / f_y) * z
+
+            faces = corner_id_to_faces(k)
+            frustum_corners_xyz[k] = [(x, y, z), faces]
+
+        marker = Marker()
+        marker.type = marker.TRIANGLE_LIST
+        marker.action = marker.ADD
+        marker.lifetime = rospy.Duration(0.5) #0.2
+        marker.text = 'D435i_frustum'
+        marker.header.frame_id = frame_id
+        marker.header.stamp = timestamp
+        marker.id = 0
+        marker.scale.x = 1.0
+        marker.scale.y = 1.0
+        marker.scale.z = 1.0
+        if camera_type == 'depth': 
+            # frustum color and transparency
+            # gray
+            marker.color.r = 1.0
+            marker.color.g = 1.0
+            marker.color.b = 1.0
+            marker.color.a = 0.4
+        elif camera_type == 'color': 
+            # frustum color and transparency
+            # yellow
+            marker.color.r = 1.0
+            marker.color.g = 1.0
+            marker.color.b = 0.0
+            marker.color.a = 0.4
+            
+        def adjacent_corners(c0, c1):
+            # return True if the corners are adjacent to one another and False otherwise
+            faces0 = c0[1]
+            faces1 = c1[1]
+            diff_count = 0
+            for f0, f1 in zip(faces0, faces1):
+                if f0 != f1:
+                    diff_count += 1
+            return (diff_count == 1)
+
+        def corners_to_quad(corners_dict, face_id):
+            quad_corners = []
+            for k in corners_dict.keys():
+                if face_id in k:
+                    quad_corners.append(corners_dict[k])
+            assert(len(quad_corners) == 4)
+            # sort into adjacent corners
+            sorted_quad_corners = []
+            sorted_quad_corners.append(quad_corners.pop(0))
+            prev_corner = sorted_quad_corners[0]
+            while len(quad_corners) > 0:
+                for c in quad_corners:
+                    if adjacent_corners(prev_corner, c):
+                        sorted_quad_corners.append(c)
+                        prev_corner = c
+                        break
+                quad_corners.remove(prev_corner)
+            quad_xyz = [c[0] for c in sorted_quad_corners]
+            return quad_xyz
+
+        def xyz_to_point(xyz):
+            p = Point()
+            p.x, p.y, p.z = xyz
+            return p
+
+        def quad_to_triangles(quad_xyz):
+            assert(len(quad_xyz) == 4)
+            triangles = []
+            for xyz in quad_xyz[:3]:
+                triangles.append(xyz_to_point(xyz))
+            for xyz in quad_xyz[2:]:
+                triangles.append(xyz_to_point(xyz))
+            triangles.append(xyz_to_point(quad_xyz[0]))
+            return triangles
+
+        points = []
+        quad_ids = ['near', 'far', 'top', 'bottom', 'left', 'right']
+        for s in quad_ids: 
+            quad_xyz = corners_to_quad(frustum_corners_xyz, s)
+            triangles = quad_to_triangles(quad_xyz)
+            points.extend(triangles)
+        marker.points = points
+        
+        if camera_type == 'depth':
+            self.depth_frustum_marker_pub.publish(marker)
+        elif camera_type == 'color':
+            self.color_frustum_marker_pub.publish(marker)
+
+        
+    def main(self):
+        rospy.init_node('FrustumNode')
+        self.node_name = rospy.get_name()
+        rospy.loginfo("{0} started".format(self.node_name))
+        
+        self.color_camera_topic = '/camera/color/camera_info'
+        self.depth_camera_topic = '/camera/depth/camera_info'
+        self.depth_camera_info_subscriber = rospy.Subscriber(self.depth_camera_topic, CameraInfo, self.depth_camera_info_callback)
+        self.color_camera_info_subscriber = rospy.Subscriber(self.color_camera_topic, CameraInfo, self.color_camera_info_callback)
+
+        self.depth_frustum_marker_pub = rospy.Publisher('/frustum_marker/depth_camera', Marker, queue_size=1)
+        self.color_frustum_marker_pub = rospy.Publisher('/frustum_marker/color_camera', Marker, queue_size=1)
+
+
+if __name__ == '__main__':
+    node = FrustumNode()
+    node.main()
+    try:
+        rospy.spin()
+    except KeyboardInterrupt:
+        print('interrupt received, so shutting down')

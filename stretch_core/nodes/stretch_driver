@@ -1,0 +1,1397 @@
+#! /usr/bin/env python
+
+from __future__ import print_function, division
+
+import threading
+
+import rospy
+from geometry_msgs.msg import Quaternion
+from geometry_msgs.msg import PoseWithCovarianceStamped
+from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TransformStamped
+
+from nav_msgs.msg import Odometry
+from sensor_msgs.msg import JointState, Imu, MagneticField
+from std_msgs.msg import Header
+
+import tf2_ros
+import tf_conversions
+
+import stretch_body.robot as rb
+import math
+import numpy as np
+import time
+
+import yaml
+
+import actionlib
+from control_msgs.msg import FollowJointTrajectoryAction
+from control_msgs.msg import FollowJointTrajectoryResult
+from control_msgs.msg import FollowJointTrajectoryResult
+from trajectory_msgs.msg import JointTrajectoryPoint
+from actionlib_msgs.msg import GoalStatus
+
+from control_msgs.msg import GripperCommandAction
+from control_msgs.msg import GripperCommandFeedback
+from control_msgs.msg import GripperCommandActionResult
+
+from std_srvs.srv import Trigger, TriggerResponse
+
+import hello_helpers.hello_misc as hm
+
+
+GRIPPER_DEBUG = False
+BACKLASH_DEBUG = False
+
+
+def bound_ros_command(bounds, ros_pos, clip_ros_tolerance):
+    # Clip the command with clip_ros_tolerance, instead of
+    # invalidating it, if it is close enough to the valid ranges.
+    if ros_pos < bounds[0]:
+        # Command is lower than the minimum value.
+        if (bounds[0] - ros_pos) < clip_ros_tolerance:
+            return bounds[0]
+        else: 
+            return None
+    if ros_pos > bounds[1]:
+        # Command is greater than the maximum value.
+        if (ros_pos - bounds[1]) < clip_ros_tolerance:
+            return bounds[1]
+        else: 
+            return None
+    return ros_pos
+
+
+class GripperConversion:
+    def __init__(self):
+        # robotis position values (gripper.py)
+        #      0 is very close to closed (fingers almost or barely touching)
+        #     50 is maximally open
+        #   -100 is maximally closed (maximum force applied to the object - might be risky for a large object)
+        #
+        # aperture is 12.5 cm wide when open (0.125 m, 125 mm)
+        #
+        # finger angle
+        #   0.0 just barely closed
+        #   fully opened is
+
+        # from stretch_gripper.xacro
+        # scale_finger_length = 0.9
+        # scale_finger_length * 0.19011
+        # = 0.171099
+        self.finger_length_m = 0.171
+
+        self.open_aperture_m = 0.09 #0.125
+        self.closed_aperture_m = 0.0
+
+        self.open_robotis = 70.0
+        self.closed_robotis = 0.0
+        
+        self.robotis_to_aperture_slope = ((self.open_aperture_m - self.closed_aperture_m) / (self.open_robotis - self.closed_robotis))
+
+    def robotis_to_aperture(self, robotis_in):
+        # linear model
+        aperture_m = (self.robotis_to_aperture_slope * (robotis_in - self.closed_robotis)) + self.closed_aperture_m
+        return aperture_m
+
+    def aperture_to_robotis(self, aperture_m):
+        # linear model
+        robotis_out = ((aperture_m - self.closed_aperture_m) / self.robotis_to_aperture_slope) + self.closed_robotis
+        return robotis_out
+    
+    def aperture_to_finger_rad(self, aperture_m):
+        # arc length / radius = ang_rad
+        finger_rad = (aperture_m/2.0)/self.finger_length_m
+        return finger_rad
+
+    def finger_rad_to_aperture(self, finger_rad):
+        aperture_m = 2.0 * (finger_rad * self.finger_length_m)
+        return aperture_m
+    
+    def finger_to_robotis(self, finger_ang_rad):
+        aperture_m = self.finger_rad_to_aperture(finger_ang_rad)
+        robotis_out = self.aperture_to_robotis(aperture_m)
+        return robotis_out
+        
+    def status_to_all(self, gripper_status):
+        aperture_m = self.robotis_to_aperture(gripper_status['pos_pct'])
+        finger_rad = self.aperture_to_finger_rad(aperture_m)
+        finger_effort = gripper_status['effort']
+        finger_vel = (self.robotis_to_aperture_slope * gripper_status['vel'])/2.0
+        return aperture_m, finger_rad, finger_effort, finger_vel
+
+    
+class SimpleCommandGroup:
+    def __init__(self, joint_name, acceptable_joint_error=0.015, clip_ros_tolerance=0.001):
+        self.clip_ros_tolerance = clip_ros_tolerance
+        self.acceptable_joint_error = acceptable_joint_error
+        self.joint_name = joint_name
+        
+    def update(self, joint_names, invalid_joints_error_func, robot_mode):
+        self.use_joint = False
+        if self.joint_name in joint_names:
+            self.joint_index = joint_names.index(self.joint_name)
+            self.use_joint = True
+        return True
+
+    def get_num_valid_commands(self):
+        if self.use_joint:
+            return 1
+        return 0
+
+    def set_goal(self, point, invalid_goal_error_func, other):
+        self.joint_goal = False
+        self.goal_joint_ros = None
+        self.goal_joint_hello = None
+        if self.use_joint:
+            self.goal_joint_ros = point.positions[self.joint_index]
+            self.goal_joint_hello = self.ros_to_mechaduino(self.goal_joint_ros)
+            self.joint_goal = True
+        if self.joint_goal and (self.goal_joint_hello is None):
+            error_string = 'received goal point that is out of bounds. The first error that was caught is that the {0} goal is invalid ({1} = {2}).'.format(self.joint_name, self.joint_name, self.goal_joint_ros)
+            invalid_goal_error_func(error_string)
+            return False
+        return True
+
+    def ros_to_mechaduino(self, joint_ros):
+        return joint_ros
+
+
+    def init_execution(self, robot_status):
+        pass
+
+    def update_execution(self, robot_status, backlash_state):
+        # This method needs to be implemented. It also needs to set self.joint_error.
+        return None
+    
+    def goal_reached(self):
+        if self.joint_goal:
+            return (abs(self.joint_error) < self.acceptable_joint_error)
+        else:
+            return True
+
+class HeadPanCommandGroup(SimpleCommandGroup):
+    def __init__(self, head_pan_calibrated_offset, head_pan_calibrated_looked_left_offset):
+        SimpleCommandGroup.__init__(self, 'joint_head_pan', acceptable_joint_error=0.15, clip_ros_tolerance=0.001)
+        self.head_pan_calibrated_offset = head_pan_calibrated_offset
+        self.head_pan_calibrated_looked_left_offset = head_pan_calibrated_looked_left_offset
+        
+    def update_execution(self, robot_status, backlash_state):
+        if self.joint_goal:
+            if backlash_state['head_pan_looked_left']:
+                pan_backlash_correction = self.head_pan_calibrated_looked_left_offset 
+            else:
+                pan_backlash_correction = 0.0
+            self.current_joint_hello = robot_status['head']['head_pan']['pos'] + self.head_pan_calibrated_offset + pan_backlash_correction
+            self.joint_error = self.goal_joint_hello - self.current_joint_hello
+            self.joint_target = self.goal_joint_hello
+            return self.joint_error
+        else:
+            return None
+
+
+class HeadTiltCommandGroup(SimpleCommandGroup):
+    def __init__(self, head_tilt_calibrated_offset, head_tilt_calibrated_looking_up_offset):
+        SimpleCommandGroup.__init__(self, 'joint_head_tilt', acceptable_joint_error=0.52, clip_ros_tolerance=0.001)
+        self.head_tilt_calibrated_offset = head_tilt_calibrated_offset
+        self.head_tilt_calibrated_looking_up_offset = head_tilt_calibrated_looking_up_offset
+
+    def update_execution(self, robot_status, backlash_state):
+        if self.joint_goal:
+            if backlash_state['head_tilt_looking_up']:
+                tilt_backlash_correction = self.head_tilt_calibrated_looking_up_offset
+            else:
+                tilt_backlash_correction = 0.0
+            self.current_joint_hello = robot_status['head']['head_tilt']['pos'] + self.head_tilt_calibrated_offset + tilt_backlash_correction
+            self.joint_error = self.goal_joint_hello - self.current_joint_hello
+            self.joint_target = self.goal_joint_hello
+            return self.joint_error
+        else:
+            return None
+
+
+class WristYawCommandGroup(SimpleCommandGroup):
+    def __init__(self):
+        SimpleCommandGroup.__init__(self, 'joint_wrist_yaw', acceptable_joint_error=0.015, clip_ros_tolerance=0.001)
+
+    def update_execution(self, robot_status, backlash_state):
+        if self.joint_goal: 
+            self.current_joint_hello = robot_status['end_of_arm']['wrist_yaw']['pos']
+            self.joint_error = self.goal_joint_hello - self.current_joint_hello
+            self.joint_target = self.goal_joint_hello
+            return self.joint_error
+        else:
+            return None
+
+
+
+class GripperCommandGroup:
+    def __init__(self, acceptable_joint_error=0.015, clip_ros_tolerance=0.001):
+        self.clip_ros_tolerance = clip_ros_tolerance
+        self.acceptable_joint_error = acceptable_joint_error
+        self.gripper_joint_names = ['joint_gripper_finger_left', 'joint_gripper_finger_right', 'gripper_aperture']
+        self.gripper_conversion = GripperConversion()
+        
+    def update(self, joint_names, invalid_joints_error_func, robot_mode):
+        self.use_gripper_joint = False
+        self.gripper_joints_to_command_names = [j for j in self.gripper_joint_names if j in joint_names]
+        self.gripper_joints_to_command_indices = [joint_names.index(j) for j in self.gripper_joints_to_command_names]
+        if len(self.gripper_joints_to_command_names) > 1: 
+            # Commands that attempt to control the gripper with more
+            # than one joint name are not allowed, since the gripper
+            # ultimately only has a single degree of freedom.
+            error_string = 'Received a command for the gripper that includes more than one gripper joint name: {0}. Only one joint name is allowed to be used for a gripper command to avoid conflicts and confusion. The gripper only has a single degree of freedom that can be controlled using the following three mutually exclusive joint names: {1}.'.format(self.gripper_joints_to_command_names, self.gripper_joint_names)
+            invalid_joints_error_func(error_string)
+            self.use_gripper_joint = False
+            return False
+
+        if len(self.gripper_joints_to_command_names) == 1: 
+            self.gripper_joint_command_name = self.gripper_joints_to_command_names[0]
+            self.gripper_joint_command_index = self.gripper_joints_to_command_indices[0]
+            self.use_gripper_joint = True
+            
+        return True
+
+    def get_num_valid_commands(self):
+        if self.use_gripper_joint: 
+            return 1
+        else:
+            return 0
+
+    def set_goal(self, point, invalid_goal_error_func, other):
+        self.gripper_joint_goal = False
+        self.goal_gripper_joint = None
+        goal = None
+        if self.use_gripper_joint:
+            name = self.gripper_joint_command_name
+            goal = point.positions[self.gripper_joint_command_index]
+            if ((name == 'joint_gripper_finger_left') or (name == 'joint_gripper_finger_right')):
+                self.goal_gripper_joint = self.gripper_conversion.finger_to_robotis(goal)
+            if (name == 'gripper_aperture'):
+                self.goal_gripper_joint = self.gripper_conversion.aperture_to_robotis(goal)
+            self.gripper_joint_goal = True
+
+            # Check that the goal is valid.
+            self.gripper_joint_goal_valid = True
+            if self.goal_gripper_joint is None:
+                self.gripper_joint_goal_valid = False
+
+            if not self.gripper_joint_goal_valid: 
+                error_string = 'gripper goal {0} is invalid'.format(goal)
+                invalid_goal_error_func(error_string)
+                return False
+        return True
+    
+    def ros_to_mechaduino(self, joint_ros):
+        return joint_ros
+
+    def init_execution(self, robot_status):
+        pass
+
+    def update_execution(self, robot_status, backlash_state):
+        pass
+        
+    def goal_reached(self):
+        # TODO: check the gripper state
+        if self.use_gripper_joint: 
+            return True
+        else:
+            return True
+        
+
+class TelescopingCommandGroup:
+    def __init__(self, wrist_extension_calibrated_retracted_offset):
+        self.wrist_extension_calibrated_retracted_offset = wrist_extension_calibrated_retracted_offset
+        self.telescoping_joints = ['joint_arm_l3', 'joint_arm_l2', 'joint_arm_l1', 'joint_arm_l0']
+        self.clip_ros_tolerance = 0.001
+        self.acceptable_joint_error_m = 0.005
+
+    def update(self, joint_names, invalid_joints_error_func, robot_mode):
+        self.use_telescoping_joints = False
+        self.use_wrist_extension = False
+        if 'wrist_extension' in joint_names:
+            # Check if a wrist_extension command was received.
+            self.use_wrist_extension = True
+            self.extension_index = joint_names.index('wrist_extension')
+            if any([(j in joint_names) for j in self.telescoping_joints]):
+                # Consider commands for both the wrist_extension joint and any of the telescoping joints invalid, since these can be redundant. 
+                error_string = 'received a command for the wrist_extension joint and one or more telescoping_joints. These are mutually exclusive options. The joint names in the received command = {0}'.format(joint_names)
+                invalid_joints_error_func(error_string)
+                return False
+        elif all([(j in joint_names) for j in self.telescoping_joints]):
+            # Require all telescoping joints to be present for their commands to be used.
+            self.use_telescoping_joints = True
+            self.telescoping_indices = [joint_names.index(j) for j in self.telescoping_joints]
+        return True
+
+    def get_num_valid_commands(self):
+        if self.use_wrist_extension:
+            return 1
+        if self.use_telescoping_joints:
+            return len(self.telescoping_joints)
+        return 0
+
+    def set_goal(self, point, invalid_goal_error_func, other):
+        self.extension_goal = False
+        self.goal_extension_mecha = None
+        self.goal_extension_ros = None
+        if self.use_wrist_extension: 
+            self.goal_extension_ros = point.positions[self.extension_index]
+            self.goal_extension_mecha = self.ros_to_mechaduino(self.goal_extension_ros)
+            self.extension_goal = True
+
+        if self.use_telescoping_joints:
+            self.goal_extension_ros = sum([point.positions[i] for i in self.telescoping_indices])
+            self.goal_extension_mecha = self.ros_to_mechaduino(self.goal_extension_ros)
+            self.extension_goal = True
+
+        if self.extension_goal and (self.goal_extension_mecha is None):
+            error_string = 'received goal point that is out of bounds. The first error that was caught is that the extension goal is invalid (goal_extension_ros = {0}).'.format(self.goal_extension_ros)
+            invalid_goal_error_func(error_string)
+            return False
+        return True
+
+    def ros_to_mechaduino(self, wrist_extension_ros):
+        return wrist_extension_ros
+
+    def init_execution(self, robot_status):
+        pass
+
+    def update_execution(self, robot_status, backlash_state):
+        if self.extension_goal:
+            if backlash_state['wrist_extension_retracted']:
+                arm_backlash_correction = self.wrist_extension_calibrated_retracted_offset
+            else: 
+                arm_backlash_correction = 0.0
+            self.current_extension_mecha = robot_status['arm']['pos'] + arm_backlash_correction
+            self.extension_error_m = self.goal_extension_mecha - self.current_extension_mecha
+            return self.extension_error_m
+        else:
+            return None
+    
+    def goal_reached(self):
+        if self.extension_goal: 
+            return (abs(self.extension_error_m) < self.acceptable_joint_error_m)
+        else:
+            return True
+    
+
+class LiftCommandGroup:
+    def __init__(self, max_arm_height):
+        self.clip_ros_tolerance = 0.001
+        self.acceptable_joint_error_m = 0.015 #15.0
+        self.max_arm_height = max_arm_height
+        self.lift_ros_range = [0.0, self.max_arm_height]
+
+    def update(self, joint_names, invalid_joints_error_func, robot_mode):
+        self.use_lift = False
+        if 'joint_lift' in joint_names:
+            self.lift_index = joint_names.index('joint_lift')
+            self.use_lift = True
+        return True
+
+    def get_num_valid_commands(self):
+        if self.use_lift:
+            return 1
+        return 0
+
+    def set_goal(self, point, invalid_goal_error_func, other):
+        self.lift_goal = False
+        self.goal_lift_mecha = None
+        self.goal_lift_ros = None
+        if self.use_lift:
+            self.goal_lift_ros = point.positions[self.lift_index]
+            self.goal_lift_mecha = self.ros_to_mechaduino(self.goal_lift_ros)
+            self.lift_goal = True
+
+        if self.lift_goal and (self.goal_lift_mecha is None):
+            error_string = 'received goal point that is out of bounds. The first error that was caught is that the lift goal is invalid (goal_lift_ros = {0}).'.format(self.goal_lift_ros)
+            invalid_goal_error_func(error_string)
+            return False
+        return True
+
+    def ros_to_mechaduino(self, lift_ros):
+        return lift_ros
+
+    def init_execution(self, robot_status):
+        pass
+
+    def update_execution(self, robot_status, backlash_state):
+        if self.lift_goal: 
+            self.current_lift_mecha = robot_status['lift']['pos']
+            self.lift_error_m = self.goal_lift_mecha - self.current_lift_mecha
+            return self.lift_error_m
+        else:
+            return None
+    
+    def goal_reached(self):
+        if self.lift_goal: 
+            return (abs(self.lift_error_m) < self.acceptable_joint_error_m)
+        else:
+            return True
+    
+
+class MobileBaseCommandGroup:
+    def __init__(self):
+        self.mobile_base_virtual_joint_ros_range = [-0.5, 0.5]
+        self.acceptable_mobile_base_error_m = 0.005
+        self.excellent_mobile_base_error_m = 0.005
+        self.acceptable_mobile_base_error_rad = (math.pi/180.0) * 6.0
+        self.excellent_mobile_base_error_rad = (math.pi/180.0) * 0.6
+
+    def update(self, joint_names, invalid_joints_error_func, robot_mode):
+        self.use_mobile_base_virtual_joint = False
+        self.use_mobile_base_inc = False
+        self.use_mobile_base_inc_rot = ('rotate_mobile_base' in joint_names)
+        self.use_mobile_base_inc_trans = ('translate_mobile_base' in joint_names)
+        self.use_mobile_base_inc = (self.use_mobile_base_inc_rot or self.use_mobile_base_inc_trans)
+        self.use_mobile_base_virtual_joint = ('joint_mobile_base_translation' in joint_names)
+        
+        if self.use_mobile_base_inc and self.use_mobile_base_virtual_joint:
+            # Commands that attempt to control the mobile base's
+            # virtual joint together with mobile base incremental
+            # commands are invalid.
+            command_string = ''
+            if self.use_mobile_base_inc_rot:
+                command_string += ' rotate_mobile_base '
+            if self.use_mobile_base_inc_trans:
+                command_string += ' translate_mobile_base '
+            error_string = 'received a command for the mobile base virtual joint (joint_mobile_base_translation) and mobile base incremental motions ({0}). These are mutually exclusive options. The joint names in the received command = {1}'.format(command_string, joint_names)
+            invalid_joints_error_func(error_string)
+            return False
+        
+        if self.use_mobile_base_virtual_joint: 
+            # Check if a mobile base command was received.
+            if robot_mode != 'manipulation':
+                error_string = 'must be in manipulation mode to receive a command for the joint_mobile_base_translation joint. Current mode = {0}.'.format(robot_mode)
+                invalid_joints_error_func(error_string)
+                return False
+            self.virtual_joint_mobile_base_index = joint_names.index('joint_mobile_base_translation')
+
+        if self.use_mobile_base_inc_rot:
+            if robot_mode != 'position':
+                error_string = 'must be in position mode to receive a rotate_mobile_base command. Current mode = {0}.'.format(robot_mode)
+                invalid_joints_error_func(error_string)
+                return False
+            self.rotate_mobile_base_index = joint_names.index('rotate_mobile_base')
+
+        if self.use_mobile_base_inc_trans: 
+            if robot_mode != 'position':
+                error_string = 'must be in position mode to receive a translate_mobile_base command. Current mode = {0}.'.format(robot_mode)
+                invalid_joints_error_func(error_string)
+                return False
+            self.translate_mobile_base_index = joint_names.index('translate_mobile_base')
+        return True
+
+    
+    def get_num_valid_commands(self):
+        number_of_valid_joints = 0
+        if self.use_mobile_base_virtual_joint:
+            number_of_valid_joints += 1
+        if self.use_mobile_base_inc_rot:
+            number_of_valid_joints += 1
+        if self.use_mobile_base_inc_trans:
+            number_of_valid_joints += 1
+        return number_of_valid_joints
+
+    def set_goal(self, point, invalid_goal_error_func, manipulation_origin):
+        self.rotate_mobile_base_goal = False
+        self.translate_mobile_base_goal = False
+        self.virtual_joint_mobile_base_goal = False
+        
+        if self.use_mobile_base_virtual_joint:
+            self.goal_mobile_base_virtual_joint_ros = point.positions[self.virtual_joint_mobile_base_index]
+            self.goal_mobile_base_virtual_joint_mecha = self.ros_to_mechaduino(self.goal_mobile_base_virtual_joint_ros, manipulation_origin)
+            self.virtual_joint_mobile_base_goal = True
+
+        if self.use_mobile_base_inc_rot:
+            self.goal_rotate_mobile_base_mecha = point.positions[self.rotate_mobile_base_index]
+            self.rotate_mobile_base_goal = True
+
+        if self.use_mobile_base_inc_trans: 
+            self.goal_translate_mobile_base_mecha = point.positions[self.translate_mobile_base_index]
+            self.translate_mobile_base_goal = True
+
+        if self.rotate_mobile_base_goal and self.translate_mobile_base_goal:
+            error_string = 'received a goal point with simultaneous rotation and translation mobile base goals. This is not allowed. Only one is allowed to be sent for a given goal point. rotate_mobile_base = {0} and translate_mobile_base = {1}'.format(self.goal_rotate_mobile_base_ros, self.goal_translate_mobile_base_ros)
+            invalid_goal_error_func(error_string)
+            return False
+
+        return True
+    
+    def ros_to_mechaduino(self, ros_ros, manipulation_origin):
+        bounds = self.mobile_base_virtual_joint_ros_range
+        ros_pos = bound_ros_command(bounds, ros_ros, self.clip_ros_tolerance)
+        if ros_pos is None:
+            return None
+        else:
+            return (manipulation_origin['x'] + ros_pos)
+
+    def init_execution(self, robot_status):
+        self.initial_mobile_base_translation_mecha_x = robot_status['base']['x']
+        self.initial_mobile_base_translation_mecha_y = robot_status['base']['y']
+        self.initial_mobile_base_rotation_mecha = robot_status['base']['theta']
+        b = robot_status['base']
+
+    def update_execution(self, robot_status, backlash_state):
+        current_mobile_base_translation_mecha_x = robot_status['base']['x']
+        current_mobile_base_translation_mecha_y = robot_status['base']['y']
+        current_mobile_base_rotation_mecha = robot_status['base']['theta']
+        b = robot_status['base']
+
+        self.mobile_base_error_m = None
+        self.mobile_base_error_rad = None
+        self.mobile_base_goal_reached = True
+        if self.virtual_joint_mobile_base_goal:
+            self.mobile_base_error_m = self.goal_mobile_base_virtual_joint_mecha - current_mobile_base_translation_mecha_x
+            self.mobile_base_goal_reached = (abs(self.mobile_base_error_m) < self.acceptable_mobile_base_error_m)
+        elif self.translate_mobile_base_goal:
+            # incremental motion relative to the initial position
+            x0 = self.initial_mobile_base_translation_mecha_x
+            y0 = self.initial_mobile_base_translation_mecha_y
+            x1 = current_mobile_base_translation_mecha_x
+            y1 = current_mobile_base_translation_mecha_y
+            distance_traveled = np.sqrt(np.square(x1 - x0) + np.square(y1 - y0))
+            self.mobile_base_error_m = abs(self.goal_translate_mobile_base_mecha) - distance_traveled
+            self.mobile_base_error_m = np.sign(self.goal_translate_mobile_base_mecha) * self.mobile_base_error_m
+            self.mobile_base_goal_reached = (abs(self.mobile_base_error_m) < self.acceptable_mobile_base_error_m)
+            if (abs(self.mobile_base_error_m) < self.excellent_mobile_base_error_m):
+                self.mobile_base_goal_reached = True
+            else:
+                # Use velocity to help decide when the low-level command
+                # has been finished.
+                min_m_per_s = 0.002
+                b = robot_status['base']
+                speed = np.sqrt(np.square(b['x_vel']) + np.square(b['y_vel']))
+                self.mobile_base_goal_reached = self.mobile_base_goal_reached and (speed < min_m_per_s)
+            
+        elif self.rotate_mobile_base_goal:
+            incremental_rad = hm.angle_diff_rad(current_mobile_base_rotation_mecha, self.initial_mobile_base_rotation_mecha)
+            self.mobile_base_error_rad = hm.angle_diff_rad(self.goal_rotate_mobile_base_mecha, incremental_rad)
+            self.mobile_base_goal_reached = (abs(self.mobile_base_error_rad) < self.acceptable_mobile_base_error_rad)
+            if (abs(self.mobile_base_error_rad) < self.excellent_mobile_base_error_rad):
+                self.mobile_base_goal_reached = True
+            else:
+                # Use velocity to help decide when the low-level command
+                # has been finished.
+                min_deg_per_s = 1.0
+                min_rad_per_s = min_deg_per_s * (math.pi/180.0)
+                self.mobile_base_goal_reached = self.mobile_base_goal_reached and (abs(robot_status['base']['theta_vel']) < min_rad_per_s)
+        return self.mobile_base_error_m, self.mobile_base_error_rad
+    
+    def goal_reached(self):
+        return self.mobile_base_goal_reached
+
+
+class StretchBodyNode:
+
+    def __init__(self):
+
+        self.use_robotis_head = True
+        self.use_robotis_end_of_arm = True
+        self.use_robotis_trajectories = False
+
+        self.default_goal_timeout_s = 10.0
+        self.default_goal_timeout_duration = rospy.Duration(self.default_goal_timeout_s)
+
+        # Initialize calibration offsets
+        self.head_tilt_calibrated_offset_rad = 0.0
+        self.head_pan_calibrated_offset_rad = 0.0
+
+        # Initialize backlash state
+        self.backlash_state = {'head_tilt_looking_up' : False,
+                               'head_pan_looked_left' : False,
+                               'wrist_extension_retracted' : False}
+
+        # Initialize backlash offsets
+        self.head_pan_calibrated_looked_left_offset_rad = 0.0
+        self.head_tilt_calibrated_looking_up_offset_rad = 0.0
+        self.wrist_extension_calibrated_retracted_offset_m = 0.0
+        self.head_tilt_backlash_transition_angle_rad = -0.4
+        
+        self.gripper_conversion = GripperConversion()
+        
+        self.mobile_base_manipulation_origin = None #{'x':None, 'y':None, 'theta':None}
+
+        self.use_lift = True
+
+        # Clip the command, instead of invalidating it, if it is close
+        # enough to the valid ranges.
+        self.trajectory_debug = True
+        
+        self.robot_stop_lock = threading.Lock()
+        self.stop_the_robot = False
+        
+        self.robot_mode_lock = threading.Lock()
+        with self.robot_mode_lock: 
+            self.robot_mode = None
+            self.robot_mode_read_only = 0
+
+        self.mode_change_polling_rate_hz = 4.0
+
+        
+    def trajectory_action_server_callback(self, goal):
+
+        with self.robot_stop_lock:
+            if self.stop_the_robot:
+                # This trajectory callback has been called after a
+                # stop_the_robot service trigger that did not result
+                # in prempting a trajectory callback. Sufficient time
+                # is likely to have passed for the robot motors to
+                # have received their stop commands, so this
+                # trajectory command will be accepted.
+
+                # Please note that it is possible that this trajectory
+                # command was sent before the stop_the_robot service
+                # trigger.
+                self.stop_the_robot = False
+        
+        with self.robot_mode_lock:
+            self.robot_mode_read_only += 1
+
+        def invalid_joints_error(error_string):
+            error_string = '{0} action server:'.format(self.node_name) + error_string
+            rospy.logerr(error_string)
+            result = FollowJointTrajectoryResult()
+            result.error_code = result.INVALID_JOINTS
+            self.trajectory_action_server.set_aborted(result)
+            with self.robot_mode_lock:
+                self.robot_mode_read_only -= 1
+
+        def invalid_goal_error(error_string):
+            error_string = '{0} action server:'.format(self.node_name) + error_string
+            rospy.logerr(error_string)
+            result = FollowJointTrajectoryResult()
+            result.error_code = result.INVALID_JOINTS
+            self.trajectory_action_server.set_aborted(result)
+            with self.robot_mode_lock:
+                self.robot_mode_read_only -= 1
+
+        def goal_tolerance_violated(error_string):
+            error_string = '{0} action server:'.format(self.node_name) + error_string
+            rospy.logerr(error_string)
+            result = FollowJointTrajectoryResult()
+            result.error_code = result.GOAL_TOLERANCE_VIOLATED
+            self.trajectory_action_server.set_aborted(result)
+            with self.robot_mode_lock:
+                self.robot_mode_read_only -= 1
+                
+        # For now, ignore goal time and configuration tolerances.
+        joint_names = goal.trajectory.joint_names
+        if self.trajectory_debug:
+            rospy.loginfo('New trajectory received with joint_names = {0}'.format(joint_names))
+
+        ###################################################
+        # Decide what to do based on the commanded joints.
+        if self.use_lift: 
+            command_groups = [self.telescoping_cg, self.lift_cg, self.mobile_base_cg, self.head_pan_cg, self.head_tilt_cg, self.wrist_yaw_cg, self.gripper_cg]
+        else:
+            command_groups = [self.telescoping_cg, self.mobile_base_cg, self.head_pan_cg, self.head_tilt_cg, self.wrist_yaw_cg, self.gripper_cg]
+
+        updates = [c.update(joint_names, invalid_joints_error, self.robot_mode) for c in command_groups]
+        if not all(updates):
+            # The joint names violated at least one of the command
+            # group's requirements. The command group should have
+            # reported the error.
+            return
+
+        number_of_valid_joints = sum([c.get_num_valid_commands() for c in command_groups])
+        
+        if number_of_valid_joints <= 0:
+            # Abort if no valid joints were received.
+            error_string = 'received a command without any valid joint names. Received joint names = ' + str(joint_names)
+            invalid_joints_error(error_string)
+            return                
+
+        if len(joint_names) != number_of_valid_joints:
+            error_string = 'received {0} valid joints and {1} total joints. Received joint names = {2}'.format(number_of_valid_joints,  len(joint_names), joint_names)
+            invalid_joints_error(error_string)
+            return
+
+        ###################################################
+        # Try to reach each of the goals in sequence until an error is
+        # detected or success is achieved.
+        for point_number, point in enumerate(goal.trajectory.points):
+            if self.trajectory_debug:
+                rospy.loginfo('position # {0} = {1}'.format(point_number, point.positions))
+
+            
+            valid_goals = [c.set_goal(point, invalid_goal_error, self.mobile_base_manipulation_origin) for c in command_groups]
+            if not all(valid_goals):
+                # At least one of the goals violated the requirements
+                # of a command group. Any violations should have been
+                # reported as errors by the command groups.
+                return
+                
+            # Attempt to reach the goal.
+            update_rate = rospy.Rate(15.0)
+
+            first_time = True
+            incremental_commands_executed = False
+
+            goal_start_time = rospy.Time.now()
+            
+            while True:
+                # Get copy of the current robot status (uses lock held by the robot).
+                robot_status = self.robot.get_status()
+
+                if first_time:
+                    for c in command_groups:
+                        c.init_execution(robot_status)
+                    first_time = False
+
+                if self.use_lift: 
+                    lift_error_m = self.lift_cg.update_execution(robot_status, self.backlash_state)
+                extension_error_m = self.telescoping_cg.update_execution(robot_status, self.backlash_state)
+                mobile_base_error_m, mobile_base_error_rad = self.mobile_base_cg.update_execution(robot_status, self.backlash_state)
+                self.head_pan_cg.update_execution(robot_status, self.backlash_state)
+                self.head_tilt_cg.update_execution(robot_status, self.backlash_state)
+                self.wrist_yaw_cg.update_execution(robot_status, self.backlash_state)
+                self.gripper_cg.update_execution(robot_status, self.backlash_state)
+                    
+                # Check if a premption request has been received.
+                with self.robot_stop_lock:
+                    if self.stop_the_robot or self.trajectory_action_server.is_preempt_requested():
+                        if self.trajectory_debug: 
+                            rospy.loginfo('PREEMPTION REQUESTED, but not stopping current motions to allow smooth interpolation between old and new commands.')
+                        self.trajectory_action_server.set_preempted()
+                        with self.robot_mode_lock:
+                            self.robot_mode_read_only -= 1
+
+                        self.stop_the_robot = False
+                        return
+
+                    if not incremental_commands_executed:
+                        translate = (mobile_base_error_m is not None)
+                        rotate = (mobile_base_error_rad is not None)
+                        if translate and rotate:
+                            error_string = 'simultaneous translation and rotation of the mobile base requested. This is not allowed.'
+                            invalid_goal_error(error_string)
+                            return
+                        if translate:
+                            self.robot.base.translate_by(mobile_base_error_m)
+                        if rotate: 
+                            self.robot.base.rotate_by(mobile_base_error_rad)
+
+                        if self.telescoping_cg.extension_goal:
+                            self.robot.arm.move_by(extension_error_m)
+                            if extension_error_m < 0.0:
+                                self.backlash_state['wrist_extension_retracted'] = True
+                            else:
+                                self.backlash_state['wrist_extension_retracted'] = False
+
+                        if self.use_lift: 
+                            if self.lift_cg.lift_goal: 
+                                self.robot.lift.move_by(lift_error_m)
+
+                        if self.head_pan_cg.joint_goal:
+                           self.robot.head.move_by('head_pan', self.head_pan_cg.joint_error)
+                           if self.head_pan_cg.joint_error > 0.0:
+                               self.backlash_state['head_pan_looked_left'] = True
+                           else:
+                               self.backlash_state['head_pan_looked_left'] = False
+ 
+                        if self.head_tilt_cg.joint_goal:
+                            self.robot.head.move_by('head_tilt', self.head_tilt_cg.joint_error)
+                            if self.head_tilt_cg.joint_target > (self.head_tilt_backlash_transition_angle_rad + self.head_tilt_calibrated_offset_rad):
+                                self.backlash_state['head_tilt_looking_up'] = True
+                            else:
+                                self.backlash_state['head_tilt_looking_up'] = False
+ 
+                        if self.wrist_yaw_cg.joint_goal:
+                            self.robot.end_of_arm.move_to('wrist_yaw', self.wrist_yaw_cg.joint_target)
+
+                        if self.gripper_cg.gripper_joint_goal:
+                            gripper_command = self.gripper_cg.goal_gripper_joint
+                            if GRIPPER_DEBUG: 
+                                print('move_to stretch_gripper =', gripper_command)
+                            self.robot.end_of_arm.move_to('stretch_gripper', gripper_command)
+
+                        self.robot.push_command()
+                        incremental_commands_executed = True
+                    
+                # Check if the goal positions have been reached.                
+                goals_reached = [c.goal_reached() for c in command_groups]
+                if all(goals_reached):
+                    if self.trajectory_debug: 
+                        rospy.loginfo('achieved goal!')
+                    break
+
+                if (rospy.Time.now() - goal_start_time) > self.default_goal_timeout_duration:
+                    error_string = 'time to execute the current goal point = {0} exceeded the default_goal_timeout = {1}'.format(point, self.default_goal_timeout_s)
+                    goal_tolerance_violated(error_string)
+                    return
+                
+                update_rate.sleep()
+
+            # Currently not providing feedback.
+
+        if self.trajectory_debug: 
+            rospy.loginfo('Finished with all goals.')
+
+        result = FollowJointTrajectoryResult()
+        result.error_code = result.SUCCESSFUL 
+        self.trajectory_action_server.set_succeeded(result)
+
+        with self.robot_mode_lock:
+            self.robot_mode_read_only -= 1
+        return
+
+
+    ###### MOBILE BASE VELOCITY METHODS #######
+        
+    def set_mobile_base_velocity_callback(self, twist):
+        # check on thread safety for this callback function
+        if self.robot_mode != 'navigation':
+            error_string = '{0} action server must be in navigation mode to receive a twist on cmd_vel. Current mode = {1}.'.format(self.node_name, self.robot_mode)
+            rospy.logerr(error_string)
+            return
+        self.linear_velocity_mps = twist.linear.x
+        self.angular_velocity_radps = twist.angular.z
+        self.last_twist_time = rospy.get_time()
+        
+    def command_mobile_base_velocity_and_publish_state(self):
+        with self.robot_mode_lock:
+            self.robot_mode_read_only += 1
+
+        if BACKLASH_DEBUG:
+            print('***')
+            print('self.backlash_state =', self.backlash_state)
+
+        # set new mobile base velocities, if appropriate
+        # check on thread safety for this with callback that sets velocity command values
+        if self.robot_mode == 'navigation': 
+            time_since_last_twist = rospy.get_time() - self.last_twist_time
+            if time_since_last_twist < self.timeout:
+                self.robot.base.set_velocity(self.linear_velocity_mps, self.angular_velocity_radps)
+                self.robot.push_command()
+            else:
+                # Too much information in general, although it could be blocked, since it's just INFO.
+                self.robot.base.set_velocity(0.0, 0.0)
+                self.robot.push_command()
+
+        # get copy of the current robot status (uses lock held by the robot)
+        robot_status = self.robot.get_status()
+
+
+        # In the future, consider using time stamps from the robot's
+        # motor control boards and other boards. These would need to
+        # be synchronized with the rospy clock.
+        #robot_time = robot_status['timestamp_pc']
+        #rospy.loginfo('robot_time =', robot_time)        
+        #current_time = rospy.Time.from_sec(robot_time)
+        
+        current_time = rospy.Time.now()
+        
+        # obtain odometry
+        # assign relevant base status to variables
+        base_status = robot_status['base']
+        x = base_status['x']
+        x_raw = x
+        y = base_status['y']
+        theta = base_status['theta']
+        x_vel = base_status['x_vel']
+        x_vel_raw = x_vel
+        y_vel = base_status['y_vel']
+        x_effort = base_status['effort'][0]
+        x_effort_raw = x_effort
+        theta_vel = base_status['theta_vel']
+        pose_time_s = base_status['pose_time_s']
+
+        if self.robot_mode == 'manipulation':
+            x = self.mobile_base_manipulation_origin['x']
+            x_vel = 0.0
+            x_effort = 0.0
+
+        # assign relevant arm status to variables
+        arm_status = robot_status['arm']
+        if self.backlash_state['wrist_extension_retracted']:
+            arm_backlash_correction = self.wrist_extension_calibrated_retracted_offset_m
+        else: 
+            arm_backlash_correction = 0.0
+
+        if BACKLASH_DEBUG: 
+            print('arm_backlash_correction =', arm_backlash_correction)
+        pos_out = arm_status['pos'] + arm_backlash_correction
+        vel_out = arm_status['vel']
+        eff_out = arm_status['motor']['effort']
+
+        if self.use_lift: 
+            # assign relevant lift status to variables
+            lift_status = robot_status['lift']
+            pos_up = lift_status['pos']
+            vel_up = lift_status['vel']
+            eff_up = lift_status['motor']['effort']
+        else:
+            pos_up = 0.242
+            vel_up = 0.0
+            eff_up = 0.0
+
+        if self.use_robotis_end_of_arm:         
+            # assign relevant wrist status to variables
+            wrist_status = robot_status['end_of_arm']['wrist_yaw']
+            wrist_rad = wrist_status['pos']
+            wrist_vel = wrist_status['vel']
+            wrist_effort = wrist_status['effort']
+            
+            # assign relevant gripper status to variables
+            gripper_status = robot_status['end_of_arm']['stretch_gripper']
+            if GRIPPER_DEBUG: 
+                print('-----------------------')
+                print('gripper_status[\'pos\'] =', gripper_status['pos'])
+                print('gripper_status[\'pos_pct\'] =', gripper_status['pos_pct'])
+            gripper_aperture_m, gripper_finger_rad, gripper_finger_effort, gripper_finger_vel = self.gripper_conversion.status_to_all(gripper_status)
+            if GRIPPER_DEBUG: 
+                print('gripper_aperture_m =', gripper_aperture_m)
+                print('gripper_finger_rad =', gripper_finger_rad)
+                print('-----------------------')
+
+        if self.use_robotis_head: 
+            # assign relevant head pan status to variables
+            head_pan_status = robot_status['head']['head_pan']
+            if self.backlash_state['head_pan_looked_left']:
+                pan_backlash_correction = self.head_pan_calibrated_looked_left_offset_rad 
+            else:
+                pan_backlash_correction = 0.0
+            if BACKLASH_DEBUG: 
+                print('pan_backlash_correction =', pan_backlash_correction)
+            head_pan_rad = head_pan_status['pos'] + self.head_pan_calibrated_offset_rad + pan_backlash_correction
+            head_pan_vel = head_pan_status['vel']
+            head_pan_effort = head_pan_status['effort']
+
+            # assign relevant head tilt status to variables
+            head_tilt_status = robot_status['head']['head_tilt']
+            if self.backlash_state['head_tilt_looking_up']:
+                tilt_backlash_correction = self.head_tilt_calibrated_looking_up_offset_rad
+            else:
+                tilt_backlash_correction = 0.0
+            if BACKLASH_DEBUG: 
+                print('tilt_backlash_correction =', tilt_backlash_correction)
+            head_tilt_rad = head_tilt_status['pos'] + self.head_tilt_calibrated_offset_rad + tilt_backlash_correction
+            head_tilt_vel = head_tilt_status['vel']
+            head_tilt_effort = head_tilt_status['effort']
+
+        q = tf_conversions.transformations.quaternion_from_euler(0, 0, theta)
+
+        if self.broadcast_odom_tf: 
+            # publish odometry via TF
+            t = TransformStamped()
+            t.header.stamp = current_time
+            t.header.frame_id = self.odom_frame_id
+            t.child_frame_id = self.base_frame_id
+            t.transform.translation.x = x
+            t.transform.translation.y = y
+            t.transform.translation.z = 0.0
+            t.transform.rotation.x = q[0]
+            t.transform.rotation.y = q[1]
+            t.transform.rotation.z = q[2]
+            t.transform.rotation.w = q[3]
+            self.tf_broadcaster.sendTransform(t)
+
+        # publish odometry via the odom topic
+        odom = Odometry()
+        odom.header.stamp = current_time
+        odom.header.frame_id = self.odom_frame_id
+        odom.child_frame_id = self.base_frame_id
+        odom.pose.pose.position.x = x
+        odom.pose.pose.position.y = y
+        odom.pose.pose.orientation.x = q[0]
+        odom.pose.pose.orientation.y = q[1]
+        odom.pose.pose.orientation.z = q[2]
+        odom.pose.pose.orientation.w = q[3]
+        odom.twist.twist.linear.x = x_vel
+        odom.twist.twist.angular.z = theta_vel
+        self.odom_pub.publish(odom)
+
+        # publish joint state for the arm
+        joint_state = JointState()
+        joint_state.header.stamp = current_time
+        # joint_arm_l3 is the most proximal and joint_arm_l0 is the
+        # most distal joint of the telescoping arm model. The joints
+        # are connected in series such that moving the most proximal
+        # joint moves all the other joints in the global frame.
+        joint_state.name = ['wrist_extension', 'joint_lift', 'joint_arm_l3', 'joint_arm_l2', 'joint_arm_l1', 'joint_arm_l0']
+
+        # set positions of the telescoping joints
+        positions = [pos_out/4.0 for i in xrange(4)]
+        # set lift position
+        positions.insert(0, pos_up)
+        # set wrist_extension position
+        positions.insert(0, pos_out)
+
+        # set velocities of the telescoping joints
+        velocities = [vel_out/4.0 for i in xrange(4)]
+        # set lift velocity
+        velocities.insert(0, vel_up)
+        # set wrist_extension velocity
+        velocities.insert(0, vel_out)
+
+        # set efforts of the telescoping joints
+        efforts = [eff_out for i in xrange(4)]
+        # set lift effort
+        efforts.insert(0, eff_up)
+        # set wrist_extension effort
+        efforts.insert(0, eff_out)
+
+        if self.use_robotis_head:
+            head_joint_names = ['joint_head_pan', 'joint_head_tilt']
+            joint_state.name.extend(head_joint_names)
+
+            positions.append(head_pan_rad)
+            velocities.append(head_pan_vel)
+            efforts.append(head_pan_effort)
+
+            positions.append(head_tilt_rad)
+            velocities.append(head_tilt_vel)
+            efforts.append(head_tilt_effort)
+
+        if self.use_robotis_end_of_arm: 
+            end_of_arm_joint_names = ['joint_wrist_yaw', 'joint_gripper_finger_left', 'joint_gripper_finger_right']
+            joint_state.name.extend(end_of_arm_joint_names)
+
+            positions.append(wrist_rad)
+            velocities.append(wrist_vel)
+            efforts.append(wrist_effort)
+
+            positions.append(gripper_finger_rad)
+            velocities.append(gripper_finger_vel)
+            efforts.append(gripper_finger_effort)
+
+            positions.append(gripper_finger_rad)
+            velocities.append(gripper_finger_vel)
+            efforts.append(gripper_finger_effort)
+            
+        # set virtual joint for mobile base translation
+        joint_state.name.append('joint_mobile_base_translation')
+        if self.robot_mode == 'manipulation':
+            manipulation_translation = x_raw - self.mobile_base_manipulation_origin['x']
+            positions.append(manipulation_translation)
+            velocities.append(x_vel_raw)
+            efforts.append(x_effort_raw)
+        else:
+            positions.append(0.0)
+            velocities.append(0.0)
+            efforts.append(0.0)
+
+        # set joint_state
+        joint_state.position = positions
+        joint_state.velocity = velocities
+        joint_state.effort = efforts
+        self.joint_state_pub.publish(joint_state)
+
+        ##################################################
+        # publish IMU sensor data
+        imu_status = robot_status['pimu']['imu']
+        ax = imu_status['ax']
+        ay = imu_status['ay']
+        az = imu_status['az']
+        gx = imu_status['gx']
+        gy = imu_status['gy']
+        gz = imu_status['gz']
+        mx = imu_status['mx']
+        my = imu_status['my']
+        mz = imu_status['mz']
+
+        i = Imu()
+        i.header.stamp = current_time
+        i.header.frame_id = 'imu_mobile_base'
+        i.angular_velocity.x = gx
+        i.angular_velocity.y = gy
+        i.angular_velocity.z = gz
+
+        i.linear_acceleration.x = ax
+        i.linear_acceleration.y = ay
+        i.linear_acceleration.z = az
+        self.imu_mobile_base_pub.publish(i)
+        
+        m = MagneticField()
+        m.header.stamp = current_time
+        m.header.frame_id = 'imu_mobile_base'
+        self.magnetometer_mobile_base_pub.publish(m)
+
+        accel_status = robot_status['wacc']
+        ax = accel_status['ax']
+        ay = accel_status['ay']
+        az = accel_status['az']
+
+        i = Imu()
+        i.header.stamp = current_time
+        i.header.frame_id = 'accel_wrist'
+        i.linear_acceleration.x = ax
+        i.linear_acceleration.y = ay
+        i.linear_acceleration.z = az
+        self.imu_wrist_pub.publish(i)
+        ##################################################
+        
+        with self.robot_mode_lock:
+            self.robot_mode_read_only -= 1
+        return
+
+
+    ######## CHANGE MODES #########
+    
+    def change_mode(self, new_mode, code_to_run):
+        polling_rate = rospy.Rate(self.mode_change_polling_rate_hz)
+        changed = False
+        while not changed: 
+            with self.robot_mode_lock:
+                if self.robot_mode_read_only == 0:
+                    self.robot_mode = new_mode
+                    code_to_run()
+                    changed = True
+                    rospy.loginfo('Changed to mode = {0}'.format(self.robot_mode))
+            if not changed:
+                polling_rate.sleep()
+
+    # TODO : add a freewheel mode or something comparable for the mobile base?
+                
+    def turn_on_navigation_mode(self):
+        # Navigation mode enables mobile base velocity control via
+        # cmd_vel, and disables position-based control of the mobile
+        # base.
+        def code_to_run():
+            self.linear_velocity_mps = 0.0
+            self.angular_velocity_radps = 0.0
+        self.change_mode('navigation', code_to_run)
+        
+    def turn_on_manipulation_mode(self):
+        # Manipulation mode enables mobile base translation using
+        # position control via joint_mobile_base_translation, and
+        # disables velocity control of the mobile base. It also
+        # updates the virtual prismatic joint named
+        # joint_mobile_base_translation that relates 'floor_link' and
+        # 'base_link'. This mode was originally created so that
+        # MoveIt! could treat the robot like an arm. This mode does
+        # not allow base rotation.
+        def code_to_run():
+            self.robot.base.enable_pos_incr_mode()
+            # get copy of the current robot status (uses lock held by the robot)
+            robot_status = self.robot.get_status()
+            # obtain odometry
+            # assign relevant base status to variables
+            base_status = robot_status['base']
+            x = base_status['x']
+            y = base_status['y']
+            theta = base_status['theta']
+            self.mobile_base_manipulation_origin = {'x':x, 'y':y, 'theta':theta} 
+        self.change_mode('manipulation', code_to_run)
+
+    def turn_on_position_mode(self):
+        # Position mode enables mobile base translation and rotation
+        # using position control with sequential incremental rotations
+        # and translations. It also disables velocity control of the
+        # mobile base. It does not update the virtual prismatic
+        # joint. The frames associated with 'floor_link' and
+        # 'base_link' become identical in this mode.
+        def code_to_run():
+            self.robot.base.enable_pos_incr_mode()
+        self.change_mode('position', code_to_run)
+        
+    def calibrate(self):
+        def code_to_run():
+            if self.use_lift: 
+                self.robot.lift.home()
+            self.robot.arm.home()
+        self.change_mode('calibration', code_to_run)
+
+    ###############################
+    
+    ######## SERVICE CALLBACKS #######
+
+    def stop_the_robot_callback(self, request):
+        with self.robot_stop_lock:
+            self.stop_the_robot = True
+            
+            self.robot.base.translate_by(0.0)
+            self.robot.base.rotate_by(0.0)
+            self.robot.arm.move_by(0.0)
+            self.robot.lift.move_by(0.0)
+            self.robot.push_command()
+
+            self.robot.head.move_by('head_pan', 0.0)
+            self.robot.head.move_by('head_tilt', 0.0)
+            self.robot.end_of_arm.move_by('wrist_yaw', 0.0)
+            self.robot.end_of_arm.move_by('stretch_gripper', 0.0)
+            self.robot.push_command()
+            
+        rospy.loginfo('Received stop_the_robot service call, so commanded all actuators to stop.')
+        return TriggerResponse(
+            success=True,
+            message='Stopped the robot.'
+            )
+        
+    def navigation_mode_service_callback(self, request):
+        self.turn_on_navigation_mode()
+        return TriggerResponse(
+            success=True,
+            message='Now in navigation mode.'
+            )
+
+    def manipulation_mode_service_callback(self, request):
+        self.turn_on_manipulation_mode()
+        return TriggerResponse(
+            success=True,
+            message='Now in manipulation mode.'
+            )
+
+    def position_mode_service_callback(self, request):
+        self.turn_on_position_mode()
+        return TriggerResponse(
+            success=True,
+            message='Now in position mode.'
+            )
+    ###############################
+    
+    def main(self):
+        
+        rospy.init_node('stretch_driver')
+        self.node_name = rospy.get_name()
+
+        rospy.loginfo("{0} started".format(self.node_name))
+
+        filename = rospy.get_param('~controller_calibration_file')
+        mode = rospy.get_param('~mode', "position")
+        rospy.loginfo('mode = ' + str(mode))
+
+        self.broadcast_odom_tf = rospy.get_param('~broadcast_odom_tf')
+        rospy.loginfo('broadcast_odom_tf = ' + str(self.broadcast_odom_tf))
+        if self.broadcast_odom_tf:
+            self.tf_broadcaster = tf2_ros.TransformBroadcaster()
+        
+        large_ang = 45.0 * np.pi/180.0
+        
+        rospy.loginfo('Loading controller calibration parameters for the head from YAML file named {0}'.format(filename))
+        fid = open(filename, 'r')
+        controller_parameters = yaml.load(fid)
+        fid.close()
+
+        rospy.loginfo('controller parameters loaded = {0}'.format(controller_parameters))
+        
+        deg_per_rad = 180.0/math.pi
+        self.head_tilt_calibrated_offset_rad = controller_parameters['tilt_angle_offset']
+        ang = self.head_tilt_calibrated_offset_rad
+        if (abs(ang) > large_ang):
+            rospy.loginfo('WARNING: self.head_tilt_calibrated_offset_rad HAS AN UNUSUALLY LARGE MAGNITUDE')
+        rospy.loginfo('self.head_tilt_calibrated_offset_rad in degrees = {0}'.format(self.head_tilt_calibrated_offset_rad * deg_per_rad))
+
+        self.head_pan_calibrated_offset_rad = controller_parameters['pan_angle_offset']
+        ang = self.head_pan_calibrated_offset_rad
+        if (abs(ang) > large_ang):
+            rospy.loginfo('WARNING: self.head_pan_calibrated_offset_rad HAS AN UNUSUALLY LARGE MAGNITUDE')
+        rospy.loginfo('self.head_pan_calibrated_offset_rad in degrees = {0}'.format(self.head_pan_calibrated_offset_rad * deg_per_rad))
+
+        self.head_pan_calibrated_looked_left_offset_rad = controller_parameters['pan_looked_left_offset']
+        ang = self.head_pan_calibrated_looked_left_offset_rad
+        if (abs(ang) > large_ang):
+            rospy.loginfo('WARNING: self.head_pan_calibrated_looked_left_offset_rad HAS AN UNUSUALLY LARGE MAGNITUDE')
+        rospy.loginfo('self.head_pan_calibrated_looked_left_offset_rad in degrees = {0}'.format(self.head_pan_calibrated_looked_left_offset_rad * deg_per_rad))
+
+        self.head_tilt_backlash_transition_angle_rad = controller_parameters['tilt_angle_backlash_transition']
+        rospy.loginfo('self.head_tilt_backlash_transition_angle_rad in degrees = {0}'.format(self.head_tilt_backlash_transition_angle_rad * deg_per_rad))
+        
+        self.head_tilt_calibrated_looking_up_offset_rad = controller_parameters['tilt_looking_up_offset']
+        ang = self.head_tilt_calibrated_looking_up_offset_rad
+        if (abs(ang) > large_ang):
+            rospy.loginfo('WARNING: self.head_tilt_calibrated_looking_up_offset_rad HAS AN UNUSUALLY LARGE MAGNITUDE')
+        rospy.loginfo('self.head_tilt_calibrated_looking_up_offset_rad in degrees = {0}'.format(self.head_tilt_calibrated_looking_up_offset_rad * deg_per_rad))
+
+        self.wrist_extension_calibrated_retracted_offset_m = controller_parameters['arm_retracted_offset']
+        m = self.wrist_extension_calibrated_retracted_offset_m
+        if (abs(m) > 0.05):
+            rospy.loginfo('WARNING: self.wrist_extension_calibrated_retracted_offset_m HAS AN UNUSUALLY LARGE MAGNITUDE')
+        rospy.loginfo('self.wrist_extension_calibrated_retracted_offset_m in meters = {0}'.format(self.wrist_extension_calibrated_retracted_offset_m))
+        
+        self.linear_velocity_mps = 0.0 # m/s ROS SI standard for cmd_vel (REP 103)
+        self.angular_velocity_radps = 0.0 # rad/s ROS SI standard for cmd_vel (REP 103)
+        
+        self.max_arm_height = 1.1
+        
+        self.telescoping_cg = TelescopingCommandGroup(self.wrist_extension_calibrated_retracted_offset_m)
+        if self.use_lift:
+            self.lift_cg = LiftCommandGroup(self.max_arm_height)
+        self.mobile_base_cg = MobileBaseCommandGroup()
+        self.head_pan_cg = HeadPanCommandGroup(self.head_pan_calibrated_offset_rad,
+                                               self.head_pan_calibrated_looked_left_offset_rad)
+        self.head_tilt_cg = HeadTiltCommandGroup(self.head_tilt_calibrated_offset_rad,
+                                                 self.head_tilt_calibrated_looking_up_offset_rad)
+        self.wrist_yaw_cg = WristYawCommandGroup()
+        self.gripper_cg = GripperCommandGroup()
+        
+        self.odom_pub = rospy.Publisher('odom', Odometry, queue_size=1)
+        
+        self.imu_mobile_base_pub = rospy.Publisher('imu_mobile_base', Imu, queue_size=1)
+        self.magnetometer_mobile_base_pub = rospy.Publisher('magnetometer_mobile_base', MagneticField, queue_size=1)
+        self.imu_wrist_pub = rospy.Publisher('imu_wrist', Imu, queue_size=1)
+        
+        
+        rospy.Subscriber("cmd_vel", Twist, self.set_mobile_base_velocity_callback)
+
+        # ~ symbol gets parameter from private namespace
+        self.joint_state_rate = rospy.get_param('~rate', 15.0)
+        self.timeout = rospy.get_param('~timeout', 1.0)
+        rospy.loginfo("{0} rate = {1} Hz".format(self.node_name, self.joint_state_rate))
+        rospy.loginfo("{0} timeout = {1} s".format(self.node_name, self.timeout))
+
+        self.use_fake_mechaduinos = rospy.get_param('~use_fake_mechaduinos', False)
+        rospy.loginfo("{0} use_fake_mechaduinos = {1}".format(rospy.get_name(), self.use_fake_mechaduinos))
+
+        self.base_frame_id = 'base_link'
+        rospy.loginfo("{0} base_frame_id = {1}".format(self.node_name, self.base_frame_id))
+        self.odom_frame_id = 'odom'
+        rospy.loginfo("{0} odom_frame_id = {1}".format(self.node_name, self.odom_frame_id))
+
+        self.robot = rb.Robot()
+        self.robot.startup()
+        
+        # TODO: check with the actuators to see if calibration is required
+        #self.calibrate()
+        
+        self.joint_state_pub = rospy.Publisher('joint_states', JointState, queue_size=1)
+        
+        command_base_velocity_and_publish_joint_state_rate = rospy.Rate(self.joint_state_rate)
+        self.last_twist_time = rospy.get_time()
+
+        # start action server for joint trajectories
+        self.trajectory_action_server = actionlib.SimpleActionServer('/stretch_controller/follow_joint_trajectory',
+                                                                     FollowJointTrajectoryAction,
+                                                                     execute_cb = self.trajectory_action_server_callback,
+                                                                     auto_start = False)
+        self.trajectory_action_server.start()
+
+        if mode == "position":
+            self.turn_on_position_mode()
+        elif mode == "navigation":
+            self.turn_on_navigation_mode()
+        elif mode == "manipulation":
+            self.turn_on_manipulation_mode()
+
+        self.switch_to_manipulation_mode_service = rospy.Service('/switch_to_manipulation_mode',
+                                                                 Trigger,
+                                                                 self.manipulation_mode_service_callback)
+
+        self.switch_to_navigation_mode_service = rospy.Service('/switch_to_navigation_mode',
+                                                               Trigger,
+                                                               self.navigation_mode_service_callback)
+
+        self.switch_to_position_mode_service = rospy.Service('/switch_to_position_mode',
+                                                             Trigger,
+                                                             self.position_mode_service_callback)
+        
+        self.stop_the_robot_service = rospy.Service('/stop_the_robot',
+                                                    Trigger,
+                                                    self.stop_the_robot_callback)
+
+        
+        # start loop to command the mobile base velocity, publish
+        # odometry, and publish joint states
+        while not rospy.is_shutdown():
+            self.command_mobile_base_velocity_and_publish_state()
+            command_base_velocity_and_publish_joint_state_rate.sleep()
+
+
+if __name__ == '__main__':
+    try:
+        node = StretchBodyNode()
+        node.main()
+    except rospy.ROSInterruptException:
+        pass

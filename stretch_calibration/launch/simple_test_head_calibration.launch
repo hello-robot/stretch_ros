@@ -1,0 +1,32 @@
+<launch>
+
+  <arg name="urdf_file" value="$(find stretch_description)/urdf/stretch.urdf"/>
+  <arg name="controller_yaml_file" value="$(find stretch_core)/config/controller_calibration_head.yaml"/>
+  <arg name="calibration_directory" value="$(env HELLO_FLEET_PATH)/$(env HELLO_FLEET_ID)/calibration_ros/"/>
+  
+  <!-- REALSENSE D435i -->
+  <include file="$(find stretch_core)/launch/d435i_high_resolution.launch"></include>
+  <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen">
+    <param name="initial_mode" type="string" value="High Accuracy"/>
+  </node>
+  <!-- -->
+
+  <!-- STRETCH DRIVER -->
+  <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="true"/>
+  <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true"/>
+  <!-- -->
+
+  <!-- ARUCO MARKER DETECTOR -->
+  <include file="$(find stretch_core)/launch/stretch_aruco.launch"></include>
+  <!-- -->
+
+  <!-- KEYBOARD TELEOP -->
+  <node name="keyboard_teleop" pkg="stretch_core" type="keyboard_teleop" output="screen" args=''/>
+  <!-- -->
+
+  <!-- VISUALIZE -->
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_core)/rviz/stretch_simple_test.rviz">
+  </node>
+  <!-- -->
+  
+</launch>

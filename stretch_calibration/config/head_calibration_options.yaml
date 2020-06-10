@@ -1,0 +1,3 @@
+'head_calibration_options': 
+  'data_to_use': 'use_all_data' #'use_very_little_data' #'use_all_data'
+  'fit_quality': 'slow_high_quality' #'fastest_lowest_quality' #'slow_high_quality'
