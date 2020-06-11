@@ -20,7 +20,7 @@ class GetKeyboardCommands:
         self.clean_surface_on = clean_surface_on
         self.grasp_object_on = grasp_object_on
         self.deliver_object_on = deliver_object_on
-        
+
         self.step_size = 'medium'
         # self.persistent_command_count = 0
         # self.prev_persistent_c = None
@@ -81,10 +81,9 @@ class GetKeyboardCommands:
         print('                                           ')
         print('-------------------------------------------')
 
-
     def get_command(self, node):
         command = None
-        
+
         c = kb.getch()
         #rospy.loginfo('c =', c)
         if ((c == '+') or (c == '=')) and self.mapping_on:
@@ -164,7 +163,7 @@ class GetKeyboardCommands:
                 command = {'joint': 'rotate_mobile_base', 'inc': -self.get_deltas()['rad']}
         elif self.mode == 'navigation':
             rospy.loginfo('ERROR: Navigation mode is not currently supported.')
-            
+
         if c == 'w' or c == 'W':
             command = {'joint': 'wrist_extension', 'delta': self.get_deltas()['translate']}
         if c == 'x' or c == 'X':
@@ -201,7 +200,7 @@ class GetKeyboardCommands:
             rospy.signal_shutdown('Received quit character (q), so exiting')
 
         return command
-        
+
 
 class KeyboardTeleopNode(hm.HelloNode):
 
@@ -216,7 +215,7 @@ class KeyboardTeleopNode(hm.HelloNode):
         self.clean_surface_on = clean_surface_on
         self.grasp_object_on = grasp_object_on
         self.deliver_object_on = deliver_object_on
-        
+
     def joint_states_callback(self, joint_state):
         self.joint_state = joint_state
 
@@ -242,7 +241,6 @@ class KeyboardTeleopNode(hm.HelloNode):
             self.trajectory_client.send_goal(self.trajectory_goal)
             rospy.loginfo('Done sending pose.')
 
-        
     def main(self):
         hm.HelloNode.main(self, 'keyboard_teleop', 'keyboard_teleop', wait_for_first_pointcloud=False)
 
@@ -252,7 +250,7 @@ class KeyboardTeleopNode(hm.HelloNode):
             rospy.wait_for_service('/funmap/trigger_head_scan')
             rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_head_scan.')
             self.trigger_head_scan_service = rospy.ServiceProxy('/funmap/trigger_head_scan', Trigger)
-            
+
             rospy.wait_for_service('/funmap/trigger_drive_to_scan')
             rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_drive_to_scan.')
             self.trigger_drive_to_scan_service = rospy.ServiceProxy('/funmap/trigger_drive_to_scan', Trigger)
@@ -286,7 +284,7 @@ class KeyboardTeleopNode(hm.HelloNode):
             rospy.wait_for_service('/open_drawer/trigger_open_drawer')
             rospy.loginfo('Node ' + self.node_name + ' connected to /open_drawer/trigger_open_drawer.')
             self.trigger_open_drawer_service = rospy.ServiceProxy('/open_drawer/trigger_open_drawer', Trigger)
- 
+
         if self.clean_surface_on:
             rospy.wait_for_service('/clean_surface/trigger_clean_surface')
             rospy.loginfo('Node ' + self.node_name + ' connected to /clean_surface/trigger_clean_surface.')
@@ -296,15 +294,14 @@ class KeyboardTeleopNode(hm.HelloNode):
             rospy.wait_for_service('/grasp_object/trigger_grasp_object')
             rospy.loginfo('Node ' + self.node_name + ' connected to /grasp_object/trigger_grasp_object.')
             self.trigger_grasp_object_service = rospy.ServiceProxy('/grasp_object/trigger_grasp_object', Trigger)
-            
+
         if self.deliver_object_on:
             rospy.wait_for_service('/deliver_object/trigger_deliver_object')
             rospy.loginfo('Node ' + self.node_name + ' connected to /deliver_object/trigger_deliver_object.')
             self.trigger_deliver_object_service = rospy.ServiceProxy('/deliver_object/trigger_deliver_object', Trigger)
 
-            
         rospy.Subscriber('/stretch/joint_states', JointState, self.joint_states_callback)
-        
+
         rate = rospy.Rate(self.rate)
 
         while not rospy.is_shutdown():
@@ -314,7 +311,7 @@ class KeyboardTeleopNode(hm.HelloNode):
             self.send_command(command)
             rate.sleep()
 
-        
+
 if __name__ == '__main__':
     try:
         parser = ap.ArgumentParser(description='Keyboard teleoperation for stretch.')
@@ -324,7 +321,7 @@ if __name__ == '__main__':
         parser.add_argument('--clean_surface_on', action='store_true', help='Enable Clean Surface trigger, which requires connection to the appropriate clean_surface service.')
         parser.add_argument('--grasp_object_on', action='store_true', help='Enable Grasp Object trigger, which requires connection to the appropriate grasp_object service.')
         parser.add_argument('--deliver_object_on', action='store_true', help='Enable Deliver Object trigger, which requires connection to the appropriate deliver_object service.')
-        
+
         args, unknown = parser.parse_known_args()
         mapping_on = args.mapping_on
         hello_world_on = args.hello_world_on
@@ -332,9 +329,8 @@ if __name__ == '__main__':
         clean_surface_on = args.clean_surface_on
         grasp_object_on = args.grasp_object_on
         deliver_object_on = args.deliver_object_on
-        
+
         node = KeyboardTeleopNode(mapping_on, hello_world_on, open_drawer_on, clean_surface_on, grasp_object_on, deliver_object_on)
         node.main()
     except KeyboardInterrupt:
         rospy.loginfo('interrupt received, so shutting down')
-

@@ -73,7 +73,7 @@ class GripperConversion:
 
         self.open_robotis = 70.0
         self.closed_robotis = 0.0
-        
+
         self.robotis_to_aperture_slope = ((self.open_aperture_m - self.closed_aperture_m) / (self.open_robotis - self.closed_robotis))
 
     def robotis_to_aperture(self, robotis_in):
@@ -85,7 +85,7 @@ class GripperConversion:
         # linear model
         robotis_out = ((aperture_m - self.closed_aperture_m) / self.robotis_to_aperture_slope) + self.closed_robotis
         return robotis_out
-    
+
     def aperture_to_finger_rad(self, aperture_m):
         # arc length / radius = ang_rad
         finger_rad = (aperture_m/2.0)/self.finger_length_m
@@ -94,12 +94,12 @@ class GripperConversion:
     def finger_rad_to_aperture(self, finger_rad):
         aperture_m = 2.0 * (finger_rad * self.finger_length_m)
         return aperture_m
-    
+
     def finger_to_robotis(self, finger_ang_rad):
         aperture_m = self.finger_rad_to_aperture(finger_ang_rad)
         robotis_out = self.aperture_to_robotis(aperture_m)
         return robotis_out
-        
+
     def status_to_all(self, gripper_status):
         aperture_m = self.robotis_to_aperture(gripper_status['pos_pct'])
         finger_rad = self.aperture_to_finger_rad(aperture_m)
@@ -107,13 +107,13 @@ class GripperConversion:
         finger_vel = (self.robotis_to_aperture_slope * gripper_status['vel'])/2.0
         return aperture_m, finger_rad, finger_effort, finger_vel
 
-    
+
 class SimpleCommandGroup:
     def __init__(self, joint_name, acceptable_joint_error=0.015, clip_ros_tolerance=0.001):
         self.clip_ros_tolerance = clip_ros_tolerance
         self.acceptable_joint_error = acceptable_joint_error
         self.joint_name = joint_name
-        
+
     def update(self, joint_names, invalid_joints_error_func, robot_mode):
         self.use_joint = False
         if self.joint_name in joint_names:
@@ -150,19 +150,20 @@ class SimpleCommandGroup:
     def update_execution(self, robot_status, backlash_state):
         # This method needs to be implemented. It also needs to set self.joint_error.
         return None
-    
+
     def goal_reached(self):
         if self.joint_goal:
             return (abs(self.joint_error) < self.acceptable_joint_error)
         else:
             return True
 
+
 class HeadPanCommandGroup(SimpleCommandGroup):
     def __init__(self, head_pan_calibrated_offset, head_pan_calibrated_looked_left_offset):
         SimpleCommandGroup.__init__(self, 'joint_head_pan', acceptable_joint_error=0.15, clip_ros_tolerance=0.001)
         self.head_pan_calibrated_offset = head_pan_calibrated_offset
         self.head_pan_calibrated_looked_left_offset = head_pan_calibrated_looked_left_offset
-        
+
     def update_execution(self, robot_status, backlash_state):
         if self.joint_goal:
             if backlash_state['head_pan_looked_left']:
@@ -211,14 +212,13 @@ class WristYawCommandGroup(SimpleCommandGroup):
             return None
 
 
-
 class GripperCommandGroup:
     def __init__(self, acceptable_joint_error=0.015, clip_ros_tolerance=0.001):
         self.clip_ros_tolerance = clip_ros_tolerance
         self.acceptable_joint_error = acceptable_joint_error
         self.gripper_joint_names = ['joint_gripper_finger_left', 'joint_gripper_finger_right', 'gripper_aperture']
         self.gripper_conversion = GripperConversion()
-        
+
     def update(self, joint_names, invalid_joints_error_func, robot_mode):
         self.use_gripper_joint = False
         self.gripper_joints_to_command_names = [j for j in self.gripper_joint_names if j in joint_names]
@@ -236,7 +236,7 @@ class GripperCommandGroup:
             self.gripper_joint_command_name = self.gripper_joints_to_command_names[0]
             self.gripper_joint_command_index = self.gripper_joints_to_command_indices[0]
             self.use_gripper_joint = True
-            
+
         return True
 
     def get_num_valid_commands(self):
@@ -268,7 +268,7 @@ class GripperCommandGroup:
                 invalid_goal_error_func(error_string)
                 return False
         return True
-    
+
     def ros_to_mechaduino(self, joint_ros):
         return joint_ros
 
@@ -277,14 +277,14 @@ class GripperCommandGroup:
 
     def update_execution(self, robot_status, backlash_state):
         pass
-        
+
     def goal_reached(self):
         # TODO: check the gripper state
         if self.use_gripper_joint: 
             return True
         else:
             return True
-        
+
 
 class TelescopingCommandGroup:
     def __init__(self, wrist_extension_calibrated_retracted_offset):
@@ -355,13 +355,13 @@ class TelescopingCommandGroup:
             return self.extension_error_m
         else:
             return None
-    
+
     def goal_reached(self):
         if self.extension_goal: 
             return (abs(self.extension_error_m) < self.acceptable_joint_error_m)
         else:
             return True
-    
+
 
 class LiftCommandGroup:
     def __init__(self, max_arm_height):
@@ -410,13 +410,13 @@ class LiftCommandGroup:
             return self.lift_error_m
         else:
             return None
-    
+
     def goal_reached(self):
         if self.lift_goal: 
             return (abs(self.lift_error_m) < self.acceptable_joint_error_m)
         else:
             return True
-    
+
 
 class MobileBaseCommandGroup:
     def __init__(self):
@@ -433,7 +433,7 @@ class MobileBaseCommandGroup:
         self.use_mobile_base_inc_trans = ('translate_mobile_base' in joint_names)
         self.use_mobile_base_inc = (self.use_mobile_base_inc_rot or self.use_mobile_base_inc_trans)
         self.use_mobile_base_virtual_joint = ('joint_mobile_base_translation' in joint_names)
-        
+
         if self.use_mobile_base_inc and self.use_mobile_base_virtual_joint:
             # Commands that attempt to control the mobile base's
             # virtual joint together with mobile base incremental
@@ -446,7 +446,7 @@ class MobileBaseCommandGroup:
             error_string = 'received a command for the mobile base virtual joint (joint_mobile_base_translation) and mobile base incremental motions ({0}). These are mutually exclusive options. The joint names in the received command = {1}'.format(command_string, joint_names)
             invalid_joints_error_func(error_string)
             return False
-        
+
         if self.use_mobile_base_virtual_joint: 
             # Check if a mobile base command was received.
             if robot_mode != 'manipulation':
@@ -470,7 +470,7 @@ class MobileBaseCommandGroup:
             self.translate_mobile_base_index = joint_names.index('translate_mobile_base')
         return True
 
-    
+
     def get_num_valid_commands(self):
         number_of_valid_joints = 0
         if self.use_mobile_base_virtual_joint:
@@ -485,7 +485,7 @@ class MobileBaseCommandGroup:
         self.rotate_mobile_base_goal = False
         self.translate_mobile_base_goal = False
         self.virtual_joint_mobile_base_goal = False
-        
+
         if self.use_mobile_base_virtual_joint:
             self.goal_mobile_base_virtual_joint_ros = point.positions[self.virtual_joint_mobile_base_index]
             self.goal_mobile_base_virtual_joint_mecha = self.ros_to_mechaduino(self.goal_mobile_base_virtual_joint_ros, manipulation_origin)
@@ -505,7 +505,7 @@ class MobileBaseCommandGroup:
             return False
 
         return True
-    
+
     def ros_to_mechaduino(self, ros_ros, manipulation_origin):
         bounds = self.mobile_base_virtual_joint_ros_range
         ros_pos = bound_ros_command(bounds, ros_ros, self.clip_ros_tolerance)
@@ -551,7 +551,7 @@ class MobileBaseCommandGroup:
                 b = robot_status['base']
                 speed = np.sqrt(np.square(b['x_vel']) + np.square(b['y_vel']))
                 self.mobile_base_goal_reached = self.mobile_base_goal_reached and (speed < min_m_per_s)
-            
+
         elif self.rotate_mobile_base_goal:
             incremental_rad = hm.angle_diff_rad(current_mobile_base_rotation_mecha, self.initial_mobile_base_rotation_mecha)
             self.mobile_base_error_rad = hm.angle_diff_rad(self.goal_rotate_mobile_base_mecha, incremental_rad)
@@ -565,7 +565,7 @@ class MobileBaseCommandGroup:
                 min_rad_per_s = min_deg_per_s * (np.pi/180.0)
                 self.mobile_base_goal_reached = self.mobile_base_goal_reached and (abs(robot_status['base']['theta_vel']) < min_rad_per_s)
         return self.mobile_base_error_m, self.mobile_base_error_rad
-    
+
     def goal_reached(self):
         return self.mobile_base_goal_reached
 
@@ -595,9 +595,9 @@ class StretchBodyNode:
         self.head_tilt_calibrated_looking_up_offset_rad = 0.0
         self.wrist_extension_calibrated_retracted_offset_m = 0.0
         self.head_tilt_backlash_transition_angle_rad = -0.4
-        
+
         self.gripper_conversion = GripperConversion()
-        
+
         self.mobile_base_manipulation_origin = None #{'x':None, 'y':None, 'theta':None}
 
         self.use_lift = True
@@ -605,10 +605,10 @@ class StretchBodyNode:
         # Clip the command, instead of invalidating it, if it is close
         # enough to the valid ranges.
         self.trajectory_debug = True
-        
+
         self.robot_stop_lock = threading.Lock()
         self.stop_the_robot = False
-        
+
         self.robot_mode_lock = threading.Lock()
         with self.robot_mode_lock: 
             self.robot_mode = None
@@ -616,7 +616,6 @@ class StretchBodyNode:
 
         self.mode_change_polling_rate_hz = 4.0
 
-        
     def trajectory_action_server_callback(self, goal):
 
         with self.robot_stop_lock:
@@ -632,7 +631,7 @@ class StretchBodyNode:
                 # command was sent before the stop_the_robot service
                 # trigger.
                 self.stop_the_robot = False
-        
+
         with self.robot_mode_lock:
             self.robot_mode_read_only += 1
 
@@ -662,7 +661,7 @@ class StretchBodyNode:
             self.trajectory_action_server.set_aborted(result)
             with self.robot_mode_lock:
                 self.robot_mode_read_only -= 1
-                
+
         # For now, ignore goal time and configuration tolerances.
         joint_names = goal.trajectory.joint_names
         if self.trajectory_debug:
@@ -683,7 +682,7 @@ class StretchBodyNode:
             return
 
         number_of_valid_joints = sum([c.get_num_valid_commands() for c in command_groups])
-        
+
         if number_of_valid_joints <= 0:
             # Abort if no valid joints were received.
             error_string = 'received a command without any valid joint names. Received joint names = ' + str(joint_names)
@@ -702,14 +701,14 @@ class StretchBodyNode:
             if self.trajectory_debug:
                 rospy.loginfo('position # {0} = {1}'.format(point_number, point.positions))
 
-            
+
             valid_goals = [c.set_goal(point, invalid_goal_error, self.mobile_base_manipulation_origin) for c in command_groups]
             if not all(valid_goals):
                 # At least one of the goals violated the requirements
                 # of a command group. Any violations should have been
                 # reported as errors by the command groups.
                 return
-                
+
             # Attempt to reach the goal.
             update_rate = rospy.Rate(15.0)
 
@@ -717,7 +716,7 @@ class StretchBodyNode:
             incremental_commands_executed = False
 
             goal_start_time = rospy.Time.now()
-            
+
             while True:
                 # Get copy of the current robot status (uses lock held by the robot).
                 robot_status = self.robot.get_status()
@@ -735,7 +734,7 @@ class StretchBodyNode:
                 self.head_tilt_cg.update_execution(robot_status, self.backlash_state)
                 self.wrist_yaw_cg.update_execution(robot_status, self.backlash_state)
                 self.gripper_cg.update_execution(robot_status, self.backlash_state)
-                    
+
                 # Check if a premption request has been received.
                 with self.robot_stop_lock:
                     if self.stop_the_robot or self.trajectory_action_server.is_preempt_requested():
@@ -777,14 +776,14 @@ class StretchBodyNode:
                                self.backlash_state['head_pan_looked_left'] = True
                            else:
                                self.backlash_state['head_pan_looked_left'] = False
- 
+
                         if self.head_tilt_cg.joint_goal:
                             self.robot.head.move_by('head_tilt', self.head_tilt_cg.joint_error)
                             if self.head_tilt_cg.joint_target > (self.head_tilt_backlash_transition_angle_rad + self.head_tilt_calibrated_offset_rad):
                                 self.backlash_state['head_tilt_looking_up'] = True
                             else:
                                 self.backlash_state['head_tilt_looking_up'] = False
- 
+
                         if self.wrist_yaw_cg.joint_goal:
                             self.robot.end_of_arm.move_to('wrist_yaw', self.wrist_yaw_cg.joint_target)
 
@@ -808,7 +807,7 @@ class StretchBodyNode:
                     error_string = 'time to execute the current goal point = {0} exceeded the default_goal_timeout = {1}'.format(point, self.default_goal_timeout_s)
                     goal_tolerance_violated(error_string)
                     return
-                
+
                 update_rate.sleep()
 
             # Currently not providing feedback.
@@ -824,9 +823,8 @@ class StretchBodyNode:
             self.robot_mode_read_only -= 1
         return
 
-
     ###### MOBILE BASE VELOCITY METHODS #######
-        
+
     def set_mobile_base_velocity_callback(self, twist):
         # check on thread safety for this callback function
         if self.robot_mode != 'navigation':
@@ -836,7 +834,7 @@ class StretchBodyNode:
         self.linear_velocity_mps = twist.linear.x
         self.angular_velocity_radps = twist.angular.z
         self.last_twist_time = rospy.get_time()
-        
+
     def command_mobile_base_velocity_and_publish_state(self):
         with self.robot_mode_lock:
             self.robot_mode_read_only += 1
@@ -867,9 +865,9 @@ class StretchBodyNode:
         #robot_time = robot_status['timestamp_pc']
         #rospy.loginfo('robot_time =', robot_time)        
         #current_time = rospy.Time.from_sec(robot_time)
-        
+
         current_time = rospy.Time.now()
-        
+
         # obtain odometry
         # assign relevant base status to variables
         base_status = robot_status['base']
@@ -920,7 +918,7 @@ class StretchBodyNode:
             wrist_rad = wrist_status['pos']
             wrist_vel = wrist_status['vel']
             wrist_effort = wrist_status['effort']
-            
+
             # assign relevant gripper status to variables
             gripper_status = robot_status['end_of_arm']['stretch_gripper']
             if GRIPPER_DEBUG: 
@@ -1047,7 +1045,7 @@ class StretchBodyNode:
             positions.append(gripper_finger_rad)
             velocities.append(gripper_finger_vel)
             efforts.append(gripper_finger_effort)
-            
+
         # set virtual joint for mobile base translation
         joint_state.name.append('joint_mobile_base_translation')
         if self.robot_mode == 'manipulation':
@@ -1090,7 +1088,7 @@ class StretchBodyNode:
         i.linear_acceleration.y = ay
         i.linear_acceleration.z = az
         self.imu_mobile_base_pub.publish(i)
-        
+
         m = MagneticField()
         m.header.stamp = current_time
         m.header.frame_id = 'imu_mobile_base'
@@ -1109,14 +1107,13 @@ class StretchBodyNode:
         i.linear_acceleration.z = az
         self.imu_wrist_pub.publish(i)
         ##################################################
-        
+
         with self.robot_mode_lock:
             self.robot_mode_read_only -= 1
         return
 
-
     ######## CHANGE MODES #########
-    
+
     def change_mode(self, new_mode, code_to_run):
         polling_rate = rospy.Rate(self.mode_change_polling_rate_hz)
         changed = False
@@ -1131,7 +1128,7 @@ class StretchBodyNode:
                 polling_rate.sleep()
 
     # TODO : add a freewheel mode or something comparable for the mobile base?
-                
+
     def turn_on_navigation_mode(self):
         # Navigation mode enables mobile base velocity control via
         # cmd_vel, and disables position-based control of the mobile
@@ -1140,7 +1137,7 @@ class StretchBodyNode:
             self.linear_velocity_mps = 0.0
             self.angular_velocity_radps = 0.0
         self.change_mode('navigation', code_to_run)
-        
+
     def turn_on_manipulation_mode(self):
         # Manipulation mode enables mobile base translation using
         # position control via joint_mobile_base_translation, and
@@ -1173,7 +1170,7 @@ class StretchBodyNode:
         def code_to_run():
             self.robot.base.enable_pos_incr_mode()
         self.change_mode('position', code_to_run)
-        
+
     def calibrate(self):
         def code_to_run():
             if self.use_lift: 
@@ -1181,14 +1178,12 @@ class StretchBodyNode:
             self.robot.arm.home()
         self.change_mode('calibration', code_to_run)
 
-    ###############################
-    
     ######## SERVICE CALLBACKS #######
 
     def stop_the_robot_callback(self, request):
         with self.robot_stop_lock:
             self.stop_the_robot = True
-            
+
             self.robot.base.translate_by(0.0)
             self.robot.base.rotate_by(0.0)
             self.robot.arm.move_by(0.0)
@@ -1200,13 +1195,13 @@ class StretchBodyNode:
             self.robot.end_of_arm.move_by('wrist_yaw', 0.0)
             self.robot.end_of_arm.move_by('stretch_gripper', 0.0)
             self.robot.push_command()
-            
+
         rospy.loginfo('Received stop_the_robot service call, so commanded all actuators to stop.')
         return TriggerResponse(
             success=True,
             message='Stopped the robot.'
             )
-        
+
     def navigation_mode_service_callback(self, request):
         self.turn_on_navigation_mode()
         return TriggerResponse(
@@ -1227,10 +1222,11 @@ class StretchBodyNode:
             success=True,
             message='Now in position mode.'
             )
-    ###############################
-    
+
+    ########### MAIN ############
+
     def main(self):
-        
+
         rospy.init_node('stretch_driver')
         self.node_name = rospy.get_name()
 
@@ -1243,9 +1239,9 @@ class StretchBodyNode:
         rospy.loginfo('broadcast_odom_tf = ' + str(self.broadcast_odom_tf))
         if self.broadcast_odom_tf:
             self.tf_broadcaster = tf2_ros.TransformBroadcaster()
-        
+
         large_ang = 45.0 * np.pi/180.0
-        
+
         filename = rospy.get_param('~controller_calibration_file')
         rospy.loginfo('Loading controller calibration parameters for the head from YAML file named {0}'.format(filename))
         with open(filename, 'r') as fid:
@@ -1286,12 +1282,12 @@ class StretchBodyNode:
             if (abs(m) > 0.05):
                 rospy.loginfo('WARNING: self.wrist_extension_calibrated_retracted_offset_m HAS AN UNUSUALLY LARGE MAGNITUDE')
             rospy.loginfo('self.wrist_extension_calibrated_retracted_offset_m in meters = {0}'.format(self.wrist_extension_calibrated_retracted_offset_m))
-        
+
         self.linear_velocity_mps = 0.0 # m/s ROS SI standard for cmd_vel (REP 103)
         self.angular_velocity_radps = 0.0 # rad/s ROS SI standard for cmd_vel (REP 103)
-        
+
         self.max_arm_height = 1.1
-        
+
         self.telescoping_cg = TelescopingCommandGroup(self.wrist_extension_calibrated_retracted_offset_m)
         if self.use_lift:
             self.lift_cg = LiftCommandGroup(self.max_arm_height)
@@ -1302,14 +1298,13 @@ class StretchBodyNode:
                                                  self.head_tilt_calibrated_looking_up_offset_rad)
         self.wrist_yaw_cg = WristYawCommandGroup()
         self.gripper_cg = GripperCommandGroup()
-        
+
         self.odom_pub = rospy.Publisher('odom', Odometry, queue_size=1)
-        
+
         self.imu_mobile_base_pub = rospy.Publisher('imu_mobile_base', Imu, queue_size=1)
         self.magnetometer_mobile_base_pub = rospy.Publisher('magnetometer_mobile_base', MagneticField, queue_size=1)
         self.imu_wrist_pub = rospy.Publisher('imu_wrist', Imu, queue_size=1)
-        
-        
+
         rospy.Subscriber("cmd_vel", Twist, self.set_mobile_base_velocity_callback)
 
         # ~ symbol gets parameter from private namespace
@@ -1328,12 +1323,12 @@ class StretchBodyNode:
 
         self.robot = rb.Robot()
         self.robot.startup()
-        
+
         # TODO: check with the actuators to see if calibration is required
         #self.calibrate()
-        
+
         self.joint_state_pub = rospy.Publisher('joint_states', JointState, queue_size=1)
-        
+
         command_base_velocity_and_publish_joint_state_rate = rospy.Rate(self.joint_state_rate)
         self.last_twist_time = rospy.get_time()
 
