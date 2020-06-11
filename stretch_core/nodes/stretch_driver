@@ -1249,33 +1249,32 @@ class StretchBodyNode:
 
             rospy.loginfo('controller parameters loaded = {0}'.format(controller_parameters))
 
-            deg_per_rad = 180.0/np.pi
             self.head_tilt_calibrated_offset_rad = controller_parameters['tilt_angle_offset']
             ang = self.head_tilt_calibrated_offset_rad
             if (abs(ang) > large_ang):
                 rospy.loginfo('WARNING: self.head_tilt_calibrated_offset_rad HAS AN UNUSUALLY LARGE MAGNITUDE')
-            rospy.loginfo('self.head_tilt_calibrated_offset_rad in degrees = {0}'.format(self.head_tilt_calibrated_offset_rad * deg_per_rad))
+            rospy.loginfo('self.head_tilt_calibrated_offset_rad in degrees = {0}'.format(np.degrees(self.head_tilt_calibrated_offset_rad)))
 
             self.head_pan_calibrated_offset_rad = controller_parameters['pan_angle_offset']
             ang = self.head_pan_calibrated_offset_rad
             if (abs(ang) > large_ang):
                 rospy.loginfo('WARNING: self.head_pan_calibrated_offset_rad HAS AN UNUSUALLY LARGE MAGNITUDE')
-            rospy.loginfo('self.head_pan_calibrated_offset_rad in degrees = {0}'.format(self.head_pan_calibrated_offset_rad * deg_per_rad))
+            rospy.loginfo('self.head_pan_calibrated_offset_rad in degrees = {0}'.format(np.degrees(self.head_pan_calibrated_offset_rad)))
 
             self.head_pan_calibrated_looked_left_offset_rad = controller_parameters['pan_looked_left_offset']
             ang = self.head_pan_calibrated_looked_left_offset_rad
             if (abs(ang) > large_ang):
                 rospy.loginfo('WARNING: self.head_pan_calibrated_looked_left_offset_rad HAS AN UNUSUALLY LARGE MAGNITUDE')
-            rospy.loginfo('self.head_pan_calibrated_looked_left_offset_rad in degrees = {0}'.format(self.head_pan_calibrated_looked_left_offset_rad * deg_per_rad))
+            rospy.loginfo('self.head_pan_calibrated_looked_left_offset_rad in degrees = {0}'.format(np.degrees(self.head_pan_calibrated_looked_left_offset_rad)))
 
             self.head_tilt_backlash_transition_angle_rad = controller_parameters['tilt_angle_backlash_transition']
-            rospy.loginfo('self.head_tilt_backlash_transition_angle_rad in degrees = {0}'.format(self.head_tilt_backlash_transition_angle_rad * deg_per_rad))
+            rospy.loginfo('self.head_tilt_backlash_transition_angle_rad in degrees = {0}'.format(np.degrees(self.head_tilt_backlash_transition_angle_rad)))
 
             self.head_tilt_calibrated_looking_up_offset_rad = controller_parameters['tilt_looking_up_offset']
             ang = self.head_tilt_calibrated_looking_up_offset_rad
             if (abs(ang) > large_ang):
                 rospy.loginfo('WARNING: self.head_tilt_calibrated_looking_up_offset_rad HAS AN UNUSUALLY LARGE MAGNITUDE')
-            rospy.loginfo('self.head_tilt_calibrated_looking_up_offset_rad in degrees = {0}'.format(self.head_tilt_calibrated_looking_up_offset_rad * deg_per_rad))
+            rospy.loginfo('self.head_tilt_calibrated_looking_up_offset_rad in degrees = {0}'.format(np.degrees(self.head_tilt_calibrated_looking_up_offset_rad)))
 
             self.wrist_extension_calibrated_retracted_offset_m = controller_parameters['arm_retracted_offset']
             m = self.wrist_extension_calibrated_retracted_offset_m
