@@ -1,42 +1,28 @@
 #! /usr/bin/env python
 
-from __future__ import print_function, division
-
+import yaml
+import numpy as np
 import threading
-
-import rospy
-from geometry_msgs.msg import Quaternion
-from geometry_msgs.msg import PoseWithCovarianceStamped
-from geometry_msgs.msg import Twist
-from geometry_msgs.msg import TransformStamped
-
-from nav_msgs.msg import Odometry
-from sensor_msgs.msg import JointState, Imu, MagneticField
-from std_msgs.msg import Header
+import stretch_body.robot as rb
+from stretch_body.hello_utils import ThreadServiceExit
 
 import tf2_ros
 import tf_conversions
 
-from stretch_body.hello_utils import ThreadServiceExit
-import stretch_body.robot as rb
-import math
-import numpy as np
-import time
-
-import yaml
+import rospy
+from geometry_msgs.msg import Quaternion
+from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TransformStamped
 
 import actionlib
 from control_msgs.msg import FollowJointTrajectoryAction
 from control_msgs.msg import FollowJointTrajectoryResult
-from control_msgs.msg import FollowJointTrajectoryResult
-from trajectory_msgs.msg import JointTrajectoryPoint
-from actionlib_msgs.msg import GoalStatus
-
-from control_msgs.msg import GripperCommandAction
-from control_msgs.msg import GripperCommandFeedback
-from control_msgs.msg import GripperCommandActionResult
 
 from std_srvs.srv import Trigger, TriggerResponse
+
+from nav_msgs.msg import Odometry
+from sensor_msgs.msg import JointState, Imu, MagneticField
+from std_msgs.msg import Header
 
 import hello_helpers.hello_misc as hm
 
@@ -437,8 +423,8 @@ class MobileBaseCommandGroup:
         self.mobile_base_virtual_joint_ros_range = [-0.5, 0.5]
         self.acceptable_mobile_base_error_m = 0.005
         self.excellent_mobile_base_error_m = 0.005
-        self.acceptable_mobile_base_error_rad = (math.pi/180.0) * 6.0
-        self.excellent_mobile_base_error_rad = (math.pi/180.0) * 0.6
+        self.acceptable_mobile_base_error_rad = (np.pi/180.0) * 6.0
+        self.excellent_mobile_base_error_rad = (np.pi/180.0) * 0.6
 
     def update(self, joint_names, invalid_joints_error_func, robot_mode):
         self.use_mobile_base_virtual_joint = False
@@ -576,7 +562,7 @@ class MobileBaseCommandGroup:
                 # Use velocity to help decide when the low-level command
                 # has been finished.
                 min_deg_per_s = 1.0
-                min_rad_per_s = min_deg_per_s * (math.pi/180.0)
+                min_rad_per_s = min_deg_per_s * (np.pi/180.0)
                 self.mobile_base_goal_reached = self.mobile_base_goal_reached and (abs(robot_status['base']['theta_vel']) < min_rad_per_s)
         return self.mobile_base_error_m, self.mobile_base_error_rad
     
@@ -1269,7 +1255,7 @@ class StretchBodyNode:
 
             rospy.loginfo('controller parameters loaded = {0}'.format(controller_parameters))
 
-            deg_per_rad = 180.0/math.pi
+            deg_per_rad = 180.0/np.pi
             self.head_tilt_calibrated_offset_rad = controller_parameters['tilt_angle_offset']
             ang = self.head_tilt_calibrated_offset_rad
             if (abs(ang) > large_ang):
