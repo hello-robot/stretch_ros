@@ -1255,7 +1255,7 @@ class StretchBodyNode:
         mode = rospy.get_param('~mode', "position")
         rospy.loginfo('mode = ' + str(mode))
 
-        self.broadcast_odom_tf = rospy.get_param('~broadcast_odom_tf')
+        self.broadcast_odom_tf = rospy.get_param('~broadcast_odom_tf', False)
         rospy.loginfo('broadcast_odom_tf = ' + str(self.broadcast_odom_tf))
         if self.broadcast_odom_tf:
             self.tf_broadcaster = tf2_ros.TransformBroadcaster()
