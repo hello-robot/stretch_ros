@@ -1,0 +1,19 @@
+# Emacs related
+*~
+\#*\#
+.\#*
+
+# Python related
+*.pyc
+*.so
+
+# Stretch related
+stretch.urdf
+stretch_uncalibrated.urdf
+controller_calibration_head.yaml
+controller_calibration_tool.yaml
+stretch_description/urdf/exported_urdf
+stretch_description/urdf/exported_urdf/*
+stretch_description/urdf/exported_urdf_previous
+stretch_description/urdf/exported_urdf_previous/*
+stretch_funmap/src/stretch_funmap/cython_min_cost_path.c
