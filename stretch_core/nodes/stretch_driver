@@ -17,6 +17,7 @@ from std_msgs.msg import Header
 import tf2_ros
 import tf_conversions
 
+from stretch_body.hello_utils import ThreadServiceExit
 import stretch_body.robot as rb
 import math
 import numpy as np
@@ -1383,17 +1384,17 @@ class StretchBodyNode:
                                                     Trigger,
                                                     self.stop_the_robot_callback)
 
-        
-        # start loop to command the mobile base velocity, publish
-        # odometry, and publish joint states
-        while not rospy.is_shutdown():
-            self.command_mobile_base_velocity_and_publish_state()
-            command_base_velocity_and_publish_joint_state_rate.sleep()
+        try:
+            # start loop to command the mobile base velocity, publish
+            # odometry, and publish joint states
+            while not rospy.is_shutdown():
+                self.command_mobile_base_velocity_and_publish_state()
+                command_base_velocity_and_publish_joint_state_rate.sleep()
+        except (rospy.ROSInterruptException, ThreadServiceExit):
+            self.robot.stop()
+            rospy.signal_shutdown("stretch_driver shutdown")
 
 
 if __name__ == '__main__':
-    try:
-        node = StretchBodyNode()
-        node.main()
-    except rospy.ROSInterruptException:
-        pass
+    node = StretchBodyNode()
+    node.main()
