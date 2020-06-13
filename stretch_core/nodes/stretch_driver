@@ -1247,6 +1247,8 @@ class StretchBodyNode:
         rospy.init_node('stretch_driver')
         self.node_name = rospy.get_name()
 
+        rospy.loginfo("For use with S T R E T C H (TM) RESEARCH EDITION from Hello Robot Inc.")
+
         rospy.loginfo("{0} started".format(self.node_name))
 
         filename = rospy.get_param('~controller_calibration_file')
