@@ -33,24 +33,6 @@ GRIPPER_DEBUG = False
 BACKLASH_DEBUG = False
 
 
-def bound_ros_command(bounds, ros_pos, clip_ros_tolerance):
-    # Clip the command with clip_ros_tolerance, instead of
-    # invalidating it, if it is close enough to the valid ranges.
-    if ros_pos < bounds[0]:
-        # Command is lower than the minimum value.
-        if (bounds[0] - ros_pos) < clip_ros_tolerance:
-            return bounds[0]
-        else: 
-            return None
-    if ros_pos > bounds[1]:
-        # Command is greater than the maximum value.
-        if (ros_pos - bounds[1]) < clip_ros_tolerance:
-            return bounds[1]
-        else: 
-            return None
-    return ros_pos
-
-
 class SimpleCommandGroup:
     def __init__(self, joint_name, acceptable_joint_error=0.015, clip_ros_tolerance=0.001):
         self.clip_ros_tolerance = clip_ros_tolerance
@@ -449,9 +431,26 @@ class MobileBaseCommandGroup:
 
         return True
 
+    def bound_ros_command(self, bounds, ros_pos, clip_ros_tolerance):
+        # Clip the command with clip_ros_tolerance, instead of
+        # invalidating it, if it is close enough to the valid ranges.
+        if ros_pos < bounds[0]:
+            # Command is lower than the minimum value.
+            if (bounds[0] - ros_pos) < clip_ros_tolerance:
+                return bounds[0]
+            else:
+                return None
+        if ros_pos > bounds[1]:
+            # Command is greater than the maximum value.
+            if (ros_pos - bounds[1]) < clip_ros_tolerance:
+                return bounds[1]
+            else:
+                return None
+        return ros_pos
+
     def ros_to_mechaduino(self, ros_ros, manipulation_origin):
         bounds = self.mobile_base_virtual_joint_ros_range
-        ros_pos = bound_ros_command(bounds, ros_ros, self.clip_ros_tolerance)
+        ros_pos = self.bound_ros_command(bounds, ros_ros, self.clip_ros_tolerance)
         if ros_pos is None:
             return None
         else:
