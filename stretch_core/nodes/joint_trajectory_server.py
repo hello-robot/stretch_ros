@@ -31,7 +31,8 @@ class JointTrajectoryAction:
         self.head_pan_cg = HeadPanCommandGroup(self.node.head_pan_calibrated_offset_rad,
                                                self.node.head_pan_calibrated_looked_left_offset_rad)
         self.head_tilt_cg = HeadTiltCommandGroup(self.node.head_tilt_calibrated_offset_rad,
-                                                 self.node.head_tilt_calibrated_looking_up_offset_rad)
+                                                 self.node.head_tilt_calibrated_looking_up_offset_rad,
+                                                 self.node.head_tilt_backlash_transition_angle_rad)
         self.wrist_yaw_cg = WristYawCommandGroup()
         self.gripper_cg = GripperCommandGroup()
 
@@ -99,9 +100,11 @@ class JointTrajectoryAction:
                 return
 
             robot_status = self.node.robot.get_status() # uses lock held by robot
-            [c.init_execution(robot_status=robot_status) for c in command_groups]
+            [c.init_execution(self.node.robot, robot_status, backlash_state=self.node.backlash_state)
+             for c in command_groups]
+            self.node.robot.push_command()
+
             goals_reached = [c.goal_reached() for c in command_groups]
-            incremental_commands_executed = False
             update_rate = rospy.Rate(15.0)
             goal_start_time = rospy.Time.now()
 
@@ -136,57 +139,6 @@ class JointTrajectoryAction:
                         self.node.stop_the_robot = False
                         self.node.robot_mode_rwlock.release_read()
                         return
-
-                if not incremental_commands_executed:
-                    translate = (mobile_base_error_m is not None)
-                    rotate = (mobile_base_error_rad is not None)
-                    if translate and rotate:
-                        err_str = 'Simultaneous translation and rotation of the mobile base requested. \
-                                   This is not allowed.'
-                        self.invalid_goal_callback(err_str)
-                        self.node.robot_mode_rwlock.release_read()
-                        return
-                    if translate:
-                        self.node.robot.base.translate_by(mobile_base_error_m)
-                    if rotate:
-                        self.node.robot.base.rotate_by(mobile_base_error_rad)
-
-                    if self.telescoping_cg.extension_goal:
-                        self.node.robot.arm.move_by(extension_error_m)
-                        if extension_error_m < 0.0:
-                            self.node.backlash_state['wrist_extension_retracted'] = True
-                        else:
-                            self.node.backlash_state['wrist_extension_retracted'] = False
-
-                    if self.node.use_lift:
-                        if self.lift_cg.lift_goal:
-                            self.node.robot.lift.move_by(lift_error_m)
-
-                    if self.head_pan_cg.joint_goal:
-                        self.node.robot.head.move_by('head_pan', self.head_pan_cg.joint_error)
-                        if self.head_pan_cg.joint_error > 0.0:
-                            self.node.backlash_state['head_pan_looked_left'] = True
-                        else:
-                            self.node.backlash_state['head_pan_looked_left'] = False
-
-                    if self.head_tilt_cg.joint_goal:
-                        self.node.robot.head.move_by('head_tilt', self.head_tilt_cg.joint_error)
-                        if self.head_tilt_cg.joint_target > (self.node.head_tilt_backlash_transition_angle_rad + self.node.head_tilt_calibrated_offset_rad):
-                            self.node.backlash_state['head_tilt_looking_up'] = True
-                        else:
-                            self.node.backlash_state['head_tilt_looking_up'] = False
-
-                    if self.wrist_yaw_cg.joint_goal:
-                        self.node.robot.end_of_arm.move_to('wrist_yaw', self.wrist_yaw_cg.joint_target)
-
-                    if self.gripper_cg.gripper_joint_goal:
-                        gripper_command = self.gripper_cg.goal_gripper_joint
-                        rospy.logdebug('{0} gripper debug: move_to stretch_gripper = \
-                                        {1}'.format(self.node.node_name, gripper_command))
-                        self.node.robot.end_of_arm.move_to('stretch_gripper', gripper_command)
-
-                    self.node.robot.push_command()
-                    incremental_commands_executed = True
 
                 goals_reached = [c.goal_reached() for c in command_groups]
                 update_rate.sleep()

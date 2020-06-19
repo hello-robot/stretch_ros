@@ -51,6 +51,11 @@ class GripperConversion:
         robotis_out = self.aperture_to_robotis(aperture_m)
         return robotis_out
 
+    def robotis_to_finger(self, robotis_pct):
+        aperture_m = self.robotis_to_aperture(robotis_pct)
+        finger_rad = self.aperture_to_finger_rad(aperture_m)
+        return finger_rad
+
     def status_to_all(self, gripper_status):
         aperture_m = self.robotis_to_aperture(gripper_status['pos_pct'])
         finger_rad = self.aperture_to_finger_rad(aperture_m)
