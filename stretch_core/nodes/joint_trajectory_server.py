@@ -56,7 +56,8 @@ class JointTrajectoryAction:
             command_groups = [self.telescoping_cg, self.mobile_base_cg, self.head_pan_cg,
                               self.head_tilt_cg, self.wrist_yaw_cg, self.gripper_cg]
 
-        updates = [c.update(commanded_joint_names, self.invalid_joints_callback, self.node.robot_mode)
+        updates = [c.update(commanded_joint_names, self.invalid_joints_callback,
+                   robot_mode=self.node.robot_mode)
                    for c in command_groups]
         if not all(updates):
             # The joint names violated at least one of the command
@@ -88,7 +89,8 @@ class JointTrajectoryAction:
                             target point #{1} = <{2}>'.format(self.node.node_name, pointi, point))
 
             valid_goals = [c.set_goal(point, self.invalid_goal_callback,
-                                      self.node.mobile_base_manipulation_origin) for c in command_groups]
+                                      manipulation_origin=self.node.mobile_base_manipulation_origin)
+                           for c in command_groups]
             if not all(valid_goals):
                 # At least one of the goals violated the requirements
                 # of a command group. Any violations should have been
@@ -97,7 +99,7 @@ class JointTrajectoryAction:
                 return
 
             robot_status = self.node.robot.get_status() # uses lock held by robot
-            [c.init_execution(robot_status) for c in command_groups]
+            [c.init_execution(robot_status=robot_status) for c in command_groups]
             goals_reached = [c.goal_reached() for c in command_groups]
             incremental_commands_executed = False
             update_rate = rospy.Rate(15.0)
@@ -113,15 +115,16 @@ class JointTrajectoryAction:
 
                 robot_status = self.node.robot.get_status()
                 if self.node.use_lift:
-                    lift_error_m = self.lift_cg.update_execution(robot_status, self.node.backlash_state)
-                extension_error_m = self.telescoping_cg.update_execution(robot_status,
-                                                                         self.node.backlash_state)
+                    lift_error_m = self.lift_cg.update_execution(robot_status,
+                                                                 backlash_state=self.node.backlash_state)
+                extension_error_m = \
+                    self.telescoping_cg.update_execution(robot_status, backlash_state=self.node.backlash_state)
                 mobile_base_error_m, mobile_base_error_rad = \
-                    self.mobile_base_cg.update_execution(robot_status, self.node.backlash_state)
-                self.head_pan_cg.update_execution(robot_status, self.node.backlash_state)
-                self.head_tilt_cg.update_execution(robot_status, self.node.backlash_state)
-                self.wrist_yaw_cg.update_execution(robot_status, self.node.backlash_state)
-                self.gripper_cg.update_execution(robot_status, self.node.backlash_state)
+                    self.mobile_base_cg.update_execution(robot_status, backlash_state=self.node.backlash_state)
+                self.head_pan_cg.update_execution(robot_status, backlash_state=self.node.backlash_state)
+                self.head_tilt_cg.update_execution(robot_status, backlash_state=self.node.backlash_state)
+                self.wrist_yaw_cg.update_execution(robot_status, backlash_state=self.node.backlash_state)
+                self.gripper_cg.update_execution(robot_status, backlash_state=self.node.backlash_state)
 
                 # Check if a premption request has been received.
                 with self.node.robot_stop_lock:
