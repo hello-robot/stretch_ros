@@ -41,7 +41,7 @@ class SimpleCommandGroup:
     def ros_to_mechaduino(self, joint_ros):
         return joint_ros
 
-    def init_execution(self, **kwargs):
+    def init_execution(self, robot, robot_status, **kwargs):
         pass
 
     def update_execution(self, robot_status, **kwargs):
@@ -61,6 +61,15 @@ class HeadPanCommandGroup(SimpleCommandGroup):
         self.head_pan_calibrated_offset = head_pan_calibrated_offset
         self.head_pan_calibrated_looked_left_offset = head_pan_calibrated_looked_left_offset
 
+    def init_execution(self, robot, robot_status, **kwargs):
+        if self.joint_goal:
+            pan_error = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
+            robot.head.move_by('head_pan', pan_error)
+            if pan_error > 0.0:
+                kwargs['backlash_state']['head_pan_looked_left'] = True
+            else:
+                kwargs['backlash_state']['head_pan_looked_left'] = False
+
     def update_execution(self, robot_status, **kwargs):
         backlash_state = kwargs['backlash_state']
         if self.joint_goal:
@@ -77,10 +86,20 @@ class HeadPanCommandGroup(SimpleCommandGroup):
 
 
 class HeadTiltCommandGroup(SimpleCommandGroup):
-    def __init__(self, head_tilt_calibrated_offset, head_tilt_calibrated_looking_up_offset):
+    def __init__(self, head_tilt_calibrated_offset, head_tilt_calibrated_looking_up_offset, head_tilt_backlash_transition_angle):
         SimpleCommandGroup.__init__(self, 'joint_head_tilt', acceptable_joint_error=0.52, clip_ros_tolerance=0.001)
         self.head_tilt_calibrated_offset = head_tilt_calibrated_offset
         self.head_tilt_calibrated_looking_up_offset = head_tilt_calibrated_looking_up_offset
+        self.head_tilt_backlash_transition_angle = head_tilt_backlash_transition_angle
+
+    def init_execution(self, robot, robot_status, **kwargs):
+        if self.joint_goal:
+            tilt_error = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
+            robot.head.move_by('head_tilt', tilt_error)
+            if tilt_error > (self.head_tilt_backlash_transition_angle + self.head_tilt_calibrated_offset):
+                kwargs['backlash_state']['head_tilt_looking_up'] = True
+            else:
+                kwargs['backlash_state']['head_tilt_looking_up'] = False
 
     def update_execution(self, robot_status, **kwargs):
         backlash_state = kwargs['backlash_state']
@@ -101,6 +120,10 @@ class WristYawCommandGroup(SimpleCommandGroup):
     def __init__(self):
         SimpleCommandGroup.__init__(self, 'joint_wrist_yaw', acceptable_joint_error=0.015, clip_ros_tolerance=0.001)
 
+    def init_execution(self, robot, robot_status, **kwargs):
+        if self.joint_goal:
+            robot.end_of_arm.move_by('wrist_yaw', self.update_execution(robot_status))
+
     def update_execution(self, robot_status, **kwargs):
         if self.joint_goal:
             self.current_joint_hello = robot_status['end_of_arm']['wrist_yaw']['pos']
@@ -117,6 +140,7 @@ class GripperCommandGroup:
         self.acceptable_joint_error = acceptable_joint_error
         self.gripper_joint_names = ['joint_gripper_finger_left', 'joint_gripper_finger_right', 'gripper_aperture']
         self.gripper_conversion = GripperConversion()
+        self.gripper_joint_goal_valid = False
 
     def update(self, joint_names, invalid_joints_error_func, **kwargs):
         self.use_gripper_joint = False
@@ -145,6 +169,7 @@ class GripperCommandGroup:
             return 0
 
     def set_goal(self, point, invalid_goal_error_func, **kwargs):
+        self.gripper_joint_goal_valid = False
         self.gripper_joint_goal = False
         self.goal_gripper_joint = None
         goal = None
@@ -152,9 +177,9 @@ class GripperCommandGroup:
             name = self.gripper_joint_command_name
             goal = point.positions[self.gripper_joint_command_index]
             if ((name == 'joint_gripper_finger_left') or (name == 'joint_gripper_finger_right')):
-                self.goal_gripper_joint = self.gripper_conversion.finger_to_robotis(goal)
+                self.goal_gripper_joint = goal
             if (name == 'gripper_aperture'):
-                self.goal_gripper_joint = self.gripper_conversion.aperture_to_robotis(goal)
+                self.goal_gripper_joint = goal
             self.gripper_joint_goal = True
 
             # Check that the goal is valid.
@@ -171,16 +196,33 @@ class GripperCommandGroup:
     def ros_to_mechaduino(self, joint_ros):
         return joint_ros
 
-    def init_execution(self, **kwargs):
-        pass
+    def init_execution(self, robot, robot_status, **kwargs):
+        if self.gripper_joint_goal_valid:
+            name = self.gripper_joint_command_name
+            delta = self.update_execution(robot_status)
+            if (name == 'joint_gripper_finger_left') or (name == 'joint_gripper_finger_right'):
+                robotis_delta = self.gripper_conversion.finger_to_robotis(delta)
+            if (name == 'gripper_aperture'):
+                robotis_delta = self.gripper_conversion.aperture_to_robotis(delta)
+            robot.end_of_arm.move_by('stretch_gripper', robotis_delta)
 
     def update_execution(self, robot_status, **kwargs):
-        pass
+        if self.gripper_joint_goal_valid:
+            name = self.gripper_joint_command_name
+            robotis_pct = robot_status['end_of_arm']['stretch_gripper']['pos_pct']
+            if (name == 'joint_gripper_finger_left') or (name == 'joint_gripper_finger_right'):
+                self.current_gripper_pos = self.gripper_conversion.robotis_to_finger(robotis_pct)
+            if name == 'gripper_aperture':
+                self.current_gripper_pos = self.gripper_conversion.robotis_to_aperture(robotis_pct)
+
+            self.gripper_error = self.goal_gripper_joint - self.current_gripper_pos
+            return self.gripper_error
+        else:
+            return None
 
     def goal_reached(self):
-        # TODO: check the gripper state
-        if self.use_gripper_joint:
-            return True
+        if self.gripper_joint_goal_valid:
+            return (abs(self.gripper_error) < self.acceptable_joint_error)
         else:
             return True
 
@@ -240,8 +282,14 @@ class TelescopingCommandGroup:
     def ros_to_mechaduino(self, wrist_extension_ros):
         return wrist_extension_ros
 
-    def init_execution(self, **kwargs):
-        pass
+    def init_execution(self, robot, robot_status, **kwargs):
+        if self.extension_goal:
+            extension_error_m = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
+            robot.arm.move_by(extension_error_m)
+            if extension_error_m < 0.0:
+                kwargs['backlash_state']['wrist_extension_retracted'] = True
+            else:
+                kwargs['backlash_state']['wrist_extension_retracted'] = False
 
     def update_execution(self, robot_status, **kwargs):
         backlash_state = kwargs['backlash_state']
@@ -300,8 +348,9 @@ class LiftCommandGroup:
     def ros_to_mechaduino(self, lift_ros):
         return lift_ros
 
-    def init_execution(self, **kwargs):
-        pass
+    def init_execution(self, robot, robot_status, **kwargs):
+        if self.lift_goal:
+            robot.lift.move_by(self.update_execution(robot_status))
 
     def update_execution(self, robot_status, **kwargs):
         if self.lift_goal:
@@ -326,16 +375,14 @@ class MobileBaseCommandGroup:
         self.acceptable_mobile_base_error_rad = (np.pi/180.0) * 6.0
         self.excellent_mobile_base_error_rad = (np.pi/180.0) * 0.6
 
-    def update(self, joint_names, invalid_joints_error_func, **kwargs):
+    def update(self, joint_names, invalid_joints_callback, **kwargs):
         robot_mode = kwargs['robot_mode']
-        self.use_mobile_base_virtual_joint = False
-        self.use_mobile_base_inc = False
         self.use_mobile_base_inc_rot = ('rotate_mobile_base' in joint_names)
         self.use_mobile_base_inc_trans = ('translate_mobile_base' in joint_names)
-        self.use_mobile_base_inc = (self.use_mobile_base_inc_rot or self.use_mobile_base_inc_trans)
         self.use_mobile_base_virtual_joint = ('joint_mobile_base_translation' in joint_names)
 
-        if self.use_mobile_base_inc and self.use_mobile_base_virtual_joint:
+        if (self.use_mobile_base_inc_trans or self.use_mobile_base_inc_rot) \
+            and self.use_mobile_base_virtual_joint:
             # Commands that attempt to control the mobile base's
             # virtual joint together with mobile base incremental
             # commands are invalid.
@@ -344,31 +391,36 @@ class MobileBaseCommandGroup:
                 command_string += ' rotate_mobile_base '
             if self.use_mobile_base_inc_trans:
                 command_string += ' translate_mobile_base '
-            error_string = 'received a command for the mobile base virtual joint (joint_mobile_base_translation) and mobile base incremental motions ({0}). These are mutually exclusive options. The joint names in the received command = {1}'.format(command_string, joint_names)
-            invalid_joints_error_func(error_string)
+            err_str = 'Received a command for the mobile base virtual joint (joint_mobile_base_translation) \
+                       and mobile base incremental motions ({0}). These are mutually exclusive options. \
+                       The joint names in the received command = {1}'.format(command_string, joint_names)
+            invalid_joints_callback(err_str)
             return False
 
         if self.use_mobile_base_virtual_joint:
-            # Check if a mobile base command was received.
             if robot_mode != 'manipulation':
-                error_string = 'must be in manipulation mode to receive a command for the joint_mobile_base_translation joint. Current mode = {0}.'.format(robot_mode)
-                invalid_joints_error_func(error_string)
+                err_str = 'Must be in manipulation mode to receive a command for the \
+                           joint_mobile_base_translation joint. Current mode = {0}.'.format(robot_mode)
+                invalid_joints_callback(err_str)
                 return False
             self.virtual_joint_mobile_base_index = joint_names.index('joint_mobile_base_translation')
 
         if self.use_mobile_base_inc_rot:
             if robot_mode != 'position':
-                error_string = 'must be in position mode to receive a rotate_mobile_base command. Current mode = {0}.'.format(robot_mode)
-                invalid_joints_error_func(error_string)
+                err_str = 'Must be in position mode to receive a rotate_mobile_base command. \
+                           Current mode = {0}.'.format(robot_mode)
+                invalid_joints_callback(err_str)
                 return False
             self.rotate_mobile_base_index = joint_names.index('rotate_mobile_base')
 
         if self.use_mobile_base_inc_trans:
             if robot_mode != 'position':
-                error_string = 'must be in position mode to receive a translate_mobile_base command. Current mode = {0}.'.format(robot_mode)
-                invalid_joints_error_func(error_string)
+                err_str = 'Must be in position mode to receive a translate_mobile_base command. \
+                           Current mode = {0}.'.format(robot_mode)
+                invalid_joints_callback(err_str)
                 return False
             self.translate_mobile_base_index = joint_names.index('translate_mobile_base')
+
         return True
 
     def get_num_valid_commands(self):
@@ -381,7 +433,7 @@ class MobileBaseCommandGroup:
             number_of_valid_joints += 1
         return number_of_valid_joints
 
-    def set_goal(self, point, invalid_goal_error_func, **kwargs):
+    def set_goal(self, point, invalid_goal_callback, **kwargs):
         self.rotate_mobile_base_goal = False
         self.translate_mobile_base_goal = False
         self.virtual_joint_mobile_base_goal = False
@@ -400,8 +452,11 @@ class MobileBaseCommandGroup:
             self.translate_mobile_base_goal = True
 
         if self.rotate_mobile_base_goal and self.translate_mobile_base_goal:
-            error_string = 'received a goal point with simultaneous rotation and translation mobile base goals. This is not allowed. Only one is allowed to be sent for a given goal point. rotate_mobile_base = {0} and translate_mobile_base = {1}'.format(self.goal_rotate_mobile_base_ros, self.goal_translate_mobile_base_ros)
-            invalid_goal_error_func(error_string)
+            err_str = 'Received a goal point with simultaneous rotation and translation mobile base goals. \
+                       This is not allowed. Only one is allowed to be sent for a given goal point. \
+                       rotate_mobile_base = {0} and translate_mobile_base = \
+                       {1}'.format(self.goal_rotate_mobile_base_mecha, self.goal_translate_mobile_base_mecha)
+            invalid_goal_callback(err_str)
             return False
 
         return True
@@ -431,12 +486,17 @@ class MobileBaseCommandGroup:
         else:
             return (manipulation_origin['x'] + ros_pos)
 
-    def init_execution(self, **kwargs):
-        robot_status = kwargs['robot_status']
+    def init_execution(self, robot, robot_status, **kwargs):
         self.initial_mobile_base_translation_mecha_x = robot_status['base']['x']
         self.initial_mobile_base_translation_mecha_y = robot_status['base']['y']
         self.initial_mobile_base_rotation_mecha = robot_status['base']['theta']
         b = robot_status['base']
+
+        mobile_base_error_m, mobile_base_error_rad = self.update_execution(robot_status)
+        if mobile_base_error_m is not None:
+            robot.base.translate_by(mobile_base_error_m)
+        if mobile_base_error_rad is not None:
+            robot.base.rotate_by(mobile_base_error_rad)
 
     def update_execution(self, robot_status, **kwargs):
         current_mobile_base_translation_mecha_x = robot_status['base']['x']
