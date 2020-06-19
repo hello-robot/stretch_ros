@@ -98,13 +98,20 @@ class JointTrajectoryAction:
 
             robot_status = self.node.robot.get_status() # uses lock held by robot
             [c.init_execution(robot_status) for c in command_groups]
+            goals_reached = [c.goal_reached() for c in command_groups]
             incremental_commands_executed = False
             update_rate = rospy.Rate(15.0)
             goal_start_time = rospy.Time.now()
 
-            while True:
-                robot_status = self.node.robot.get_status()
+            while not all(goals_reached):
+                if (rospy.Time.now() - goal_start_time) > self.node.default_goal_timeout_duration:
+                    err_str = 'Time to execute the current goal point = <{0}> exceeded the \
+                               default_goal_timeout = {1}'.format(point, self.node.default_goal_timeout_s)
+                    self.goal_tolerance_violated_callback(err_str)
+                    self.node.robot_mode_rwlock.release_read()
+                    return
 
+                robot_status = self.node.robot.get_status()
                 if self.node.use_lift:
                     lift_error_m = self.lift_cg.update_execution(robot_status, self.node.backlash_state)
                 extension_error_m = self.telescoping_cg.update_execution(robot_status,
@@ -178,20 +185,7 @@ class JointTrajectoryAction:
                     self.node.robot.push_command()
                     incremental_commands_executed = True
 
-                # Check if the goal positions have been reached.
                 goals_reached = [c.goal_reached() for c in command_groups]
-                if all(goals_reached):
-                    if self.node.trajectory_debug:
-                        rospy.loginfo('achieved goal!')
-                    break
-
-                if (rospy.Time.now() - goal_start_time) > self.node.default_goal_timeout_duration:
-                    err_str = 'Time to execute the current goal point = <{0}> exceeded the \
-                               default_goal_timeout = {1}'.format(point, self.node.default_goal_timeout_s)
-                    self.goal_tolerance_violated_callback(err_str)
-                    self.node.robot_mode_rwlock.release_read()
-                    return
-
                 update_rate.sleep()
 
             rospy.logdebug('{0} joint_traj action: Achieved target point.'.format(self.node.node_name))
