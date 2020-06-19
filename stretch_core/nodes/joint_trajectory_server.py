@@ -96,19 +96,14 @@ class JointTrajectoryAction:
                 self.node.robot_mode_rwlock.release_read()
                 return
 
-            first_time = True
+            robot_status = self.node.robot.get_status() # uses lock held by robot
+            [c.init_execution(robot_status) for c in command_groups]
             incremental_commands_executed = False
             update_rate = rospy.Rate(15.0)
             goal_start_time = rospy.Time.now()
 
             while True:
-                # Get copy of the current robot status (uses lock held by the robot).
                 robot_status = self.node.robot.get_status()
-
-                if first_time:
-                    for c in command_groups:
-                        c.init_execution(robot_status)
-                    first_time = False
 
                 if self.node.use_lift:
                     lift_error_m = self.lift_cg.update_execution(robot_status, self.node.backlash_state)
