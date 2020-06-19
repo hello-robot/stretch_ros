@@ -28,10 +28,7 @@ from std_msgs.msg import Header
 
 import hello_helpers.hello_misc as hm
 from hello_helpers.gripper_conversion import GripperConversion
-from command_groups import HeadPanCommandGroup, HeadTiltCommandGroup, \
-                           WristYawCommandGroup, GripperCommandGroup, \
-                           TelescopingCommandGroup, LiftCommandGroup, \
-                           MobileBaseCommandGroup
+from joint_trajectory_server import JointTrajectoryAction
 
 GRIPPER_DEBUG = False
 BACKLASH_DEBUG = False
@@ -78,208 +75,6 @@ class StretchBodyNode:
 
         self.robot_mode_rwlock = RWLock()
         self.robot_mode = None
-
-    def trajectory_action_server_callback(self, goal):
-
-        with self.robot_stop_lock:
-            if self.stop_the_robot:
-                # This trajectory callback has been called after a
-                # stop_the_robot service trigger that did not result
-                # in prempting a trajectory callback. Sufficient time
-                # is likely to have passed for the robot motors to
-                # have received their stop commands, so this
-                # trajectory command will be accepted.
-
-                # Please note that it is possible that this trajectory
-                # command was sent before the stop_the_robot service
-                # trigger.
-                self.stop_the_robot = False
-
-        self.robot_mode_rwlock.acquire_read()
-
-        def invalid_joints_error(error_string):
-            error_string = '{0} action server:'.format(self.node_name) + error_string
-            rospy.logerr(error_string)
-            result = FollowJointTrajectoryResult()
-            result.error_code = result.INVALID_JOINTS
-            self.trajectory_action_server.set_aborted(result)
-
-        def invalid_goal_error(error_string):
-            error_string = '{0} action server:'.format(self.node_name) + error_string
-            rospy.logerr(error_string)
-            result = FollowJointTrajectoryResult()
-            result.error_code = result.INVALID_JOINTS
-            self.trajectory_action_server.set_aborted(result)
-
-        def goal_tolerance_violated(error_string):
-            error_string = '{0} action server:'.format(self.node_name) + error_string
-            rospy.logerr(error_string)
-            result = FollowJointTrajectoryResult()
-            result.error_code = result.GOAL_TOLERANCE_VIOLATED
-            self.trajectory_action_server.set_aborted(result)
-
-        # For now, ignore goal time and configuration tolerances.
-        joint_names = goal.trajectory.joint_names
-        if self.trajectory_debug:
-            rospy.loginfo('New trajectory received with joint_names = {0}'.format(joint_names))
-
-        ###################################################
-        # Decide what to do based on the commanded joints.
-        if self.use_lift: 
-            command_groups = [self.telescoping_cg, self.lift_cg, self.mobile_base_cg, self.head_pan_cg, self.head_tilt_cg, self.wrist_yaw_cg, self.gripper_cg]
-        else:
-            command_groups = [self.telescoping_cg, self.mobile_base_cg, self.head_pan_cg, self.head_tilt_cg, self.wrist_yaw_cg, self.gripper_cg]
-
-        updates = [c.update(joint_names, invalid_joints_error, self.robot_mode) for c in command_groups]
-        if not all(updates):
-            # The joint names violated at least one of the command
-            # group's requirements. The command group should have
-            # reported the error.
-            self.robot_mode_rwlock.release_read()
-            return
-
-        number_of_valid_joints = sum([c.get_num_valid_commands() for c in command_groups])
-
-        if number_of_valid_joints <= 0:
-            # Abort if no valid joints were received.
-            error_string = 'received a command without any valid joint names. Received joint names = ' + str(joint_names)
-            invalid_joints_error(error_string)
-            self.robot_mode_rwlock.release_read()
-            return                
-
-        if len(joint_names) != number_of_valid_joints:
-            error_string = 'received {0} valid joints and {1} total joints. Received joint names = {2}'.format(number_of_valid_joints,  len(joint_names), joint_names)
-            invalid_joints_error(error_string)
-            self.robot_mode_rwlock.release_read()
-            return
-
-        ###################################################
-        # Try to reach each of the goals in sequence until an error is
-        # detected or success is achieved.
-        for point_number, point in enumerate(goal.trajectory.points):
-            if self.trajectory_debug:
-                rospy.loginfo('position # {0} = {1}'.format(point_number, point.positions))
-
-
-            valid_goals = [c.set_goal(point, invalid_goal_error, self.mobile_base_manipulation_origin) for c in command_groups]
-            if not all(valid_goals):
-                # At least one of the goals violated the requirements
-                # of a command group. Any violations should have been
-                # reported as errors by the command groups.
-                self.robot_mode_rwlock.release_read()
-                return
-
-            # Attempt to reach the goal.
-            update_rate = rospy.Rate(15.0)
-
-            first_time = True
-            incremental_commands_executed = False
-
-            goal_start_time = rospy.Time.now()
-
-            while True:
-                # Get copy of the current robot status (uses lock held by the robot).
-                robot_status = self.robot.get_status()
-
-                if first_time:
-                    for c in command_groups:
-                        c.init_execution(robot_status)
-                    first_time = False
-
-                if self.use_lift: 
-                    lift_error_m = self.lift_cg.update_execution(robot_status, self.backlash_state)
-                extension_error_m = self.telescoping_cg.update_execution(robot_status, self.backlash_state)
-                mobile_base_error_m, mobile_base_error_rad = self.mobile_base_cg.update_execution(robot_status, self.backlash_state)
-                self.head_pan_cg.update_execution(robot_status, self.backlash_state)
-                self.head_tilt_cg.update_execution(robot_status, self.backlash_state)
-                self.wrist_yaw_cg.update_execution(robot_status, self.backlash_state)
-                self.gripper_cg.update_execution(robot_status, self.backlash_state)
-
-                # Check if a premption request has been received.
-                with self.robot_stop_lock:
-                    if self.stop_the_robot or self.trajectory_action_server.is_preempt_requested():
-                        if self.trajectory_debug: 
-                            rospy.loginfo('PREEMPTION REQUESTED, but not stopping current motions to allow smooth interpolation between old and new commands.')
-                        self.trajectory_action_server.set_preempted()
-                        self.stop_the_robot = False
-                        self.robot_mode_rwlock.release_read()
-                        return
-
-                    if not incremental_commands_executed:
-                        translate = (mobile_base_error_m is not None)
-                        rotate = (mobile_base_error_rad is not None)
-                        if translate and rotate:
-                            error_string = 'simultaneous translation and rotation of the mobile base requested. This is not allowed.'
-                            invalid_goal_error(error_string)
-                            self.robot_mode_rwlock.release_read()
-                            return
-                        if translate:
-                            self.robot.base.translate_by(mobile_base_error_m)
-                        if rotate: 
-                            self.robot.base.rotate_by(mobile_base_error_rad)
-
-                        if self.telescoping_cg.extension_goal:
-                            self.robot.arm.move_by(extension_error_m)
-                            if extension_error_m < 0.0:
-                                self.backlash_state['wrist_extension_retracted'] = True
-                            else:
-                                self.backlash_state['wrist_extension_retracted'] = False
-
-                        if self.use_lift: 
-                            if self.lift_cg.lift_goal: 
-                                self.robot.lift.move_by(lift_error_m)
-
-                        if self.head_pan_cg.joint_goal:
-                           self.robot.head.move_by('head_pan', self.head_pan_cg.joint_error)
-                           if self.head_pan_cg.joint_error > 0.0:
-                               self.backlash_state['head_pan_looked_left'] = True
-                           else:
-                               self.backlash_state['head_pan_looked_left'] = False
-
-                        if self.head_tilt_cg.joint_goal:
-                            self.robot.head.move_by('head_tilt', self.head_tilt_cg.joint_error)
-                            if self.head_tilt_cg.joint_target > (self.head_tilt_backlash_transition_angle_rad + self.head_tilt_calibrated_offset_rad):
-                                self.backlash_state['head_tilt_looking_up'] = True
-                            else:
-                                self.backlash_state['head_tilt_looking_up'] = False
-
-                        if self.wrist_yaw_cg.joint_goal:
-                            self.robot.end_of_arm.move_to('wrist_yaw', self.wrist_yaw_cg.joint_target)
-
-                        if self.gripper_cg.gripper_joint_goal:
-                            gripper_command = self.gripper_cg.goal_gripper_joint
-                            if GRIPPER_DEBUG: 
-                                print('move_to stretch_gripper =', gripper_command)
-                            self.robot.end_of_arm.move_to('stretch_gripper', gripper_command)
-
-                        self.robot.push_command()
-                        incremental_commands_executed = True
-                    
-                # Check if the goal positions have been reached.                
-                goals_reached = [c.goal_reached() for c in command_groups]
-                if all(goals_reached):
-                    if self.trajectory_debug: 
-                        rospy.loginfo('achieved goal!')
-                    break
-
-                if (rospy.Time.now() - goal_start_time) > self.default_goal_timeout_duration:
-                    error_string = 'time to execute the current goal point = {0} exceeded the default_goal_timeout = {1}'.format(point, self.default_goal_timeout_s)
-                    goal_tolerance_violated(error_string)
-                    self.robot_mode_rwlock.release_read()
-                    return
-
-                update_rate.sleep()
-
-            # Currently not providing feedback.
-
-        if self.trajectory_debug: 
-            rospy.loginfo('Finished with all goals.')
-
-        result = FollowJointTrajectoryResult()
-        result.error_code = result.SUCCESSFUL 
-        self.trajectory_action_server.set_succeeded(result)
-        self.robot_mode_rwlock.release_read()
-        return
 
     ###### MOBILE BASE VELOCITY METHODS #######
 
@@ -737,17 +532,6 @@ class StretchBodyNode:
 
         self.max_arm_height = 1.1
 
-        self.telescoping_cg = TelescopingCommandGroup(self.wrist_extension_calibrated_retracted_offset_m)
-        if self.use_lift:
-            self.lift_cg = LiftCommandGroup(self.max_arm_height)
-        self.mobile_base_cg = MobileBaseCommandGroup()
-        self.head_pan_cg = HeadPanCommandGroup(self.head_pan_calibrated_offset_rad,
-                                               self.head_pan_calibrated_looked_left_offset_rad)
-        self.head_tilt_cg = HeadTiltCommandGroup(self.head_tilt_calibrated_offset_rad,
-                                                 self.head_tilt_calibrated_looking_up_offset_rad)
-        self.wrist_yaw_cg = WristYawCommandGroup()
-        self.gripper_cg = GripperCommandGroup()
-
         self.odom_pub = rospy.Publisher('odom', Odometry, queue_size=1)
 
         self.imu_mobile_base_pub = rospy.Publisher('imu_mobile_base', Imu, queue_size=1)
@@ -782,11 +566,8 @@ class StretchBodyNode:
         self.last_twist_time = rospy.get_time()
 
         # start action server for joint trajectories
-        self.trajectory_action_server = actionlib.SimpleActionServer('/stretch_controller/follow_joint_trajectory',
-                                                                     FollowJointTrajectoryAction,
-                                                                     execute_cb = self.trajectory_action_server_callback,
-                                                                     auto_start = False)
-        self.trajectory_action_server.start()
+        self.joint_trajectory_action = JointTrajectoryAction(self)
+        self.joint_trajectory_action.server.start()
 
         if mode == "position":
             self.turn_on_position_mode()
