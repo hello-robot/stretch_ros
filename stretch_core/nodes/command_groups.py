@@ -369,60 +369,21 @@ class TelescopingCommandGroup(SimpleCommandGroup):
         return None
 
 
-class LiftCommandGroup:
+class LiftCommandGroup(SimpleCommandGroup):
     def __init__(self, max_arm_height):
-        self.clip_ros_tolerance = 0.001
-        self.acceptable_joint_error_m = 0.015 #15.0
-        self.max_arm_height = max_arm_height
-        self.lift_ros_range = [0.0, self.max_arm_height]
-
-    def update(self, joint_names, invalid_joints_error_func, **kwargs):
-        self.use_lift = False
-        if 'joint_lift' in joint_names:
-            self.lift_index = joint_names.index('joint_lift')
-            self.use_lift = True
-        return True
-
-    def get_num_valid_commands(self):
-        if self.use_lift:
-            return 1
-        return 0
-
-    def set_goal(self, point, invalid_goal_error_func, **kwargs):
-        self.lift_goal = False
-        self.goal_lift_mecha = None
-        self.goal_lift_ros = None
-        if self.use_lift:
-            self.goal_lift_ros = point.positions[self.lift_index]
-            self.goal_lift_mecha = self.ros_to_mechaduino(self.goal_lift_ros)
-            self.lift_goal = True
-
-        if self.lift_goal and (self.goal_lift_mecha is None):
-            error_string = 'received goal point that is out of bounds. The first error that was caught is that the lift goal is invalid (goal_lift_ros = {0}).'.format(self.goal_lift_ros)
-            invalid_goal_error_func(error_string)
-            return False
-        return True
-
-    def ros_to_mechaduino(self, lift_ros):
-        return lift_ros
+        SimpleCommandGroup.__init__(self, 'joint_lift', (0.0, max_arm_height))
 
     def init_execution(self, robot, robot_status, **kwargs):
-        if self.lift_goal:
+        if self.active:
             robot.lift.move_by(self.update_execution(robot_status))
 
     def update_execution(self, robot_status, **kwargs):
-        if self.lift_goal:
-            self.current_lift_mecha = robot_status['lift']['pos']
-            self.lift_error_m = self.goal_lift_mecha - self.current_lift_mecha
-            return self.lift_error_m
-        else:
-            return None
+        self.error = None
+        if self.active:
+            self.error = self.goal['position'] - robot_status['lift']['pos']
+            return self.error
 
-    def goal_reached(self):
-        if self.lift_goal:
-            return (abs(self.lift_error_m) < self.acceptable_joint_error_m)
-        else:
-            return True
+        return None
 
 
 class MobileBaseCommandGroup:
