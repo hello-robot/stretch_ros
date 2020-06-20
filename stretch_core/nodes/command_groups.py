@@ -237,97 +237,54 @@ class WristYawCommandGroup(SimpleCommandGroup):
         return None
 
 
-class GripperCommandGroup:
-    def __init__(self, acceptable_joint_error=0.015, clip_ros_tolerance=0.001):
-        self.clip_ros_tolerance = clip_ros_tolerance
-        self.acceptable_joint_error = acceptable_joint_error
+class GripperCommandGroup(SimpleCommandGroup):
+    def __init__(self):
+        SimpleCommandGroup.__init__(self, None, (0, 0))
         self.gripper_joint_names = ['joint_gripper_finger_left', 'joint_gripper_finger_right', 'gripper_aperture']
         self.gripper_conversion = GripperConversion()
         self.gripper_joint_goal_valid = False
 
-    def update(self, joint_names, invalid_joints_error_func, **kwargs):
-        self.use_gripper_joint = False
-        self.gripper_joints_to_command_names = [j for j in self.gripper_joint_names if j in joint_names]
-        self.gripper_joints_to_command_indices = [joint_names.index(j) for j in self.gripper_joints_to_command_names]
-        if len(self.gripper_joints_to_command_names) > 1:
-            # Commands that attempt to control the gripper with more
-            # than one joint name are not allowed, since the gripper
-            # ultimately only has a single degree of freedom.
-            error_string = 'Received a command for the gripper that includes more than one gripper joint name: {0}. Only one joint name is allowed to be used for a gripper command to avoid conflicts and confusion. The gripper only has a single degree of freedom that can be controlled using the following three mutually exclusive joint names: {1}.'.format(self.gripper_joints_to_command_names, self.gripper_joint_names)
-            invalid_joints_error_func(error_string)
-            self.use_gripper_joint = False
+    def update(self, commanded_joint_names, invalid_joints_callback, **kwargs):
+        self.active = False
+        self.index = None
+        active_gripper_joint_names = list(set(commanded_joint_names) & set(self.gripper_joint_names))
+        if len(active_gripper_joint_names) > 1:
+            err_str = 'Received a command for the gripper that includes more than one gripper joint name: {0}. \
+                       Only one joint name is allowed to be used for a gripper command to avoid conflicts \
+                       and confusion. The gripper only has a single degree of freedom that can be \
+                       controlled using the following three mutually exclusive joint names: \
+                       {1}.'.format(active_gripper_joint_names, self.gripper_joint_names)
+            invalid_joints_callback(err_str)
             return False
-
-        if len(self.gripper_joints_to_command_names) == 1:
-            self.gripper_joint_command_name = self.gripper_joints_to_command_names[0]
-            self.gripper_joint_command_index = self.gripper_joints_to_command_indices[0]
-            self.use_gripper_joint = True
+        elif len(active_gripper_joint_names) == 1:
+            self.name = active_gripper_joint_names[0]
+            self.index = commanded_joint_names.index(self.name)
+            self.active = True
 
         return True
-
-    def get_num_valid_commands(self):
-        if self.use_gripper_joint:
-            return 1
-        else:
-            return 0
-
-    def set_goal(self, point, invalid_goal_error_func, **kwargs):
-        self.gripper_joint_goal_valid = False
-        self.gripper_joint_goal = False
-        self.goal_gripper_joint = None
-        goal = None
-        if self.use_gripper_joint:
-            name = self.gripper_joint_command_name
-            goal = point.positions[self.gripper_joint_command_index]
-            if ((name == 'joint_gripper_finger_left') or (name == 'joint_gripper_finger_right')):
-                self.goal_gripper_joint = goal
-            if (name == 'gripper_aperture'):
-                self.goal_gripper_joint = goal
-            self.gripper_joint_goal = True
-
-            # Check that the goal is valid.
-            self.gripper_joint_goal_valid = True
-            if self.goal_gripper_joint is None:
-                self.gripper_joint_goal_valid = False
-
-            if not self.gripper_joint_goal_valid:
-                error_string = 'gripper goal {0} is invalid'.format(goal)
-                invalid_goal_error_func(error_string)
-                return False
-        return True
-
-    def ros_to_mechaduino(self, joint_ros):
-        return joint_ros
 
     def init_execution(self, robot, robot_status, **kwargs):
-        if self.gripper_joint_goal_valid:
-            name = self.gripper_joint_command_name
-            delta = self.update_execution(robot_status)
-            if (name == 'joint_gripper_finger_left') or (name == 'joint_gripper_finger_right'):
-                robotis_delta = self.gripper_conversion.finger_to_robotis(delta)
-            if (name == 'gripper_aperture'):
-                robotis_delta = self.gripper_conversion.aperture_to_robotis(delta)
-            robot.end_of_arm.move_by('stretch_gripper', robotis_delta)
+        if self.active:
+            gripper_error = self.update_execution(robot_status)
+            if (self.name == 'gripper_aperture'):
+                gripper_robotis_error = self.gripper_conversion.aperture_to_robotis(gripper_error)
+            elif (self.name == 'joint_gripper_finger_left') or (self.name == 'joint_gripper_finger_right'):
+                gripper_robotis_error = self.gripper_conversion.finger_to_robotis(gripper_error)
+            robot.end_of_arm.move_by('stretch_gripper', gripper_robotis_error)
 
     def update_execution(self, robot_status, **kwargs):
-        if self.gripper_joint_goal_valid:
-            name = self.gripper_joint_command_name
+        self.error = None
+        if self.active:
             robotis_pct = robot_status['end_of_arm']['stretch_gripper']['pos_pct']
-            if (name == 'joint_gripper_finger_left') or (name == 'joint_gripper_finger_right'):
-                self.current_gripper_pos = self.gripper_conversion.robotis_to_finger(robotis_pct)
-            if name == 'gripper_aperture':
-                self.current_gripper_pos = self.gripper_conversion.robotis_to_aperture(robotis_pct)
+            if (self.name == 'gripper_aperture'):
+                gripper_current = self.gripper_conversion.robotis_to_aperture(robotis_pct)
+            elif (self.name == 'joint_gripper_finger_left') or (self.name == 'joint_gripper_finger_right'):
+                gripper_current = self.gripper_conversion.robotis_to_finger(robotis_pct)
 
-            self.gripper_error = self.goal_gripper_joint - self.current_gripper_pos
-            return self.gripper_error
-        else:
-            return None
+            self.error = self.goal['position'] - gripper_current
+            return self.error
 
-    def goal_reached(self):
-        if self.gripper_joint_goal_valid:
-            return (abs(self.gripper_error) < self.acceptable_joint_error)
-        else:
-            return True
+        return None
 
 
 class TelescopingCommandGroup:
