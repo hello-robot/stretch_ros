@@ -287,63 +287,66 @@ class GripperCommandGroup(SimpleCommandGroup):
         return None
 
 
-class TelescopingCommandGroup:
+class TelescopingCommandGroup(SimpleCommandGroup):
     def __init__(self, wrist_extension_calibrated_retracted_offset):
+        SimpleCommandGroup.__init__(self, 'wrist_extension', (0, 0), acceptable_joint_error=0.005)
         self.wrist_extension_calibrated_retracted_offset = wrist_extension_calibrated_retracted_offset
         self.telescoping_joints = ['joint_arm_l3', 'joint_arm_l2', 'joint_arm_l1', 'joint_arm_l0']
-        self.clip_ros_tolerance = 0.001
-        self.acceptable_joint_error_m = 0.005
-
-    def update(self, joint_names, invalid_joints_error_func, **kwargs):
-        self.use_telescoping_joints = False
-        self.use_wrist_extension = False
-        if 'wrist_extension' in joint_names:
-            # Check if a wrist_extension command was received.
-            self.use_wrist_extension = True
-            self.extension_index = joint_names.index('wrist_extension')
-            if any([(j in joint_names) for j in self.telescoping_joints]):
-                # Consider commands for both the wrist_extension joint and any of the telescoping joints invalid, since these can be redundant.
-                error_string = 'received a command for the wrist_extension joint and one or more telescoping_joints. These are mutually exclusive options. The joint names in the received command = {0}'.format(joint_names)
-                invalid_joints_error_func(error_string)
-                return False
-        elif all([(j in joint_names) for j in self.telescoping_joints]):
-            # Require all telescoping joints to be present for their commands to be used.
-            self.use_telescoping_joints = True
-            self.telescoping_indices = [joint_names.index(j) for j in self.telescoping_joints]
-        return True
+        self.is_telescoping = False
 
     def get_num_valid_commands(self):
-        if self.use_wrist_extension:
-            return 1
-        if self.use_telescoping_joints:
+        if self.active and self.is_telescoping:
             return len(self.telescoping_joints)
+        elif self.active:
+            return 1
+
         return 0
 
-    def set_goal(self, point, invalid_goal_error_func, **kwargs):
-        self.extension_goal = False
-        self.goal_extension_mecha = None
-        self.goal_extension_ros = None
-        if self.use_wrist_extension:
-            self.goal_extension_ros = point.positions[self.extension_index]
-            self.goal_extension_mecha = self.ros_to_mechaduino(self.goal_extension_ros)
-            self.extension_goal = True
+    def update(self, commanded_joint_names, invalid_joints_callback, **kwargs):
+        self.active = False
+        self.is_telescoping = False
+        self.index = None
+        active_telescoping_joint_names = list(set(commanded_joint_names) & set(self.telescoping_joints))
+        if self.name in commanded_joint_names:
+            if len(active_telescoping_joint_names) == 0:
+                self.index = commanded_joint_names.index(self.name)
+                self.active = True
+            else:
+                err_str = 'Received a command for the wrist_extension joint and one or more telescoping_joints. \
+                           These are mutually exclusive options. The joint names in the received command = \
+                           {0}'.format(commanded_joint_names)
+                invalid_joints_callback(err_str)
+                return False
+        elif len(active_telescoping_joint_names) != 0:
+            if len(active_telescoping_joint_names) == len(self.telescoping_joints):
+                self.active = True
+                self.is_telescoping = True
+                self.index = [commanded_joint_names.index(i) for i in self.telescoping_joints]
+            else:
+                err_str = 'Commands with telescoping joints requires all telescoping joints to be present. \
+                           Only received {0} of {1} telescoping joints. They are = \
+                           {2}'.format(len(active_telescoping_joint_names), len(self.telescoping_joints),
+                                       active_telescoping_joint_names)
+                invalid_joints_callback(err_str)
+                return False
 
-        if self.use_telescoping_joints:
-            self.goal_extension_ros = sum([point.positions[i] for i in self.telescoping_indices])
-            self.goal_extension_mecha = self.ros_to_mechaduino(self.goal_extension_ros)
-            self.extension_goal = True
-
-        if self.extension_goal and (self.goal_extension_mecha is None):
-            error_string = 'received goal point that is out of bounds. The first error that was caught is that the extension goal is invalid (goal_extension_ros = {0}).'.format(self.goal_extension_ros)
-            invalid_goal_error_func(error_string)
-            return False
         return True
 
-    def ros_to_mechaduino(self, wrist_extension_ros):
-        return wrist_extension_ros
+    def set_goal(self, point, invalid_goal_callback, **kwargs):
+        self.goal = {"position": None}
+        if self.active:
+            self.goal['position'] = sum([point.positions[i] for i in self.index]) \
+                                    if self.is_telescoping else point.positions[self.index]
+            if self.goal['position'] is None:
+                err_str = 'Received extension goal point that is out of bounds. \
+                           Goal point = {0}.'.format(self.goal['position'])
+                invalid_goal_callback(err_str)
+                return False
+
+        return True
 
     def init_execution(self, robot, robot_status, **kwargs):
-        if self.extension_goal:
+        if self.active:
             extension_error_m = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
             robot.arm.move_by(extension_error_m)
             if extension_error_m < 0.0:
@@ -353,22 +356,17 @@ class TelescopingCommandGroup:
 
     def update_execution(self, robot_status, **kwargs):
         backlash_state = kwargs['backlash_state']
-        if self.extension_goal:
+        self.error = None
+        if self.active:
             if backlash_state['wrist_extension_retracted']:
                 arm_backlash_correction = self.wrist_extension_calibrated_retracted_offset
             else:
                 arm_backlash_correction = 0.0
-            self.current_extension_mecha = robot_status['arm']['pos'] + arm_backlash_correction
-            self.extension_error_m = self.goal_extension_mecha - self.current_extension_mecha
-            return self.extension_error_m
-        else:
-            return None
+            extension_current = robot_status['arm']['pos'] + arm_backlash_correction
+            self.error = self.goal['position'] - extension_current
+            return self.error
 
-    def goal_reached(self):
-        if self.extension_goal:
-            return (abs(self.extension_error_m) < self.acceptable_joint_error_m)
-        else:
-            return True
+        return None
 
 
 class LiftCommandGroup:
