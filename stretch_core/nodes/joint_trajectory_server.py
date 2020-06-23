@@ -160,7 +160,7 @@ class JointTrajectoryAction:
         rospy.logerr('{0} joint_traj action: {1}'.format(self.node.node_name, err_str))
         self.result.error_code = self.result.INVALID_GOAL
         self.result.error_string = err_str
-        self.result.set_aborted(self.result)
+        self.server.set_aborted(self.result)
 
     def goal_tolerance_violated_callback(self, err_str):
         rospy.logerr('{0} joint_traj action: {1}'.format(self.node.node_name, err_str))
