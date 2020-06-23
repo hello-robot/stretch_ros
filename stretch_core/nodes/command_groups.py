@@ -461,11 +461,13 @@ class MobileBaseCommandGroup:
 
         if self.use_mobile_base_inc_rot:
             self.goal_rotate_mobile_base_mecha = point.positions[self.rotate_mobile_base_index]
-            self.rotate_mobile_base_goal = True
+            if not np.isclose(self.goal_rotate_mobile_base_mecha, 0.0, rtol=1e-5, atol=1e-8, equal_nan=False):
+                self.rotate_mobile_base_goal = True
 
         if self.use_mobile_base_inc_trans:
             self.goal_translate_mobile_base_mecha = point.positions[self.translate_mobile_base_index]
-            self.translate_mobile_base_goal = True
+            if not np.isclose(self.goal_translate_mobile_base_mecha, 0.0, rtol=1e-5, atol=1e-8, equal_nan=False):
+                self.translate_mobile_base_goal = True
 
         if self.rotate_mobile_base_goal and self.translate_mobile_base_goal:
             err_str = 'Received a goal point with simultaneous rotation and translation mobile base goals. \
