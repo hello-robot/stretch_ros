@@ -7,7 +7,7 @@ from hello_helpers.gripper_conversion import GripperConversion
 
 
 class SimpleCommandGroup:
-    def __init__(self, joint_name, joint_range, acceptable_joint_error=0.015, clip_ros_tolerance=0.001):
+    def __init__(self, joint_name, joint_range, acceptable_joint_error=0.015):
         """Simple command group to extend
 
         Attributes
@@ -26,8 +26,6 @@ class SimpleCommandGroup:
             the error between actual and desired
         acceptable_joint_error: float
             how close to zero the error must reach
-        clip_ros_tolerance: float
-            the clip ros tolerance
         """
         self.name = joint_name
         self.range = joint_range
@@ -35,7 +33,6 @@ class SimpleCommandGroup:
         self.index = None
         self.goal = {"position": None}
         self.error = None
-        self.clip_ros_tolerance = clip_ros_tolerance
         self.acceptable_joint_error = acceptable_joint_error
 
     def get_num_valid_commands(self):
@@ -59,7 +56,7 @@ class SimpleCommandGroup:
 
         Parameters
         ----------
-        commanded_joints_names: list(str)
+        commanded_joint_names: list(str)
             list of commanded joints in the trajectory
         invalid_joints_callback: func
             error callback for misuse of joints in trajectory
@@ -480,7 +477,7 @@ class MobileBaseCommandGroup:
 
         return True
 
-    def bound_ros_command(self, bounds, ros_pos, clip_ros_tolerance):
+    def bound_ros_command(self, bounds, ros_pos, clip_ros_tolerance=0.001):
         # Clip the command with clip_ros_tolerance, instead of
         # invalidating it, if it is close enough to the valid ranges.
         if ros_pos < bounds[0]:
@@ -499,7 +496,7 @@ class MobileBaseCommandGroup:
 
     def ros_to_mechaduino(self, ros_ros, manipulation_origin):
         bounds = self.mobile_base_virtual_joint_ros_range
-        ros_pos = self.bound_ros_command(bounds, ros_ros, self.clip_ros_tolerance)
+        ros_pos = self.bound_ros_command(bounds, ros_ros)
         if ros_pos is None:
             return None
         else:
