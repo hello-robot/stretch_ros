@@ -99,7 +99,9 @@ class SimpleCommandGroup:
             self.goal['acceleration'] = point.accelerations[self.index] if len(point.accelerations) > self.index else None
             self.goal['contact_threshold'] = point.effort[self.index] if len(point.effort) > self.index else None
             if self.goal['position'] is None:
-                err_str = "Received goal point with positions array length={0}. This joint ({1})'s index is {2}. Length of array must cover all joints listed in commanded_joint_names.".format(len(point.positions), self.name, self.index)
+                err_str = ("Received goal point with positions array length={0}. "
+                           "This joint ({1})'s index is {2}. Length of array must cover all joints listed "
+                           "in commanded_joint_names.").format(len(point.positions), self.name, self.index)
                 invalid_goal_callback(err_str)
                 return False
 
@@ -225,7 +227,10 @@ class WristYawCommandGroup(SimpleCommandGroup):
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            robot.end_of_arm.move_by('wrist_yaw', self.update_execution(robot_status)[1], v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
+            robot.end_of_arm.move_by('wrist_yaw',
+                                     self.update_execution(robot_status)[1],
+                                     v_r=self.goal['velocity'],
+                                     a_r=self.goal['acceleration'])
 
     def update_execution(self, robot_status, **kwargs):
         self.error = None
@@ -248,11 +253,11 @@ class GripperCommandGroup(SimpleCommandGroup):
         self.index = None
         active_gripper_joint_names = list(set(commanded_joint_names) & set(self.gripper_joint_names))
         if len(active_gripper_joint_names) > 1:
-            err_str = 'Received a command for the gripper that includes more than one gripper joint name: {0}. \
-                       Only one joint name is allowed to be used for a gripper command to avoid conflicts \
-                       and confusion. The gripper only has a single degree of freedom that can be \
-                       controlled using the following three mutually exclusive joint names: \
-                       {1}.'.format(active_gripper_joint_names, self.gripper_joint_names)
+            err_str = ("Received a command for the gripper that includes more than one gripper joint name: {0}. "
+                       "Only one joint name is allowed to be used for a gripper command to avoid conflicts "
+                       "and confusion. The gripper only has a single degree of freedom that can be "
+                       "controlled using the following three mutually exclusive joint names: "
+                       "{1}.").format(active_gripper_joint_names, self.gripper_joint_names)
             invalid_joints_callback(err_str)
             return False
         elif len(active_gripper_joint_names) == 1:
@@ -269,7 +274,10 @@ class GripperCommandGroup(SimpleCommandGroup):
                 gripper_robotis_error = self.gripper_conversion.aperture_to_robotis(gripper_error)
             elif (self.name == 'joint_gripper_finger_left') or (self.name == 'joint_gripper_finger_right'):
                 gripper_robotis_error = self.gripper_conversion.finger_to_robotis(gripper_error)
-            robot.end_of_arm.move_by('stretch_gripper', gripper_robotis_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
+            robot.end_of_arm.move_by('stretch_gripper',
+                                     gripper_robotis_error,
+                                     v_r=self.goal['velocity'],
+                                     a_r=self.goal['acceleration'])
 
     def update_execution(self, robot_status, **kwargs):
         self.error = None
@@ -311,9 +319,9 @@ class TelescopingCommandGroup(SimpleCommandGroup):
                 self.index = commanded_joint_names.index(self.name)
                 self.active = True
             else:
-                err_str = 'Received a command for the wrist_extension joint and one or more telescoping_joints. \
-                           These are mutually exclusive options. The joint names in the received command = \
-                           {0}'.format(commanded_joint_names)
+                err_str = ("Received a command for the wrist_extension joint and one or more telescoping_joints. "
+                           "These are mutually exclusive options. The joint names in the received command = "
+                           "{0}").format(commanded_joint_names)
                 invalid_joints_callback(err_str)
                 return False
         elif len(active_telescoping_joint_names) != 0:
@@ -322,10 +330,10 @@ class TelescopingCommandGroup(SimpleCommandGroup):
                 self.is_telescoping = True
                 self.index = [commanded_joint_names.index(i) for i in self.telescoping_joints]
             else:
-                err_str = 'Commands with telescoping joints requires all telescoping joints to be present. \
-                           Only received {0} of {1} telescoping joints. They are = \
-                           {2}'.format(len(active_telescoping_joint_names), len(self.telescoping_joints),
-                                       active_telescoping_joint_names)
+                err_str = ("Commands with telescoping joints requires all telescoping joints to be present. "
+                           "Only received {0} of {1} telescoping joints. They are = "
+                           "{2}").format(len(active_telescoping_joint_names), len(self.telescoping_joints),
+                                         active_telescoping_joint_names)
                 invalid_joints_callback(err_str)
                 return False
 
@@ -335,18 +343,28 @@ class TelescopingCommandGroup(SimpleCommandGroup):
         self.goal = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
         if self.active:
             if self.is_telescoping:
-                self.goal['position'] = sum([point.positions[i] for i in self.index]) if len(point.positions) > max(self.index) else None
-                self.goal['velocity'] = point.velocities[self.index[0]] if len(point.velocities) > self.index[0] else None
-                self.goal['acceleration'] = point.accelerations[self.index[0]] if len(point.accelerations) > self.index[0] else None
-                self.goal['contact_threshold'] = point.effort[self.index[0]] if len(point.effort) > self.index[0] else None
+                self.goal['position'] = sum([point.positions[i] for i in self.index]) \
+                                        if len(point.positions) > max(self.index) else None
+                self.goal['velocity'] = point.velocities[self.index[0]] \
+                                        if len(point.velocities) > self.index[0] else None
+                self.goal['acceleration'] = point.accelerations[self.index[0]] \
+                                            if len(point.accelerations) > self.index[0] else None
+                self.goal['contact_threshold'] = point.effort[self.index[0]] \
+                                                 if len(point.effort) > self.index[0] else None
             else:
-                self.goal['position'] = point.positions[self.index] if len(point.positions) > self.index else None
-                self.goal['velocity'] = point.velocities[self.index] if len(point.velocities) > self.index else None
-                self.goal['acceleration'] = point.accelerations[self.index] if len(point.accelerations) > self.index else None
-                self.goal['contact_threshold'] = point.effort[self.index] if len(point.effort) > self.index else None
+                self.goal['position'] = point.positions[self.index] \
+                                        if len(point.positions) > self.index else None
+                self.goal['velocity'] = point.velocities[self.index] \
+                                        if len(point.velocities) > self.index else None
+                self.goal['acceleration'] = point.accelerations[self.index] \
+                                            if len(point.accelerations) > self.index else None
+                self.goal['contact_threshold'] = point.effort[self.index] \
+                                                 if len(point.effort) > self.index else None
 
             if self.goal['position'] is None:
-                err_str = "Received goal point with positions array length={0}. This joint ({1})'s index is {2}. Length of array must cover all joints listed in commanded_joint_names.".format(len(point.positions), self.name, self.index)
+                err_str = ("Received goal point with positions array length={0}. "
+                           "This joint ({1})'s index is {2}. Length of array must cover all joints listed "
+                           "in commanded_joint_names.").format(len(point.positions), self.name, self.index)
                 invalid_goal_callback(err_str)
                 return False
 
@@ -359,7 +377,8 @@ class TelescopingCommandGroup(SimpleCommandGroup):
                               v_m=self.goal['velocity'],
                               a_m=self.goal['acceleration'],
                               contact_thresh_pos_N=self.goal['contact_threshold'],
-                              contact_thresh_neg_N=-self.goal['contact_threshold'] if self.goal['contact_threshold'] is not None else None)
+                              contact_thresh_neg_N=-self.goal['contact_threshold'] \
+                                                   if self.goal['contact_threshold'] is not None else None)
             if extension_error_m < 0.0:
                 kwargs['backlash_state']['wrist_extension_retracted'] = True
             else:
@@ -390,7 +409,8 @@ class LiftCommandGroup(SimpleCommandGroup):
                                v_m=self.goal['velocity'],
                                a_m=self.goal['acceleration'],
                                contact_thresh_pos_N=self.goal['contact_threshold'],
-                               contact_thresh_neg_N=-self.goal['contact_threshold'] if self.goal['contact_threshold'] is not None else None)
+                               contact_thresh_neg_N=-self.goal['contact_threshold'] \
+                                                    if self.goal['contact_threshold'] is not None else None)
 
     def update_execution(self, robot_status, **kwargs):
         self.error = None
@@ -403,7 +423,8 @@ class LiftCommandGroup(SimpleCommandGroup):
 
 class MobileBaseCommandGroup(SimpleCommandGroup):
     def __init__(self):
-        SimpleCommandGroup.__init__(self, 'joint_mobile_base_translation', (-0.5, 0.5), acceptable_joint_error=0.005)
+        SimpleCommandGroup.__init__(self, 'joint_mobile_base_translation', (-0.5, 0.5),
+                                    acceptable_joint_error=0.005)
         self.incrementing_joint_names = ['translate_mobile_base', 'rotate_mobile_base']
         self.active_translate_mobile_base = False
         self.active_rotate_mobile_base = False
@@ -437,15 +458,15 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
                     self.active = True
                     self.index = commanded_joint_names.index(self.name)
                 else:
-                    err_str = 'Received a command for the mobile base virtual joint ({0}}) and mobile base \
-                               incremental motions ({1}). These are mutually exclusive options. \
-                               The joint names in the received command = {2}'.format(self.name,
-                                    active_incrementing_joint_names, commanded_joint_names)
+                    err_str = ("Received a command for the mobile base virtual joint ({0}}) "
+                               "and mobile base incremental motions ({1}). These are "
+                               "mutually exclusive options. The joint names in the received command = "
+                               "{2}").format(self.name, active_incrementing_joint_names, commanded_joint_names)
                     invalid_joints_callback(err_str)
                     return False
             else:
-                err_str = 'Must be in manipulation mode to receive a command for the \
-                           {0} joint. Current mode = {1}.'.format(self.name, robot_mode)
+                err_str = ("Must be in manipulation mode to receive a command for the "
+                           "{0} joint. Current mode = {1}.").format(self.name, robot_mode)
                 invalid_joints_callback(err_str)
                 return False
         elif len(active_incrementing_joint_names) != 0:
@@ -458,8 +479,8 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
                     self.active_rotate_mobile_base = True
                     self.index_rotate_mobile_base = commanded_joint_names.index('rotate_mobile_base')
             else:
-                err_str = 'Must be in position mode to receive a command for the {0} joint(s). \
-                           Current mode = {1}.'.format(active_positioning_joint_names, robot_mode)
+                err_str = ("Must be in position mode to receive a command for the {0} joint(s). "
+                           "Current mode = {1}.").format(active_positioning_joint_names, robot_mode)
                 invalid_joints_callback(err_str)
                 return False
 
@@ -472,7 +493,12 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
         if self.active:
             if self.active_translate_mobile_base or self.active_rotate_mobile_base:
                 if len(point.positions) <= self.index_translate_mobile_base and len(point.positions) <= self.index_rotate_mobile_base:
-                    err_str = "Received goal point with positions array length={0}. These joints ({1})'s indices are {2} & {3} respectively. Length of array must cover all joints listed in commanded_joint_names.".format(len(point.positions), self.incrementing_joint_names, self.index_translate_mobile_base, self.index_rotate_mobile_base)
+                    err_str = ("Received goal point with positions array length={0}. These joints ({1})'s "
+                               "indices are {2} & {3} respectively. Length of array must cover all joints "
+                               "listed in commanded_joint_names.").format(len(point.positions),
+                                                                          self.incrementing_joint_names,
+                                                                          self.index_translate_mobile_base,
+                                                                          self.index_rotate_mobile_base)
                     invalid_goal_callback(err_str)
                     return False
 
@@ -492,16 +518,18 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
 
                 if (self.goal_translate_mobile_base['position'] is not None) and \
                    (self.goal_rotate_mobile_base['position'] is not None):
-                    err_str = 'Received a goal point with simultaneous translation and rotation mobile base goals. \
-                               This is not allowed. Only one is allowed to be sent for a given goal point. \
-                               translate_mobile_base = {0} and rotate_mobile_base = {1}'.format(self.goal_translate_mobile_base['position'],
-                                                                                                self.goal_rotate_mobile_base['position'])
+                    err_str = ("Received a goal point with simultaneous translation and rotation mobile base goals. "
+                               "This is not allowed. Only one is allowed to be sent for a given goal point. "
+                               "translate_mobile_base = {0} and rotate_mobile_base = {1}").format(self.goal_translate_mobile_base['position'],
+                                                                                                  self.goal_rotate_mobile_base['position'])
                     invalid_goal_callback(err_str)
                     return False
             else:
                 goal_pos = point.positions[self.index] if len(point.positions) > self.index else None
                 if goal_pos is None:
-                    err_str = "Received goal point with positions array length={0}. This joint ({1})'s index is {2}. Length of array must cover all joints listed in commanded_joint_names.".format(len(point.positions), self.name, self.index)
+                    err_str = ("Received goal point with positions array length={0}. This joint ({1})'s index "
+                               "is {2}. Length of array must cover all joints listed in "
+                               "commanded_joint_names.").format(len(point.positions), self.name, self.index)
                     invalid_goal_callback(err_str)
                     return False
 
@@ -510,8 +538,8 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
                 self.goal['acceleration'] = point.accelerations[self.index] if len(point.accelerations) > self.index else None
                 self.goal['contact_threshold'] = point.effort[self.index] if len(point.effort) > self.index else None
                 if self.goal['position'] is None:
-                    err_str = 'Received {0} goal point that is out of bounds. \
-                               Range = {1}, but goal point = {2}.'.format(self.name, self.range, self.goal['position'])
+                    err_str = ("Received {0} goal point that is out of bounds. "
+                               "Range = {1}, but goal point = {2}.").format(self.name, self.range, self.goal['position'])
                     invalid_goal_callback(err_str)
                     return False
 
