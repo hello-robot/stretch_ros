@@ -92,12 +92,14 @@ class SimpleCommandGroup:
         bool
             False if commanded goal invalid, else True
         """
-        # TODO: validate commanded_joint_names and all arrays in JointTrajectoryPoint (positions/velocities/etc) are same size
-        self.goal = {"position": None}
+        self.goal = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
         if self.active:
-            self.goal['position'] = point.positions[self.index]
+            self.goal['position'] = point.positions[self.index] if len(point.positions) > self.index else None
+            self.goal['velocity'] = point.velocities[self.index] if len(point.velocities) > self.index else None
+            self.goal['acceleration'] = point.accelerations[self.index] if len(point.accelerations) > self.index else None
+            self.goal['contact_threshold'] = point.effort[self.index] if len(point.effort) > self.index else None
             if self.goal['position'] is None:
-                err_str = 'Received goal point that is out of bounds. The first error that was caught is that the {0} goal is invalid ({1} = {2}).'.format(self.name, self.name, self.goal['position'])
+                err_str = "Received goal point with positions array length={0}. This joint ({1})'s index is {2}. Length of array must cover all joints listed in commanded_joint_names.".format(len(point.positions), self.name, self.index)
                 invalid_goal_callback(err_str)
                 return False
 
@@ -161,7 +163,7 @@ class HeadPanCommandGroup(SimpleCommandGroup):
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
             pan_error = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
-            robot.head.move_by('head_pan', pan_error)
+            robot.head.move_by('head_pan', pan_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
             if pan_error > 0.0:
                 kwargs['backlash_state']['head_pan_looked_left'] = True
             else:
@@ -195,7 +197,7 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
             tilt_error = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
-            robot.head.move_by('head_tilt', tilt_error)
+            robot.head.move_by('head_tilt', tilt_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
             if tilt_error > (self.head_tilt_backlash_transition_angle + self.head_tilt_calibrated_offset):
                 kwargs['backlash_state']['head_tilt_looking_up'] = True
             else:
@@ -223,7 +225,7 @@ class WristYawCommandGroup(SimpleCommandGroup):
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            robot.end_of_arm.move_by('wrist_yaw', self.update_execution(robot_status))
+            robot.end_of_arm.move_by('wrist_yaw', self.update_execution(robot_status), v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
 
     def update_execution(self, robot_status, **kwargs):
         self.error = None
@@ -267,7 +269,7 @@ class GripperCommandGroup(SimpleCommandGroup):
                 gripper_robotis_error = self.gripper_conversion.aperture_to_robotis(gripper_error)
             elif (self.name == 'joint_gripper_finger_left') or (self.name == 'joint_gripper_finger_right'):
                 gripper_robotis_error = self.gripper_conversion.finger_to_robotis(gripper_error)
-            robot.end_of_arm.move_by('stretch_gripper', gripper_robotis_error)
+            robot.end_of_arm.move_by('stretch_gripper', gripper_robotis_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
 
     def update_execution(self, robot_status, **kwargs):
         self.error = None
@@ -330,13 +332,21 @@ class TelescopingCommandGroup(SimpleCommandGroup):
         return True
 
     def set_goal(self, point, invalid_goal_callback, **kwargs):
-        self.goal = {"position": None}
+        self.goal = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
         if self.active:
-            self.goal['position'] = sum([point.positions[i] for i in self.index]) \
-                                    if self.is_telescoping else point.positions[self.index]
+            if self.is_telescoping:
+                self.goal['position'] = sum([point.positions[i] for i in self.index]) if len(point.positions) > max(self.index) else None
+                self.goal['velocity'] = point.velocities[self.index[0]] if len(point.velocities) > self.index[0] else None
+                self.goal['acceleration'] = point.accelerations[self.index[0]] if len(point.accelerations) > self.index[0] else None
+                self.goal['contact_threshold'] = point.effort[self.index[0]] if len(point.effort) > self.index[0] else None
+            else:
+                self.goal['position'] = point.positions[self.index] if len(point.positions) > self.index else None
+                self.goal['velocity'] = point.velocities[self.index] if len(point.velocities) > self.index else None
+                self.goal['acceleration'] = point.accelerations[self.index] if len(point.accelerations) > self.index else None
+                self.goal['contact_threshold'] = point.effort[self.index] if len(point.effort) > self.index else None
+
             if self.goal['position'] is None:
-                err_str = 'Received extension goal point that is out of bounds. \
-                           Goal point = {0}.'.format(self.goal['position'])
+                err_str = "Received goal point with positions array length={0}. This joint ({1})'s index is {2}. Length of array must cover all joints listed in commanded_joint_names.".format(len(point.positions), self.name, self.index)
                 invalid_goal_callback(err_str)
                 return False
 
@@ -345,7 +355,11 @@ class TelescopingCommandGroup(SimpleCommandGroup):
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
             extension_error_m = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
-            robot.arm.move_by(extension_error_m)
+            robot.arm.move_by(extension_error_m,
+                              v_m=self.goal['velocity'],
+                              a_m=self.goal['acceleration'],
+                              contact_thresh_pos_N=self.goal['contact_threshold'],
+                              contact_thresh_neg_N=-self.goal['contact_threshold'] if self.goal['contact_threshold'] is not None else None)
             if extension_error_m < 0.0:
                 kwargs['backlash_state']['wrist_extension_retracted'] = True
             else:
@@ -372,7 +386,11 @@ class LiftCommandGroup(SimpleCommandGroup):
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            robot.lift.move_by(self.update_execution(robot_status))
+            robot.lift.move_by(self.update_execution(robot_status),
+                               v_m=self.goal['velocity'],
+                               a_m=self.goal['acceleration'],
+                               contact_thresh_pos_N=self.goal['contact_threshold'],
+                               contact_thresh_neg_N=-self.goal['contact_threshold'] if self.goal['contact_threshold'] is not None else None)
 
     def update_execution(self, robot_status, **kwargs):
         self.error = None
@@ -448,18 +466,29 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
         return True
 
     def set_goal(self, point, invalid_goal_callback, **kwargs):
-        self.goal = {"position": None}
-        self.goal_translate_mobile_base = {"position": None}
-        self.goal_rotate_mobile_base = {"position": None}
+        self.goal = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
+        self.goal_translate_mobile_base = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
+        self.goal_rotate_mobile_base = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
         if self.active:
             if self.active_translate_mobile_base or self.active_rotate_mobile_base:
+                if len(point.positions) <= self.index_translate_mobile_base and len(point.positions) <= self.index_rotate_mobile_base:
+                    err_str = "Received goal point with positions array length={0}. These joints ({1})'s indices are {2} & {3} respectively. Length of array must cover all joints listed in commanded_joint_names.".format(len(point.positions), self.incrementing_joint_names, self.index_translate_mobile_base, self.index_rotate_mobile_base)
+                    invalid_goal_callback(err_str)
+                    return False
+
                 if self.active_translate_mobile_base and \
                    not np.isclose(point.positions[self.index_translate_mobile_base], 0.0, rtol=1e-5, atol=1e-8, equal_nan=False):
                     self.goal_translate_mobile_base['position'] = point.positions[self.index_translate_mobile_base]
+                    self.goal_translate_mobile_base['velocity'] = point.velocities[self.index_translate_mobile_base] if len(point.velocities) > self.index_translate_mobile_base else None
+                    self.goal_translate_mobile_base['acceleration'] = point.accelerations[self.index_translate_mobile_base] if len(point.accelerations) > self.index_translate_mobile_base else None
+                    self.goal_translate_mobile_base['contact_threshold'] = point.effort[self.index_translate_mobile_base] if len(point.effort) > self.index_translate_mobile_base else None
 
                 if self.active_rotate_mobile_base and \
                    not np.isclose(point.positions[self.index_rotate_mobile_base], 0.0, rtol=1e-5, atol=1e-8, equal_nan=False):
                     self.goal_rotate_mobile_base['position'] = point.positions[self.index_rotate_mobile_base]
+                    self.goal_rotate_mobile_base['velocity'] = point.velocities[self.index_rotate_mobile_base] if len(point.velocities) > self.index_rotate_mobile_base else None
+                    self.goal_rotate_mobile_base['acceleration'] = point.accelerations[self.index_rotate_mobile_base] if len(point.accelerations) > self.index_rotate_mobile_base else None
+                    self.goal_rotate_mobile_base['contact_threshold'] = point.effort[self.index_rotate_mobile_base] if len(point.effort) > self.index_rotate_mobile_base else None
 
                 if (self.goal_translate_mobile_base['position'] is not None) and \
                    (self.goal_rotate_mobile_base['position'] is not None):
@@ -470,7 +499,16 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
                     invalid_goal_callback(err_str)
                     return False
             else:
-                self.goal['position'] = self.ros_to_mechaduino(point.positions[self.index], kwargs['manipulation_origin'])
+                goal_pos = point.positions[self.index] if len(point.positions) > self.index else None
+                if goal_pos is None:
+                    err_str = "Received goal point with positions array length={0}. This joint ({1})'s index is {2}. Length of array must cover all joints listed in commanded_joint_names.".format(len(point.positions), self.name, self.index)
+                    invalid_goal_callback(err_str)
+                    return False
+
+                self.goal['position'] = self.ros_to_mechaduino(goal_pos, kwargs['manipulation_origin'])
+                self.goal['velocity'] = point.velocities[self.index] if len(point.velocities) > self.index else None
+                self.goal['acceleration'] = point.accelerations[self.index] if len(point.accelerations) > self.index else None
+                self.goal['contact_threshold'] = point.effort[self.index] if len(point.effort) > self.index else None
                 if self.goal['position'] is None:
                     err_str = 'Received {0} goal point that is out of bounds. \
                                Range = {1}, but goal point = {2}.'.format(self.name, self.range, self.goal['position'])
@@ -493,11 +531,20 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
             if self.active_translate_mobile_base or self.active_rotate_mobile_base:
                 mobile_base_error_m, mobile_base_error_rad = self.update_execution(robot_status)
                 if mobile_base_error_m is not None:
-                    robot.base.translate_by(mobile_base_error_m)
+                    robot.base.translate_by(mobile_base_error_m,
+                                            v_m=self.goal_translate_mobile_base['velocity'],
+                                            a_m=self.goal_translate_mobile_base['acceleration'],
+                                            contact_thresh_N=self.goal_translate_mobile_base['contact_threshold'])
                 elif mobile_base_error_rad is not None:
-                    robot.base.rotate_by(mobile_base_error_rad)
+                    robot.base.rotate_by(mobile_base_error_rad,
+                                         v_r=self.goal_rotate_mobile_base['velocity'],
+                                         a_r=self.goal_rotate_mobile_base['acceleration'],
+                                         contact_thresh_N=self.goal_rotate_mobile_base['contact_threshold'])
             else:
-                robot.base.translate_by(self.update_execution(robot_status))
+                robot.base.translate_by(self.update_execution(robot_status),
+                                        v_m=self.goal['velocity'],
+                                        a_m=self.goal['acceleration'],
+                                        contact_thresh_N=self.goal['contact_threshold'])
 
     def update_execution(self, robot_status, **kwargs):
         currx = robot_status['base']['x']
