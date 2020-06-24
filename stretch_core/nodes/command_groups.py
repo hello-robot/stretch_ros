@@ -162,7 +162,7 @@ class HeadPanCommandGroup(SimpleCommandGroup):
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            pan_error = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
+            _, pan_error = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
             robot.head.move_by('head_pan', pan_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
             if pan_error > 0.0:
                 kwargs['backlash_state']['head_pan_looked_left'] = True
@@ -180,7 +180,7 @@ class HeadPanCommandGroup(SimpleCommandGroup):
             pan_current = robot_status['head']['head_pan']['pos'] + \
                           self.head_pan_calibrated_offset + pan_backlash_correction
             self.error = self.goal['position'] - pan_current
-            return self.error
+            return self.name, self.error
 
         return None
 
@@ -196,7 +196,7 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            tilt_error = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
+            _, tilt_error = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
             robot.head.move_by('head_tilt', tilt_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
             if tilt_error > (self.head_tilt_backlash_transition_angle + self.head_tilt_calibrated_offset):
                 kwargs['backlash_state']['head_tilt_looking_up'] = True
@@ -214,7 +214,7 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
             tilt_current = robot_status['head']['head_tilt']['pos'] + \
                            self.head_tilt_calibrated_offset + tilt_backlash_correction
             self.error = self.goal['position'] - tilt_current
-            return self.error
+            return self.name, self.error
 
         return None
 
@@ -225,13 +225,13 @@ class WristYawCommandGroup(SimpleCommandGroup):
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            robot.end_of_arm.move_by('wrist_yaw', self.update_execution(robot_status), v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
+            robot.end_of_arm.move_by('wrist_yaw', self.update_execution(robot_status)[1], v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
 
     def update_execution(self, robot_status, **kwargs):
         self.error = None
         if self.active:
             self.error = self.goal['position'] - robot_status['end_of_arm']['wrist_yaw']['pos']
-            return self.error
+            return self.name, self.error
 
         return None
 
@@ -264,7 +264,7 @@ class GripperCommandGroup(SimpleCommandGroup):
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            gripper_error = self.update_execution(robot_status)
+            _, gripper_error = self.update_execution(robot_status)
             if (self.name == 'gripper_aperture'):
                 gripper_robotis_error = self.gripper_conversion.aperture_to_robotis(gripper_error)
             elif (self.name == 'joint_gripper_finger_left') or (self.name == 'joint_gripper_finger_right'):
@@ -281,7 +281,7 @@ class GripperCommandGroup(SimpleCommandGroup):
                 gripper_current = self.gripper_conversion.robotis_to_finger(robotis_pct)
 
             self.error = self.goal['position'] - gripper_current
-            return self.error
+            return self.name, self.error
 
         return None
 
@@ -354,7 +354,7 @@ class TelescopingCommandGroup(SimpleCommandGroup):
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            extension_error_m = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
+            _, extension_error_m = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
             robot.arm.move_by(extension_error_m,
                               v_m=self.goal['velocity'],
                               a_m=self.goal['acceleration'],
@@ -375,7 +375,7 @@ class TelescopingCommandGroup(SimpleCommandGroup):
                 arm_backlash_correction = 0.0
             extension_current = robot_status['arm']['pos'] + arm_backlash_correction
             self.error = self.goal['position'] - extension_current
-            return self.error
+            return (self.telescoping_joints, self.error) if self.is_telescoping else (self.name, self.error)
 
         return None
 
@@ -386,7 +386,7 @@ class LiftCommandGroup(SimpleCommandGroup):
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            robot.lift.move_by(self.update_execution(robot_status),
+            robot.lift.move_by(self.update_execution(robot_status)[1],
                                v_m=self.goal['velocity'],
                                a_m=self.goal['acceleration'],
                                contact_thresh_pos_N=self.goal['contact_threshold'],
@@ -396,7 +396,7 @@ class LiftCommandGroup(SimpleCommandGroup):
         self.error = None
         if self.active:
             self.error = self.goal['position'] - robot_status['lift']['pos']
-            return self.error
+            return self.name, self.error
 
         return None
 
@@ -529,7 +529,7 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
 
         if self.active:
             if self.active_translate_mobile_base or self.active_rotate_mobile_base:
-                mobile_base_error_m, mobile_base_error_rad = self.update_execution(robot_status)
+                (_, mobile_base_error_m), (_, mobile_base_error_rad) = self.update_execution(robot_status)
                 if mobile_base_error_m is not None:
                     robot.base.translate_by(mobile_base_error_m,
                                             v_m=self.goal_translate_mobile_base['velocity'],
@@ -541,7 +541,7 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
                                          a_r=self.goal_rotate_mobile_base['acceleration'],
                                          contact_thresh_N=self.goal_rotate_mobile_base['contact_threshold'])
             else:
-                robot.base.translate_by(self.update_execution(robot_status),
+                robot.base.translate_by(self.update_execution(robot_status)[1],
                                         v_m=self.goal['velocity'],
                                         a_m=self.goal['acceleration'],
                                         contact_thresh_N=self.goal['contact_threshold'])
@@ -560,14 +560,14 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
                 if self.goal_translate_mobile_base['position'] is not None:
                     dist = np.sqrt(np.square(currx - self.startx) + np.square(curry - self.starty))
                     self.error_translate_mobile_base_m = self.goal_translate_mobile_base['position'] - (dist * np.sign(self.goal_translate_mobile_base['position']))
-                    return (self.error_translate_mobile_base_m, self.error_rotate_mobile_base_rad)
+                    return [('translate_mobile_base', self.error_translate_mobile_base_m), ('rotate_mobile_base', self.error_rotate_mobile_base_rad)]
                 elif self.goal_rotate_mobile_base['position'] is not None:
                     rot = hm.angle_diff_rad(currtheta, self.starttheta)
                     self.error_rotate_mobile_base_rad = hm.angle_diff_rad(self.goal_rotate_mobile_base['position'], rot)
-                    return (self.error_translate_mobile_base_m, self.error_rotate_mobile_base_rad)
+                    return [('translate_mobile_base', self.error_translate_mobile_base_m), ('rotate_mobile_base', self.error_rotate_mobile_base_rad)]
             else:
                 self.error = self.goal['position'] - currx
-                return self.error
+                return self.name, self.error
 
         return None
 
