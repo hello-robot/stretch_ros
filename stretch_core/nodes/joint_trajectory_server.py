@@ -116,19 +116,6 @@ class JointTrajectoryAction:
                     self.node.robot_mode_rwlock.release_read()
                     return
 
-                robot_status = self.node.robot.get_status()
-                if self.node.use_lift:
-                    lift_error_m = self.lift_cg.update_execution(robot_status,
-                                                                 backlash_state=self.node.backlash_state)
-                extension_error_m = \
-                    self.telescoping_cg.update_execution(robot_status, backlash_state=self.node.backlash_state)
-                mobile_base_error_m, mobile_base_error_rad = \
-                    self.mobile_base_cg.update_execution(robot_status, backlash_state=self.node.backlash_state)
-                self.head_pan_cg.update_execution(robot_status, backlash_state=self.node.backlash_state)
-                self.head_tilt_cg.update_execution(robot_status, backlash_state=self.node.backlash_state)
-                self.wrist_yaw_cg.update_execution(robot_status, backlash_state=self.node.backlash_state)
-                self.gripper_cg.update_execution(robot_status, backlash_state=self.node.backlash_state)
-
                 # Check if a premption request has been received.
                 with self.node.robot_stop_lock:
                     if self.node.stop_the_robot or self.server.is_preempt_requested():
@@ -139,6 +126,9 @@ class JointTrajectoryAction:
                         self.node.stop_the_robot = False
                         self.node.robot_mode_rwlock.release_read()
                         return
+
+                robot_status = self.node.robot.get_status()
+                errors = [c.update_execution(robot_status, backlash_state=self.node.backlash_state) for c in command_groups]
 
                 goals_reached = [c.goal_reached() for c in command_groups]
                 update_rate.sleep()
