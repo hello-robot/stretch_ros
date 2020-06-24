@@ -213,3 +213,15 @@ def get_p1_to_p2_matrix(p1_frame_id, p2_frame_id, tf2_buffer, lookup_time=None, 
         print('WARNING: get_p1_to_p2_matrix failed to lookup transform from p1_frame_id =', p1_frame_id, ' to p2_frame_id =', p2_frame_id)
         print('         exception =', e)
         return None, None
+
+def bound_ros_command(self, bounds, ros_pos, clip_ros_tolerance=1e-3):
+    """Clip the command with clip_ros_tolerance, instead of
+    invalidating it, if it is close enough to the valid ranges.
+    """
+    if ros_pos < bounds[0]:
+        return bounds[0] if (bounds[0] - ros_pos) < clip_ros_tolerance else None
+
+    if ros_pos > bounds[1]:
+        return bounds[1] if (ros_pos - bounds[1]) < clip_ros_tolerance else None
+
+    return ros_pos
