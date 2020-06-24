@@ -142,22 +142,25 @@ class JointTrajectoryAction:
         return
 
     def invalid_joints_callback(self, err_str):
-        rospy.logerr('{0} joint_traj action: {1}'.format(self.node.node_name, err_str))
-        self.result.error_code = self.result.INVALID_JOINTS
-        self.result.error_string = err_str
-        self.server.set_aborted(self.result)
+        if self.server.is_active() or self.server.is_preempt_requested():
+            rospy.logerr('{0} joint_traj action: {1}'.format(self.node.node_name, err_str))
+            self.result.error_code = self.result.INVALID_JOINTS
+            self.result.error_string = err_str
+            self.server.set_aborted(self.result)
 
     def invalid_goal_callback(self, err_str):
-        rospy.logerr('{0} joint_traj action: {1}'.format(self.node.node_name, err_str))
-        self.result.error_code = self.result.INVALID_GOAL
-        self.result.error_string = err_str
-        self.server.set_aborted(self.result)
+        if self.server.is_active() or self.server.is_preempt_requested():
+            rospy.logerr('{0} joint_traj action: {1}'.format(self.node.node_name, err_str))
+            self.result.error_code = self.result.INVALID_GOAL
+            self.result.error_string = err_str
+            self.server.set_aborted(self.result)
 
     def goal_tolerance_violated_callback(self, err_str):
-        rospy.logerr('{0} joint_traj action: {1}'.format(self.node.node_name, err_str))
-        self.result.error_code = self.result.GOAL_TOLERANCE_VIOLATED
-        self.result.error_string = err_str
-        self.server.set_aborted(self.result)
+        if self.server.is_active() or self.server.is_preempt_requested():
+            rospy.logerr('{0} joint_traj action: {1}'.format(self.node.node_name, err_str))
+            self.result.error_code = self.result.GOAL_TOLERANCE_VIOLATED
+            self.result.error_string = err_str
+            self.server.set_aborted(self.result)
 
     def feedback_callback(self, commanded_joint_names, desired_point, named_errors):
         clean_named_errors = []
