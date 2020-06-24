@@ -6,6 +6,7 @@ import actionlib
 from control_msgs.msg import FollowJointTrajectoryAction
 from control_msgs.msg import FollowJointTrajectoryFeedback
 from control_msgs.msg import FollowJointTrajectoryResult
+from trajectory_msgs.msg import JointTrajectoryPoint
 
 from command_groups import HeadPanCommandGroup, HeadTiltCommandGroup, \
                            WristYawCommandGroup, GripperCommandGroup, \
@@ -128,13 +129,13 @@ class JointTrajectoryAction:
                         return
 
                 robot_status = self.node.robot.get_status()
-                errors = [c.update_execution(robot_status, backlash_state=self.node.backlash_state) for c in command_groups]
+                named_errors = [c.update_execution(robot_status, backlash_state=self.node.backlash_state) for c in command_groups]
 
+                self.feedback_callback(commanded_joint_names, point, named_errors)
                 goals_reached = [c.goal_reached() for c in command_groups]
                 update_rate.sleep()
 
             rospy.logdebug('{0} joint_traj action: Achieved target point.'.format(self.node.node_name))
-            # Currently not providing feedback.
 
         self.success_callback()
         self.node.robot_mode_rwlock.release_read()
@@ -157,6 +158,29 @@ class JointTrajectoryAction:
         self.result.error_code = self.result.GOAL_TOLERANCE_VIOLATED
         self.result.error_string = err_str
         self.server.set_aborted(self.result)
+
+    def feedback_callback(self, commanded_joint_names, desired_point, named_errors):
+        clean_named_errors = []
+        for named_error in named_errors:
+            if type(named_error) == tuple:
+                clean_named_errors.append(named_error)
+            elif type(named_error) == list:
+                clean_named_errors += named_error
+        clean_named_errors_dict = dict((k, v) for k, v in clean_named_errors)
+
+        actual_point = JointTrajectoryPoint()
+        error_point = JointTrajectoryPoint()
+        for i, commanded_joint_name in enumerate(commanded_joint_names):
+            error_point.positions.append(clean_named_errors_dict[commanded_joint_name])
+            actual_point.positions.append(desired_point.positions[i] - clean_named_errors_dict[commanded_joint_name])
+
+        rospy.logdebug('{0} joint_traj action: sending feedback'.format(self.node.node_name))
+        self.feedback.header.stamp = rospy.Time.now()
+        self.feedback.joint_names = commanded_joint_names
+        self.feedback.desired = desired_point
+        self.feedback.actual = actual_point
+        self.feedback.error = error_point
+        self.server.publish_feedback(self.feedback)
 
     def success_callback(self):
         rospy.loginfo('{0} joint_traj action: Achieved all target points!'.format(self.node.node_name))
