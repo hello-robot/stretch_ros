@@ -36,6 +36,7 @@ class JointTrajectoryAction:
                                                  self.node.head_tilt_backlash_transition_angle_rad)
         self.wrist_yaw_cg = WristYawCommandGroup()
         self.gripper_cg = GripperCommandGroup()
+        self.gripper_cg.acceptable_joint_error = 1.0
 
     def execute_cb(self, goal):
         with self.node.robot_stop_lock:
