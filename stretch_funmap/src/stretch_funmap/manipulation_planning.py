@@ -252,7 +252,7 @@ class ManipulationView():
 
     def move_head(self, move_to_pose):
         tilt = -0.8
-        pan = -1.5
+        pan = -1.6
         # This head configuration can reduce seeing the hand or arm when they are held high, which can avoid noise due to the hand and arm being to close to the head.
         #tilt = -0.6
         #pan = -0.9
