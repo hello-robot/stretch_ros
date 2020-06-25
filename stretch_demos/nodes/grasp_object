@@ -73,7 +73,7 @@ class GraspObjectNode(hm.HelloNode):
     def look_at_surface(self, scan_time_s=None):
         self.manipulation_view = mp.ManipulationView(self.tf2_buffer, self.debug_directory)
         manip = self.manipulation_view
-        head_settle_time_s = 1.0
+        head_settle_time_s = 0.02 #1.0
         manip.move_head(self.move_to_pose)
         rospy.sleep(head_settle_time_s)
         if scan_time_s is None:
@@ -120,10 +120,6 @@ class GraspObjectNode(hm.HelloNode):
             rospy.loginfo('Reorient the wrist.')
             pose = {'joint_wrist_yaw': 0.0}
             self.move_to_pose(pose)
-
-        # sleep to make sure the joint poses are up to date - this
-        # should be changed to look at time stamps of the joints...
-        rospy.sleep(1.0)
             
         self.look_at_surface(scan_time_s = 3.0)
         
@@ -158,9 +154,6 @@ class GraspObjectNode(hm.HelloNode):
                 pose = {'gripper_aperture': 0.125}
                 self.move_to_pose(pose)
 
-            # sleep to make sure the joint poses are up to date - this
-            # should be changed to look at time stamps of the joints...
-            rospy.sleep(1.0)
             pregrasp_mobile_base_m, pregrasp_wrist_extension_m = self.manipulation_view.get_pregrasp_planar_translation(grasp_target, self.tf2_buffer)
             
             print('pregrasp_mobile_base_m = {0:.3f} m'.format(pregrasp_mobile_base_m))
@@ -178,10 +171,7 @@ class GraspObjectNode(hm.HelloNode):
                     self.move_to_pose(pose)
                 else:
                     print('negative wrist extension for pregrasp, so not extending or retracting.')
-                    
-            # sleep to make sure the joint poses are up to date - this
-            # should be changed to look at time stamps of the joints...
-            rospy.sleep(1.0)
+
             grasp_mobile_base_m, grasp_lift_m, grasp_wrist_extension_m = self.manipulation_view.get_grasp_from_pregrasp(grasp_target, self.tf2_buffer)
             print('grasp_mobile_base_m = {0:3f} m, grasp_lift_m = {1:3f} m, grasp_wrist_extension_m = {2:3f} m'.format(grasp_mobile_base_m, grasp_lift_m, grasp_wrist_extension_m))
 
