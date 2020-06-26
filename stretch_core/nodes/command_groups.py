@@ -94,14 +94,21 @@ class SimpleCommandGroup:
         """
         self.goal = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
         if self.active:
-            self.goal['position'] = point.positions[self.index] if len(point.positions) > self.index else None
+            goal_pos = point.positions[self.index] if len(point.positions) > self.index else None
+            if goal_pos is None:
+                err_str = ("Received goal point with positions array length={0}. "
+                           "This joint ({1})'s index is {2}. Length of array must cover all joints listed "
+                           "in commanded_joint_names.").format(len(point.positions), self.name, self.index)
+                invalid_goal_callback(err_str)
+                return False
+
+            self.goal['position'] = hm.bound_ros_command(self.range, goal_pos)
             self.goal['velocity'] = point.velocities[self.index] if len(point.velocities) > self.index else None
             self.goal['acceleration'] = point.accelerations[self.index] if len(point.accelerations) > self.index else None
             self.goal['contact_threshold'] = point.effort[self.index] if len(point.effort) > self.index else None
             if self.goal['position'] is None:
-                err_str = ("Received goal point with positions array length={0}. "
-                           "This joint ({1})'s index is {2}. Length of array must cover all joints listed "
-                           "in commanded_joint_names.").format(len(point.positions), self.name, self.index)
+                err_str = ("Received {0} goal point that is out of bounds. "
+                            "Range = {1}, but goal point = {2}.").format(self.name, self.range, goal_pos)
                 invalid_goal_callback(err_str)
                 return False
 
@@ -157,8 +164,8 @@ class SimpleCommandGroup:
 
 
 class HeadPanCommandGroup(SimpleCommandGroup):
-    def __init__(self, head_pan_calibrated_offset, head_pan_calibrated_looked_left_offset):
-        SimpleCommandGroup.__init__(self, 'joint_head_pan', (0, 0), acceptable_joint_error=0.15)
+    def __init__(self, range_rad, head_pan_calibrated_offset, head_pan_calibrated_looked_left_offset):
+        SimpleCommandGroup.__init__(self, 'joint_head_pan', range_rad, acceptable_joint_error=0.15)
         self.head_pan_calibrated_offset = head_pan_calibrated_offset
         self.head_pan_calibrated_looked_left_offset = head_pan_calibrated_looked_left_offset
 
@@ -188,10 +195,10 @@ class HeadPanCommandGroup(SimpleCommandGroup):
 
 
 class HeadTiltCommandGroup(SimpleCommandGroup):
-    def __init__(self, head_tilt_calibrated_offset,
+    def __init__(self, range_rad, head_tilt_calibrated_offset,
                  head_tilt_calibrated_looking_up_offset,
                  head_tilt_backlash_transition_angle):
-        SimpleCommandGroup.__init__(self, 'joint_head_tilt', (0, 0), acceptable_joint_error=0.52)
+        SimpleCommandGroup.__init__(self, 'joint_head_tilt', range_rad, acceptable_joint_error=0.52)
         self.head_tilt_calibrated_offset = head_tilt_calibrated_offset
         self.head_tilt_calibrated_looking_up_offset = head_tilt_calibrated_looking_up_offset
         self.head_tilt_backlash_transition_angle = head_tilt_backlash_transition_angle
@@ -222,8 +229,8 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
 
 
 class WristYawCommandGroup(SimpleCommandGroup):
-    def __init__(self):
-        SimpleCommandGroup.__init__(self, 'joint_wrist_yaw', (0, 0))
+    def __init__(self, range_rad):
+        SimpleCommandGroup.__init__(self, 'joint_wrist_yaw', range_rad)
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
@@ -242,11 +249,14 @@ class WristYawCommandGroup(SimpleCommandGroup):
 
 
 class GripperCommandGroup(SimpleCommandGroup):
-    def __init__(self):
-        SimpleCommandGroup.__init__(self, None, (0, 0))
+    def __init__(self, range_robotis):
+        SimpleCommandGroup.__init__(self, None, None, acceptable_joint_error=1.0)
         self.gripper_joint_names = ['joint_gripper_finger_left', 'joint_gripper_finger_right', 'gripper_aperture']
         self.gripper_conversion = GripperConversion()
-        self.gripper_joint_goal_valid = False
+        self.range_aperture_m = (self.gripper_conversion.robotis_to_aperture(range_robotis[0]),
+                                 self.gripper_conversion.robotis_to_aperture(range_robotis[1]))
+        self.range_finger_rad = (self.gripper_conversion.robotis_to_finger(range_robotis[0]),
+                                 self.gripper_conversion.robotis_to_finger(range_robotis[1]))
 
     def update(self, commanded_joint_names, invalid_joints_callback, **kwargs):
         self.active = False
@@ -264,6 +274,30 @@ class GripperCommandGroup(SimpleCommandGroup):
             self.name = active_gripper_joint_names[0]
             self.index = commanded_joint_names.index(self.name)
             self.active = True
+
+        return True
+
+    def set_goal(self, point, invalid_goal_callback, **kwargs):
+        self.goal = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
+        if self.active:
+            goal_pos = point.positions[self.index] if len(point.positions) > self.index else None
+            if goal_pos is None:
+                err_str = ("Received goal point with positions array length={0}. "
+                           "This joint ({1})'s index is {2}. Length of array must cover all joints listed "
+                           "in commanded_joint_names.").format(len(point.positions), self.name, self.index)
+                invalid_goal_callback(err_str)
+                return False
+
+            joint_range = self.range_aperture_m if (self.name == 'gripper_aperture') else self.range_finger_rad
+            self.goal['position'] = hm.bound_ros_command(joint_range, goal_pos)
+            self.goal['velocity'] = point.velocities[self.index] if len(point.velocities) > self.index else None
+            self.goal['acceleration'] = point.accelerations[self.index] if len(point.accelerations) > self.index else None
+            self.goal['contact_threshold'] = point.effort[self.index] if len(point.effort) > self.index else None
+            if self.goal['position'] is None:
+                err_str = ("Received {0} goal point that is out of bounds. "
+                            "Range = {1}, but goal point = {2}.").format(self.name, joint_range, goal_pos)
+                invalid_goal_callback(err_str)
+                return False
 
         return True
 
@@ -295,8 +329,8 @@ class GripperCommandGroup(SimpleCommandGroup):
 
 
 class TelescopingCommandGroup(SimpleCommandGroup):
-    def __init__(self, wrist_extension_calibrated_retracted_offset):
-        SimpleCommandGroup.__init__(self, 'wrist_extension', (0, 0), acceptable_joint_error=0.005)
+    def __init__(self, range_m, wrist_extension_calibrated_retracted_offset):
+        SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.005)
         self.wrist_extension_calibrated_retracted_offset = wrist_extension_calibrated_retracted_offset
         self.telescoping_joints = ['joint_arm_l3', 'joint_arm_l2', 'joint_arm_l1', 'joint_arm_l0']
         self.is_telescoping = False
@@ -343,8 +377,8 @@ class TelescopingCommandGroup(SimpleCommandGroup):
         self.goal = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
         if self.active:
             if self.is_telescoping:
-                self.goal['position'] = sum([point.positions[i] for i in self.index]) \
-                                        if len(point.positions) > max(self.index) else None
+                goal_pos = sum([point.positions[i] for i in self.index]) \
+                           if len(point.positions) > max(self.index) else None
                 self.goal['velocity'] = point.velocities[self.index[0]] \
                                         if len(point.velocities) > self.index[0] else None
                 self.goal['acceleration'] = point.accelerations[self.index[0]] \
@@ -352,8 +386,8 @@ class TelescopingCommandGroup(SimpleCommandGroup):
                 self.goal['contact_threshold'] = point.effort[self.index[0]] \
                                                  if len(point.effort) > self.index[0] else None
             else:
-                self.goal['position'] = point.positions[self.index] \
-                                        if len(point.positions) > self.index else None
+                goal_pos = point.positions[self.index] \
+                           if len(point.positions) > self.index else None
                 self.goal['velocity'] = point.velocities[self.index] \
                                         if len(point.velocities) > self.index else None
                 self.goal['acceleration'] = point.accelerations[self.index] \
@@ -361,10 +395,17 @@ class TelescopingCommandGroup(SimpleCommandGroup):
                 self.goal['contact_threshold'] = point.effort[self.index] \
                                                  if len(point.effort) > self.index else None
 
-            if self.goal['position'] is None:
+            if goal_pos is None:
                 err_str = ("Received goal point with positions array length={0}. "
                            "This joint ({1})'s index is {2}. Length of array must cover all joints listed "
                            "in commanded_joint_names.").format(len(point.positions), self.name, self.index)
+                invalid_goal_callback(err_str)
+                return False
+
+            self.goal['position'] = hm.bound_ros_command(self.range, goal_pos)
+            if self.goal['position'] is None:
+                err_str = ("Received {0} goal point that is out of bounds. "
+                            "Range = {1}, but goal point = {2}.").format(self.name, self.range, goal_pos)
                 invalid_goal_callback(err_str)
                 return False
 
@@ -400,8 +441,8 @@ class TelescopingCommandGroup(SimpleCommandGroup):
 
 
 class LiftCommandGroup(SimpleCommandGroup):
-    def __init__(self, max_arm_height):
-        SimpleCommandGroup.__init__(self, 'joint_lift', (0.0, max_arm_height))
+    def __init__(self, range_m):
+        SimpleCommandGroup.__init__(self, 'joint_lift', range_m)
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
@@ -422,8 +463,8 @@ class LiftCommandGroup(SimpleCommandGroup):
 
 
 class MobileBaseCommandGroup(SimpleCommandGroup):
-    def __init__(self):
-        SimpleCommandGroup.__init__(self, 'joint_mobile_base_translation', (-0.5, 0.5),
+    def __init__(self, virtual_range_m=(-0.5, 0.5)):
+        SimpleCommandGroup.__init__(self, 'joint_mobile_base_translation', virtual_range_m,
                                     acceptable_joint_error=0.005)
         self.incrementing_joint_names = ['translate_mobile_base', 'rotate_mobile_base']
         self.active_translate_mobile_base = False
@@ -539,7 +580,7 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
                 self.goal['contact_threshold'] = point.effort[self.index] if len(point.effort) > self.index else None
                 if self.goal['position'] is None:
                     err_str = ("Received {0} goal point that is out of bounds. "
-                               "Range = {1}, but goal point = {2}.").format(self.name, self.range, self.goal['position'])
+                               "Range = {1}, but goal point = {2}.").format(self.name, self.range, goal_pos)
                     invalid_goal_callback(err_str)
                     return False
 

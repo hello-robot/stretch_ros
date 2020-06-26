@@ -214,7 +214,7 @@ def get_p1_to_p2_matrix(p1_frame_id, p2_frame_id, tf2_buffer, lookup_time=None, 
         print('         exception =', e)
         return None, None
 
-def bound_ros_command(self, bounds, ros_pos, clip_ros_tolerance=1e-3):
+def bound_ros_command(bounds, ros_pos, clip_ros_tolerance=1e-3):
     """Clip the command with clip_ros_tolerance, instead of
     invalidating it, if it is close enough to the valid ranges.
     """
