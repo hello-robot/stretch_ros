@@ -25,18 +25,36 @@ class JointTrajectoryAction:
         self.feedback = FollowJointTrajectoryFeedback()
         self.result = FollowJointTrajectoryResult()
 
-        self.telescoping_cg = TelescopingCommandGroup(self.node.wrist_extension_calibrated_retracted_offset_m)
-        if self.node.use_lift:
-            self.lift_cg = LiftCommandGroup(self.node.max_arm_height)
-        self.mobile_base_cg = MobileBaseCommandGroup()
-        self.head_pan_cg = HeadPanCommandGroup(self.node.head_pan_calibrated_offset_rad,
+        r = self.node.robot
+        head_pan_range_ticks = r.head.motors['head_pan'].params['range_t']
+        head_pan_range_rad = (r.head.motors['head_pan'].ticks_to_world_rad(head_pan_range_ticks[1]),
+                              r.head.motors['head_pan'].ticks_to_world_rad(head_pan_range_ticks[0]))
+        head_tilt_range_ticks = r.head.motors['head_tilt'].params['range_t']
+        head_tilt_range_rad = (r.head.motors['head_tilt'].ticks_to_world_rad(head_tilt_range_ticks[1]),
+                               r.head.motors['head_tilt'].ticks_to_world_rad(head_tilt_range_ticks[0]))
+        wrist_yaw_range_ticks = r.end_of_arm.motors['wrist_yaw'].params['range_t']
+        wrist_yaw_range_rad = (r.end_of_arm.motors['wrist_yaw'].ticks_to_world_rad(wrist_yaw_range_ticks[1]),
+                               r.end_of_arm.motors['wrist_yaw'].ticks_to_world_rad(wrist_yaw_range_ticks[0]))
+        gripper_range_ticks = r.end_of_arm.motors['stretch_gripper'].params['range_t']
+        gripper_range_rad = (r.end_of_arm.motors['stretch_gripper'].ticks_to_world_rad(gripper_range_ticks[0]),
+                             r.end_of_arm.motors['stretch_gripper'].ticks_to_world_rad(gripper_range_ticks[1]))
+        gripper_range_robotis = (r.end_of_arm.motors['stretch_gripper'].world_rad_to_pct(gripper_range_rad[0]),
+                                 r.end_of_arm.motors['stretch_gripper'].world_rad_to_pct(gripper_range_rad[1]))
+
+        self.head_pan_cg = HeadPanCommandGroup(head_pan_range_rad,
+                                               self.node.head_pan_calibrated_offset_rad,
                                                self.node.head_pan_calibrated_looked_left_offset_rad)
-        self.head_tilt_cg = HeadTiltCommandGroup(self.node.head_tilt_calibrated_offset_rad,
+        self.head_tilt_cg = HeadTiltCommandGroup(head_tilt_range_rad,
+                                                 self.node.head_tilt_calibrated_offset_rad,
                                                  self.node.head_tilt_calibrated_looking_up_offset_rad,
                                                  self.node.head_tilt_backlash_transition_angle_rad)
-        self.wrist_yaw_cg = WristYawCommandGroup()
-        self.gripper_cg = GripperCommandGroup()
-        self.gripper_cg.acceptable_joint_error = 1.0
+        self.wrist_yaw_cg = WristYawCommandGroup(wrist_yaw_range_rad)
+        self.gripper_cg = GripperCommandGroup(gripper_range_robotis)
+        self.telescoping_cg = TelescopingCommandGroup(tuple(r.arm.params['range_m']),
+                                                      self.node.wrist_extension_calibrated_retracted_offset_m)
+        if self.node.use_lift:
+            self.lift_cg = LiftCommandGroup(tuple(r.lift.params['range_m']))
+        self.mobile_base_cg = MobileBaseCommandGroup(virtual_range_m=(-0.5, 0.5))
 
     def execute_cb(self, goal):
         with self.node.robot_stop_lock:
