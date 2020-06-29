@@ -37,10 +37,8 @@ BACKLASH_DEBUG = False
 class StretchBodyNode:
 
     def __init__(self):
-
         self.use_robotis_head = True
         self.use_robotis_end_of_arm = True
-        self.use_robotis_trajectories = False
 
         self.default_goal_timeout_s = 10.0
         self.default_goal_timeout_duration = rospy.Duration(self.default_goal_timeout_s)
@@ -63,12 +61,6 @@ class StretchBodyNode:
         self.gripper_conversion = GripperConversion()
 
         self.mobile_base_manipulation_origin = None #{'x':None, 'y':None, 'theta':None}
-
-        self.use_lift = True
-
-        # Clip the command, instead of invalidating it, if it is close
-        # enough to the valid ranges.
-        self.trajectory_debug = True
 
         self.robot_stop_lock = threading.Lock()
         self.stop_the_robot = False
@@ -154,16 +146,10 @@ class StretchBodyNode:
         vel_out = arm_status['vel']
         eff_out = arm_status['motor']['effort']
 
-        if self.use_lift: 
-            # assign relevant lift status to variables
-            lift_status = robot_status['lift']
-            pos_up = lift_status['pos']
-            vel_up = lift_status['vel']
-            eff_up = lift_status['motor']['effort']
-        else:
-            pos_up = 0.242
-            vel_up = 0.0
-            eff_up = 0.0
+        lift_status = robot_status['lift']
+        pos_up = lift_status['pos']
+        vel_up = lift_status['vel']
+        eff_up = lift_status['motor']['effort']
 
         if self.use_robotis_end_of_arm:         
             # assign relevant wrist status to variables
@@ -418,8 +404,7 @@ class StretchBodyNode:
 
     def calibrate(self):
         def code_to_run():
-            if self.use_lift: 
-                self.robot.lift.home()
+            self.robot.lift.home()
             self.robot.arm.home()
         self.change_mode('calibration', code_to_run)
 
