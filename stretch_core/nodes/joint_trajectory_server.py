@@ -52,8 +52,7 @@ class JointTrajectoryAction:
         self.gripper_cg = GripperCommandGroup(gripper_range_robotis)
         self.telescoping_cg = TelescopingCommandGroup(tuple(r.arm.params['range_m']),
                                                       self.node.wrist_extension_calibrated_retracted_offset_m)
-        if self.node.use_lift:
-            self.lift_cg = LiftCommandGroup(tuple(r.lift.params['range_m']))
+        self.lift_cg = LiftCommandGroup(tuple(r.lift.params['range_m']))
         self.mobile_base_cg = MobileBaseCommandGroup(virtual_range_m=(-0.5, 0.5))
 
     def execute_cb(self, goal):
@@ -69,13 +68,8 @@ class JointTrajectoryAction:
 
         ###################################################
         # Decide what to do based on the commanded joints.
-        if self.node.use_lift:
-            command_groups = [self.telescoping_cg, self.lift_cg, self.mobile_base_cg,
-                              self.head_pan_cg, self.head_tilt_cg, self.wrist_yaw_cg, self.gripper_cg]
-        else:
-            command_groups = [self.telescoping_cg, self.mobile_base_cg, self.head_pan_cg,
-                              self.head_tilt_cg, self.wrist_yaw_cg, self.gripper_cg]
-
+        command_groups = [self.telescoping_cg, self.lift_cg, self.mobile_base_cg, self.head_pan_cg,
+                          self.head_tilt_cg, self.wrist_yaw_cg, self.gripper_cg]
         updates = [c.update(commanded_joint_names, self.invalid_joints_callback,
                    robot_mode=self.node.robot_mode)
                    for c in command_groups]
