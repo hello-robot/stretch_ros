@@ -8,6 +8,8 @@ import argparse as ap
 import rospy
 from std_srvs.srv import Trigger, TriggerRequest
 from sensor_msgs.msg import JointState
+from control_msgs.msg import FollowJointTrajectoryGoal
+from trajectory_msgs.msg import JointTrajectoryPoint
 
 import hello_helpers.hello_misc as hm
 
@@ -223,8 +225,13 @@ class KeyboardTeleopNode(hm.HelloNode):
     def send_command(self, command):
         joint_state = self.joint_state
         if (joint_state is not None) and (command is not None):
+            point = JointTrajectoryPoint()
+            point.time_from_start = rospy.Duration(0.0)
+            trajectory_goal = FollowJointTrajectoryGoal()
+            trajectory_goal.goal_time_tolerance = rospy.Time(1.0)
+            
             joint_name = command['joint']
-            self.trajectory_goal.trajectory.joint_names = [joint_name]
+            trajectory_goal.trajectory.joint_names = [joint_name]
             if 'inc' in command:
                 inc = command['inc']
                 rospy.loginfo('inc = {0}'.format(inc))
@@ -235,11 +242,11 @@ class KeyboardTeleopNode(hm.HelloNode):
                 delta = command['delta']
                 rospy.loginfo('delta = {0}, joint_index = {1}, joint_value = {2}'.format(delta, joint_index, joint_value))
                 new_value = joint_value + delta
-            self.point.positions = [new_value]
-            self.trajectory_goal.trajectory.points = [self.point]
-            self.trajectory_goal.trajectory.header.stamp = rospy.Time.now()
-            rospy.loginfo('joint_name = {0}, self.trajectory_goal = {1}'.format(joint_name, self.trajectory_goal))
-            self.trajectory_client.send_goal(self.trajectory_goal)
+            point.positions = [new_value]
+            trajectory_goal.trajectory.points = [point]
+            trajectory_goal.trajectory.header.stamp = rospy.Time.now()
+            rospy.loginfo('joint_name = {0}, trajectory_goal = {1}'.format(joint_name, trajectory_goal))
+            self.trajectory_client.send_goal(trajectory_goal)
             rospy.loginfo('Done sending pose.')
 
     def main(self):
