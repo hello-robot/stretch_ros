@@ -76,14 +76,30 @@ class HelloNode:
     def point_cloud_callback(self, point_cloud):
         self.point_cloud = point_cloud
     
-    def move_to_pose(self, pose, async=False):
+    def move_to_pose(self, pose, async=False, custom_contact_thresholds=False):
         joint_names = [key for key in pose]
-        self.trajectory_goal.trajectory.joint_names = joint_names
-        joint_positions = [pose[key] for key in joint_names]
-        self.point.positions = joint_positions
-        self.trajectory_goal.trajectory.points = [self.point]
-        self.trajectory_goal.trajectory.header.stamp = rospy.Time.now()
-        self.trajectory_client.send_goal(self.trajectory_goal)
+        point = JointTrajectoryPoint()
+        point.time_from_start = rospy.Duration(0.0)
+
+        trajectory_goal = FollowJointTrajectoryGoal()
+        trajectory_goal.goal_time_tolerance = rospy.Time(1.0)
+        trajectory_goal.trajectory.joint_names = joint_names
+        if not custom_contact_thresholds: 
+            joint_positions = [pose[key] for key in joint_names]
+            point.positions = joint_positions
+            trajectory_goal.trajectory.points = [point]
+        else:
+            pose_correct = all([len(pose[key])==2 for key in joint_names])
+            if not pose_correct:
+                rospy.logerr("HelloNode.move_to_pose: Not sending trajectory due to improper pose. custom_contact_thresholds requires 2 values (pose_target, contact_threshold_effort) for each joint name, but pose = {0}".format(pose))
+                return
+            joint_positions = [pose[key][0] for key in joint_names]
+            joint_efforts = [pose[key][1] for key in joint_names]
+            point.positions = joint_positions
+            point.effort = joint_efforts
+            trajectory_goal.trajectory.points = [point]
+        trajectory_goal.trajectory.header.stamp = rospy.Time.now()
+        self.trajectory_client.send_goal(trajectory_goal)
         if not async: 
             self.trajectory_client.wait_for_result()
             #print('Received the following result:')
@@ -125,14 +141,10 @@ class HelloNode:
         rospy.loginfo("{0} started".format(self.node_name))
 
         self.trajectory_client = actionlib.SimpleActionClient('/stretch_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
-        self.trajectory_goal = FollowJointTrajectoryGoal()
-        self.trajectory_goal.goal_time_tolerance = rospy.Time(1.0)
         server_reached = self.trajectory_client.wait_for_server(timeout=rospy.Duration(60.0))
         if not server_reached:
             rospy.signal_shutdown('Unable to connect to arm action server. Timeout exceeded.')
             sys.exit()
-        self.point = JointTrajectoryPoint()
-        self.point.time_from_start = rospy.Duration(0.0)
         
         self.tf2_buffer = tf2_ros.Buffer()
         self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
