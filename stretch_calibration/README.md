@@ -77,7 +77,7 @@ In addition, after changing a tool, this code can be used to generate a new cali
 
 ## Generate a New URDF After Changing the Tool
 
-If you change the Stretch RE1's tool attached to the wrist and want to generate a new URDF for it, you can do with xacro files in the /stretch_ros/stretch_description/urdf/ directory. Specifically, you can edit stretch_description.xacro to include a xacro other than the default stretch_gripper.xacro. 
+If you change the Stretch RE1's tool attached to the wrist and want to generate a new URDF for it, you can do so with xacro files in the /stretch_ros/stretch_description/urdf/ directory. Specifically, you can edit stretch_description.xacro to include a xacro other than the default stretch_gripper.xacro. 
 
 After changing the tool xacro you will need to generate a new URDF and also update this new URDF with the previously optimized calibration parameters. To do so, follow the directions below: 
 
