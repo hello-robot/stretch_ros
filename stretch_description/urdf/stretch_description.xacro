@@ -3,7 +3,8 @@
 
   <xacro:include filename="stretch_gripper.xacro" />
   <!--<xacro:include filename="stretch_gripper_with_puller.xacro" />-->
-  
+  <!--<xacro:include filename="stretch_dry_erase_marker.xacro" />-->
+    
   <xacro:include filename="stretch_main.xacro" />
   <xacro:include filename="stretch_aruco.xacro" />
   <xacro:include filename="stretch_d435i.xacro" />
