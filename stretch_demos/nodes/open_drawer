@@ -14,9 +14,6 @@ from trajectory_msgs.msg import JointTrajectoryPoint
 
 from sensor_msgs.msg import PointCloud2
 
-from control_msgs.msg import GripperCommandAction
-from control_msgs.msg import GripperCommandGoal
-
 from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
 
 import math
