@@ -1,0 +1,179 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+from sensor_msgs.msg import JointState
+from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
+
+import rospy
+import actionlib
+from control_msgs.msg import FollowJointTrajectoryAction
+from control_msgs.msg import FollowJointTrajectoryGoal
+from trajectory_msgs.msg import JointTrajectoryPoint
+
+from sensor_msgs.msg import PointCloud2
+
+from control_msgs.msg import GripperCommandAction
+from control_msgs.msg import GripperCommandGoal
+
+from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
+
+import math
+import time
+import threading
+import sys
+
+import tf2_ros
+import argparse as ap
+
+import hello_helpers.hello_misc as hm
+import stretch_funmap.navigate as nv
+
+class OpenDrawerNode(hm.HelloNode):
+
+    def __init__(self):
+        hm.HelloNode.__init__(self)
+        self.rate = 10.0
+        self.joint_states = None
+        self.joint_states_lock = threading.Lock()
+        self.move_base = nv.MoveBase(self)
+        self.letter_height_m = 0.2
+        self.wrist_position = None
+        
+    def joint_states_callback(self, joint_states):
+        with self.joint_states_lock: 
+            self.joint_states = joint_states
+        wrist_position, wrist_velocity, wrist_effort = hm.get_wrist_state(joint_states)
+        self.wrist_position = wrist_position
+        
+    def align_to_surface(self):
+        rospy.loginfo('align_to_surface')
+        trigger_request = TriggerRequest() 
+        trigger_result = self.trigger_align_with_nearest_cliff_service(trigger_request)
+        rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+
+    def extend_hook_until_contact(self):
+        rospy.loginfo('extend_hook_until_contact')
+        trigger_request = TriggerRequest() 
+        trigger_result = self.trigger_reach_until_contact_service(trigger_request)
+        rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+        
+    def lower_hook_until_contact(self):
+        rospy.loginfo('lower_hook_until_contact')
+        trigger_request = TriggerRequest() 
+        trigger_result = self.trigger_lower_until_contact_service(trigger_request)
+        rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+        
+    def backoff_from_surface(self):
+        rospy.loginfo('backoff_from_surface')
+        if self.wrist_position is not None:
+            wrist_target_m = self.wrist_position - 0.012 #0.015 #0.018 #0.02 #0.022 #0.025 #0.008 #0.005
+            pose = {'wrist_extension': wrist_target_m}
+            self.move_to_pose(pose)
+            return True
+        else:
+            rospy.logerr('backoff_from_surface: self.wrist_position is None!')
+            return False
+
+    def pull_open(self):
+        rospy.loginfo('pull_open')
+        if self.wrist_position is not None:
+            wrist_target_m = self.wrist_position - 0.2
+            pose = {'wrist_extension': wrist_target_m}
+            self.move_to_pose(pose)
+            return True
+        else:
+            rospy.logerr('pull_open: self.wrist_position is None!')
+            return False
+
+    def push_closed(self):
+        rospy.loginfo('push_closed')
+        if self.wrist_position is not None:
+            wrist_target_m = self.wrist_position + 0.22
+            pose = {'wrist_extension': wrist_target_m}
+            self.move_to_pose(pose)
+            return True
+        else:
+            rospy.logerr('pull_open: self.wrist_position is None!')
+            return False
+        
+    def move_to_initial_configuration(self):
+        initial_pose = {'wrist_extension': 0.01,
+                        'joint_gripper': 1.62,
+                        'joint_gripper_finger_left': -0.25}
+        #'joint_lift': 0.71,
+        rospy.loginfo('Move to the initial configuration for drawer opening.')
+        self.move_to_pose(initial_pose)
+
+    def trigger_open_drawer_callback(self, request):
+
+        self.move_to_initial_configuration()
+
+        #self.align_to_surface()
+        self.extend_hook_until_contact()
+        success = self.backoff_from_surface()
+        if not success:
+            return TriggerResponse(
+                success=False,
+                message='Failed to backoff from the surface.'
+            )
+            
+        self.lower_hook_until_contact()
+        success = self.pull_open()
+        if not success:
+            return TriggerResponse(
+                success=False,
+                message='Failed to pull open the drawer.'
+            )
+
+        push_drawer_closed = False
+        if push_drawer_closed: 
+            rospy.sleep(3.0)
+            self.push_closed()
+        
+        return TriggerResponse(
+            success=True,
+            message='Completed opening the drawer!'
+            )
+
+    
+    def main(self):
+        hm.HelloNode.main(self, 'open_drawer', 'open_drawer', wait_for_first_pointcloud=False)
+
+        self.joint_states_subscriber = rospy.Subscriber('/stretch/joint_states', JointState, self.joint_states_callback)
+        
+        self.trigger_open_drawer_service = rospy.Service('/open_drawer/trigger_open_drawer',
+                                                         Trigger,
+                                                         self.trigger_open_drawer_callback)
+        
+        rospy.wait_for_service('/funmap/trigger_align_with_nearest_cliff')
+        rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_align_with_nearest_cliff.')
+        self.trigger_align_with_nearest_cliff_service = rospy.ServiceProxy('/funmap/trigger_align_with_nearest_cliff', Trigger)
+
+        rospy.wait_for_service('/funmap/trigger_reach_until_contact')
+        rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_reach_until_contact.')
+        self.trigger_reach_until_contact_service = rospy.ServiceProxy('/funmap/trigger_reach_until_contact', Trigger)
+
+        rospy.wait_for_service('/funmap/trigger_lower_until_contact')
+        rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_lower_until_contact.')
+        self.trigger_lower_until_contact_service = rospy.ServiceProxy('/funmap/trigger_lower_until_contact', Trigger)
+        
+        rate = rospy.Rate(self.rate)
+        while not rospy.is_shutdown():
+            rate.sleep()
+
+        
+if __name__ == '__main__':
+    try:
+        parser = ap.ArgumentParser(description='Open Drawer behavior for stretch.')
+        #parser.add_argument('--mapping_on', action='store_true', help='Turn on mapping control. For example, the space bar will trigger a head scan. This requires that the mapping node be run (funmap).')
+        args, unknown = parser.parse_known_args()
+        node = OpenDrawerNode()
+        node.main()
+    except KeyboardInterrupt:
+        rospy.loginfo('interrupt received, so shutting down')
+#    except rospy.ROSInterruptException:
+#        pass
+        #rospy.loginfo('keyboard_teleop was interrupted', file=sys.stderr)
+
