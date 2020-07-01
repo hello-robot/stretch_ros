@@ -1,0 +1,266 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+from sensor_msgs.msg import JointState
+from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
+
+import rospy
+import actionlib
+from control_msgs.msg import FollowJointTrajectoryAction
+from control_msgs.msg import FollowJointTrajectoryGoal
+from trajectory_msgs.msg import JointTrajectoryPoint
+
+from sensor_msgs.msg import PointCloud2
+
+from control_msgs.msg import GripperCommandAction
+from control_msgs.msg import GripperCommandGoal
+
+from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
+
+import math
+import time
+import threading
+import sys
+import tf2_ros
+import argparse as ap        
+
+import hello_helpers.hello_misc as hm
+import stretch_funmap.navigate as nv
+
+
+
+class HelloWorldNode(hm.HelloNode):
+
+    def __init__(self):
+        hm.HelloNode.__init__(self)
+        self.rate = 10.0
+        self.joint_states = None
+        self.joint_states_lock = threading.Lock()
+        self.move_base = nv.MoveBase(self)
+        self.letter_height_m = 0.2
+        self.letter_top_lift_m = 1.05
+        
+    def joint_states_callback(self, joint_states):
+        with self.joint_states_lock: 
+            self.joint_states = joint_states
+
+    def align_to_surface(self):
+        rospy.loginfo('align_to_surface')
+        trigger_request = TriggerRequest() 
+        trigger_result = self.trigger_align_with_nearest_cliff_service(trigger_request)
+        rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+        
+    def pen_down(self):
+        rospy.loginfo('pen_down')
+        trigger_request = TriggerRequest() 
+        trigger_result = self.trigger_reach_until_contact_service(trigger_request)
+        rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+
+    # def turn_off_contact_regulation(self):
+    #     rospy.loginfo('turn_off_contact_regulation')
+    #     trigger_request = TriggerRequest() 
+    #     trigger_result = self.trigger_turn_off_contact_regulation_service(trigger_request)
+    #     rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+        
+    def pen_up(self):
+        rospy.loginfo('pen_up')
+        #self.turn_off_contact_regulation()
+        with self.joint_states_lock:
+            wrist_position, wrist_velocity, wrist_effort = hm.get_wrist_state(self.joint_states)
+        #backoff_m = 0.03 # back away 3cm from the surface
+        backoff_m = 0.1 # back away 10cm from the surface
+        new_wrist_position = wrist_position - backoff_m
+        pose = {'wrist_extension': new_wrist_position}
+        self.move_to_pose(pose)                
+        
+    def vertical_line(self, move_down, half=False):
+        if move_down: 
+            rospy.loginfo('vertical_line moving down')
+        else: 
+            rospy.loginfo('vertical_line moving up')
+        with self.joint_states_lock: 
+            i = self.joint_states.name.index('joint_lift')
+            lift_position = self.joint_states.position[i]
+        if not half: 
+            length_m = self.letter_height_m
+        else:
+            length_m = self.letter_height_m / 2.0
+            
+        if move_down:
+            new_lift_position = lift_position - length_m
+        else:
+            new_lift_position = lift_position + length_m
+        pose = {'joint_lift': new_lift_position}
+        self.move_to_pose(pose)                
+
+    def horizontal_line(self, move_right, half=False):
+        if move_right: 
+            rospy.loginfo('horizontal_line moving right')
+        else:
+            rospy.loginfo('horizontal_line moving left')
+        length_m = self.letter_height_m / 2.0
+        if half:
+            length_m = length_m / 2.0
+        if move_right:
+            length_m = -length_m
+        use_simple_move = False
+        if use_simple_move:
+            pose = {'translate_mobile_base': length_m}
+            self.move_to_pose(pose)
+        else: 
+            if length_m > 0: 
+                at_goal = self.move_base.forward(length_m, detect_obstacles=False)
+            else:
+                at_goal = self.move_base.backward(length_m, detect_obstacles=False)
+
+    def space(self):
+        rospy.loginfo('space')
+        self.align_to_surface()
+        self.horizontal_line(move_right=True, half=True)
+
+
+    def move_arm_out_of_the_way(self):
+        initial_pose = {'wrist_extension': 0.01,
+                        'joint_lift': 0.8,
+                        'joint_wrist_yaw': 0.0}
+
+        rospy.loginfo('Move arm out of the way of the camera.')
+        self.move_to_pose(initial_pose)
+
+        
+    def move_to_initial_configuration(self):
+        initial_pose = {'wrist_extension': 0.01,
+                        'joint_lift': self.letter_top_lift_m,
+                        'joint_wrist_yaw': 0.0}
+
+        rospy.loginfo('Move to initial arm pose for writing.')
+        self.move_to_pose(initial_pose)
+
+    def letter_h(self):
+        rospy.loginfo('Letter H')
+        #write an letter "H" down and to the right
+        self.align_to_surface()
+        self.pen_down()
+        self.vertical_line(move_down=True)
+        self.pen_up()
+        self.vertical_line(move_down=False, half=True)
+        self.pen_down()
+        self.horizontal_line(move_right=True)
+        self.pen_up()
+        self.vertical_line(move_down=False, half=True)
+        self.pen_down()
+        self.vertical_line(move_down=True)
+        self.pen_up()
+        self.vertical_line(move_down=False)
+
+    def letter_e(self):
+        rospy.loginfo('Letter E')
+        # write an letter "E" down and to the right
+        self.align_to_surface()
+        self.pen_down()
+        self.vertical_line(move_down=True)
+        self.pen_down()
+        self.horizontal_line(move_right=True)
+        self.pen_up()
+        self.vertical_line(move_down=False)
+        self.pen_down()
+        self.horizontal_line(move_right=False)
+        self.pen_up()
+        self.vertical_line(move_down=True, half=True)
+        self.pen_down()
+        self.horizontal_line(move_right=True)
+        self.pen_up()
+        self.vertical_line(move_down=False, half=True)
+
+    def letter_l(self):
+        rospy.loginfo('Letter L')
+        # write an letter "L" down and to the right
+        self.align_to_surface()
+        self.pen_down()
+        self.vertical_line(move_down=True)
+        self.pen_down()
+        self.horizontal_line(move_right=True)
+        self.pen_up()
+        self.vertical_line(move_down=False)
+
+    def letter_o(self):
+        rospy.loginfo('Letter O')
+        # write an letter "O" down and to the right
+        self.align_to_surface()
+        self.pen_down()
+        self.vertical_line(move_down=True)
+        self.pen_down()
+        self.horizontal_line(move_right=True)
+        self.pen_down()
+        self.vertical_line(move_down=False)
+        self.pen_down()
+        self.horizontal_line(move_right=False)
+        self.pen_up()
+        self.horizontal_line(move_right=True)
+                
+    def trigger_write_hello_callback(self, request):
+
+        #self.move_arm_out_of_the_way()
+
+        self.move_to_initial_configuration()
+
+        self.align_to_surface()
+        
+        self.letter_h()
+        self.space()
+        self.letter_e()
+        self.space()
+        self.letter_l()
+        self.space()
+        self.letter_l()
+        self.space()
+        self.letter_o()
+        self.space()
+
+        return TriggerResponse(
+            success=True,
+            message='Completed writing hello!'
+            )
+
+    
+    def main(self):
+        hm.HelloNode.main(self, 'hello_world', 'hello_world', wait_for_first_pointcloud=False)
+
+        self.joint_states_subscriber = rospy.Subscriber('/stretch/joint_states', JointState, self.joint_states_callback)
+        
+        self.trigger_write_hello_service = rospy.Service('/hello_world/trigger_write_hello',
+                                                         Trigger,
+                                                         self.trigger_write_hello_callback)
+        
+        rospy.wait_for_service('/funmap/trigger_align_with_nearest_cliff')
+        rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_align_with_nearest_cliff.')
+        self.trigger_align_with_nearest_cliff_service = rospy.ServiceProxy('/funmap/trigger_align_with_nearest_cliff', Trigger)
+
+        rospy.wait_for_service('/funmap/trigger_reach_until_contact')
+        rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_reach_until_contact.')
+        self.trigger_reach_until_contact_service = rospy.ServiceProxy('/funmap/trigger_reach_until_contact', Trigger)
+
+        # rospy.wait_for_service('/funmap/trigger_turn_off_contact_regulation')
+        # rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_turn_off_contact_regulation.')
+        # self.trigger_turn_off_contact_regulation_service = rospy.ServiceProxy('/funmap/trigger_turn_off_contact_regulation', Trigger)
+
+        rate = rospy.Rate(self.rate)
+        while not rospy.is_shutdown():
+            rate.sleep()
+
+        
+if __name__ == '__main__':
+    try:
+        parser = ap.ArgumentParser(description='Hello World demo for stretch.')
+        #parser.add_argument('--mapping_on', action='store_true', help='Turn on mapping control. For example, the space bar will trigger a head scan. This requires that the mapping node be run (funmap).')
+        args, unknown = parser.parse_known_args()
+        node = HelloWorldNode()
+        node.main()
+    except KeyboardInterrupt:
+        rospy.loginfo('interrupt received, so shutting down')
+#    except rospy.ROSInterruptException:
+#        pass
+        #rospy.loginfo('keyboard_teleop was interrupted', file=sys.stderr)
+
