@@ -427,8 +427,12 @@ class TelescopingCommandGroup(SimpleCommandGroup):
 
     def update_execution(self, robot_status, **kwargs):
         backlash_state = kwargs['backlash_state']
+        success_callback = kwargs['success_callback'] if 'success_callback' in kwargs.keys() else None
         self.error = None
         if self.active:
+            if success_callback and robot_status['arm']['motor']['in_guarded_event']:
+                success_callback("{0} contact detected.".format(self.name))
+                return True
             if backlash_state['wrist_extension_retracted']:
                 arm_backlash_correction = self.wrist_extension_calibrated_retracted_offset
             else:
@@ -454,8 +458,12 @@ class LiftCommandGroup(SimpleCommandGroup):
                                                     if self.goal['contact_threshold'] is not None else None)
 
     def update_execution(self, robot_status, **kwargs):
+        success_callback = kwargs['success_callback'] if 'success_callback' in kwargs.keys() else None
         self.error = None
         if self.active:
+            if success_callback and robot_status['lift']['motor']['in_guarded_event']:
+                success_callback("{0} contact detected.".format(self.name))
+                return True
             self.error = self.goal['position'] - robot_status['lift']['pos']
             return self.name, self.error
 
@@ -616,6 +624,7 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
                                         contact_thresh_N=self.goal['contact_threshold'])
 
     def update_execution(self, robot_status, **kwargs):
+        success_callback = kwargs['success_callback'] if 'success_callback' in kwargs.keys() else None
         currx = robot_status['base']['x']
         curry = robot_status['base']['y']
         currtheta = robot_status['base']['theta']
@@ -627,14 +636,29 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
         if self.active:
             if self.active_translate_mobile_base or self.active_rotate_mobile_base:
                 if self.goal_translate_mobile_base['position'] is not None:
+                    if (robot_status['base']['left_wheel']['in_guarded_event'] or \
+                        robot_status['base']['right_wheel']['in_guarded_event']) and \
+                       success_callback:
+                        success_callback("translate_mobile_base contact detected.")
+                        return True
                     dist = np.sqrt(np.square(currx - self.startx) + np.square(curry - self.starty))
                     self.error_translate_mobile_base_m = self.goal_translate_mobile_base['position'] - (dist * np.sign(self.goal_translate_mobile_base['position']))
                     return [('translate_mobile_base', self.error_translate_mobile_base_m), ('rotate_mobile_base', self.error_rotate_mobile_base_rad)]
                 elif self.goal_rotate_mobile_base['position'] is not None:
+                    if (robot_status['base']['left_wheel']['in_guarded_event'] or \
+                        robot_status['base']['right_wheel']['in_guarded_event']) and \
+                       success_callback:
+                        success_callback("rotate_mobile_base contact detected.")
+                        return True
                     rot = hm.angle_diff_rad(currtheta, self.starttheta)
                     self.error_rotate_mobile_base_rad = hm.angle_diff_rad(self.goal_rotate_mobile_base['position'], rot)
                     return [('translate_mobile_base', self.error_translate_mobile_base_m), ('rotate_mobile_base', self.error_rotate_mobile_base_rad)]
             else:
+                if (robot_status['base']['left_wheel']['in_guarded_event'] or \
+                    robot_status['base']['right_wheel']['in_guarded_event']) and \
+                   success_callback:
+                    success_callback("{0} contact detected.".format(self.name))
+                    return True
                 self.error = self.goal['position'] - currx
                 return self.name, self.error
 
