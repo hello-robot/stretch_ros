@@ -140,7 +140,12 @@ class JointTrajectoryAction:
                         return
 
                 robot_status = self.node.robot.get_status()
-                named_errors = [c.update_execution(robot_status, backlash_state=self.node.backlash_state) for c in command_groups]
+                named_errors = [c.update_execution(robot_status, success_callback=self.success_callback,
+                                                   backlash_state=self.node.backlash_state)
+                                for c in command_groups]
+                if any(ret == True for ret in named_errors):
+                    self.node.robot_mode_rwlock.release_read()
+                    return
 
                 self.feedback_callback(commanded_joint_names, point, named_errors)
                 goals_reached = [c.goal_reached() for c in command_groups]
@@ -148,7 +153,7 @@ class JointTrajectoryAction:
 
             rospy.logdebug("{0} joint_traj action: Achieved target point.".format(self.node.node_name))
 
-        self.success_callback()
+        self.success_callback("Achieved all target points.")
         self.node.robot_mode_rwlock.release_read()
         return
 
@@ -196,8 +201,8 @@ class JointTrajectoryAction:
         self.feedback.error = error_point
         self.server.publish_feedback(self.feedback)
 
-    def success_callback(self):
-        rospy.loginfo("{0} joint_traj action: Achieved all target points!".format(self.node.node_name))
+    def success_callback(self, success_str):
+        rospy.loginfo("{0} joint_traj action: {1}".format(self.node.node_name, success_str))
         self.result.error_code = self.result.SUCCESSFUL
-        self.result.error_string = "Achieved all target points!"
+        self.result.error_string = success_str
         self.server.set_succeeded(self.result)
