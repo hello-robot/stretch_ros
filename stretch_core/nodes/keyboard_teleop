@@ -121,9 +121,13 @@ class GetKeyboardCommands:
             trigger_request = TriggerRequest() 
             trigger_result = node.trigger_write_hello_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+        if ((c == 'z') or (c == 'Z')) and self.open_drawer_on:
+            trigger_request = TriggerRequest() 
+            trigger_result = node.trigger_open_drawer_down_service(trigger_request)
+            rospy.loginfo('trigger_result = {0}'.format(trigger_result))
         if ((c == '.') or (c == '>')) and self.open_drawer_on:
             trigger_request = TriggerRequest() 
-            trigger_result = node.trigger_open_drawer_service(trigger_request)
+            trigger_result = node.trigger_open_drawer_up_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
         if ((c == '/') or (c == '?')) and self.clean_surface_on:
             trigger_request = TriggerRequest() 
@@ -289,10 +293,15 @@ class KeyboardTeleopNode(hm.HelloNode):
             self.trigger_write_hello_service = rospy.ServiceProxy('/hello_world/trigger_write_hello', Trigger)
 
         if self.open_drawer_on:
-            rospy.wait_for_service('/open_drawer/trigger_open_drawer')
-            rospy.loginfo('Node ' + self.node_name + ' connected to /open_drawer/trigger_open_drawer.')
-            self.trigger_open_drawer_service = rospy.ServiceProxy('/open_drawer/trigger_open_drawer', Trigger)
+            rospy.wait_for_service('/open_drawer/trigger_open_drawer_down')
+            rospy.loginfo('Node ' + self.node_name + ' connected to /open_drawer/trigger_open_drawer_down.')
+            self.trigger_open_drawer_down_service = rospy.ServiceProxy('/open_drawer/trigger_open_drawer_down', Trigger)
 
+            rospy.wait_for_service('/open_drawer/trigger_open_drawer_up')
+            rospy.loginfo('Node ' + self.node_name + ' connected to /open_drawer/trigger_open_drawer_up.')
+            self.trigger_open_drawer_up_service = rospy.ServiceProxy('/open_drawer/trigger_open_drawer_up', Trigger)
+
+            
         if self.clean_surface_on:
             rospy.wait_for_service('/clean_surface/trigger_clean_surface')
             rospy.loginfo('Node ' + self.node_name + ' connected to /clean_surface/trigger_clean_surface.')

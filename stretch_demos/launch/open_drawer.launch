@@ -15,9 +15,6 @@
   <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true"/>
   <!-- -->
 
-  <!-- example of args for funmap that loads a map on launch (should have double hyphen before load_map) -->
-  <!-- load_map FILENAME -->
-    
   <!-- MAPPING -->
   <node name="funmap" pkg="stretch_funmap" type="funmap" output="screen" >
     <param name="debug_directory" type="string" value="$(arg debug_directory)"/>
