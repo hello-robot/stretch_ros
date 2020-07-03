@@ -96,13 +96,14 @@ class CleanSurfaceNode(hm.HelloNode):
         
     def trigger_clean_surface_callback(self, request):
 
-        tool_width_m = 0.06
-        tool_length_m = 0.06
+        tool_width_m = 0.08 #0.06
+        tool_length_m = 0.08 #0.06
+        step_size_m = 0.04 #0.06 #0.1 #0.02
         min_extension_m = 0.01
         max_extension_m = 0.5
         
         self.look_at_surface()
-        strokes, simple_plan, lift_to_surface_m = self.manipulation_view.get_surface_wiping_plan(self.tf2_buffer, tool_width_m, tool_length_m)
+        strokes, simple_plan, lift_to_surface_m = self.manipulation_view.get_surface_wiping_plan(self.tf2_buffer, tool_width_m, tool_length_m, step_size_m)
 
         print('********* lift_to_surface_m = {0} **************'.format(lift_to_surface_m))
 
