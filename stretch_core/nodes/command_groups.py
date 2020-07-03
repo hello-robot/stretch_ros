@@ -330,7 +330,8 @@ class GripperCommandGroup(SimpleCommandGroup):
 
 class TelescopingCommandGroup(SimpleCommandGroup):
     def __init__(self, range_m, wrist_extension_calibrated_retracted_offset):
-        SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.005)
+        #SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.005)
+        SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.008)
         self.wrist_extension_calibrated_retracted_offset = wrist_extension_calibrated_retracted_offset
         self.telescoping_joints = ['joint_arm_l3', 'joint_arm_l2', 'joint_arm_l1', 'joint_arm_l0']
         self.is_telescoping = False
