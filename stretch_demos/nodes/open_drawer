@@ -79,12 +79,16 @@ class OpenDrawerNode(hm.HelloNode):
         pose = {'joint_lift': (lift_m, lift_contact_effort)}
         self.move_to_pose(pose, custom_contact_thresholds=True)
 
-        # raise due to contact detection drop
-        rospy.sleep(0.5) # wait for new lift position
-        lift_m = self.lift_position + 0.015
-        pose = {'joint_lift': lift_m}
-        self.move_to_pose(pose)
-        rospy.sleep(0.5) # wait for new lift position
+        #rospy.sleep(1.0) # needed to correct for bounce after contact
+        
+        use_correction = True
+        if use_correction:
+            # raise due to drop down after contact detection
+            rospy.sleep(0.5) # wait for new lift position
+            lift_m = self.lift_position + 0.01 #0.015
+            pose = {'joint_lift': lift_m}
+            self.move_to_pose(pose)
+            rospy.sleep(0.5) # wait for new lift position
         
     def backoff_from_surface(self):
         rospy.loginfo('backoff_from_surface')
@@ -103,7 +107,8 @@ class OpenDrawerNode(hm.HelloNode):
             max_extension_m = 0.5
             extension_m = self.wrist_position - 0.2
             extension_m = min(extension_m, max_extension_m)
-            extension_contact_effort = 60.0 #40.0 from funmap
+            extension_m = max(0.01, extension_m)
+            extension_contact_effort = 100.0 #40.0 from funmap
             pose = {'wrist_extension': (extension_m, extension_contact_effort)}
             self.move_to_pose(pose, custom_contact_thresholds=True)
             return True
