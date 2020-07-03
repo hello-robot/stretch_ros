@@ -67,9 +67,19 @@ class OpenDrawerNode(hm.HelloNode):
         rospy.loginfo('lower_hook_until_contact')
         max_drop_m = 0.15
         lift_m = self.lift_position - max_drop_m
-        lift_contact_effort = 18.0 #20.0 #20.0 from funmap
+        lift_contact_effort = 16.0 #18.0 #20.0 #20.0 from funmap
         pose = {'joint_lift': (lift_m, lift_contact_effort)}
         self.move_to_pose(pose, custom_contact_thresholds=True)
+
+        use_correction = True
+        if use_correction:
+            # raise due to drop down after contact detection
+            #rospy.sleep(0.5) # wait for new lift position
+            rospy.sleep(0.2) # wait for new lift position
+            lift_m = self.lift_position + 0.015
+            pose = {'joint_lift': lift_m}
+            self.move_to_pose(pose)
+            rospy.sleep(0.2) # wait for new lift position
 
     def raise_hook_until_contact(self):
         rospy.loginfo('raise_hook_until_contact')
@@ -108,7 +118,7 @@ class OpenDrawerNode(hm.HelloNode):
             extension_m = self.wrist_position - 0.2
             extension_m = min(extension_m, max_extension_m)
             extension_m = max(0.01, extension_m)
-            extension_contact_effort = 100.0 #40.0 from funmap
+            extension_contact_effort = 120 #100.0 #40.0 from funmap
             pose = {'wrist_extension': (extension_m, extension_contact_effort)}
             self.move_to_pose(pose, custom_contact_thresholds=True)
             return True
