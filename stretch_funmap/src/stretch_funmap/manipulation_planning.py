@@ -675,7 +675,7 @@ class ManipulationView():
         return grasp_mobile_base_m, grasp_lift_m, grasp_wrist_extension_m
     
     
-    def get_surface_wiping_plan(self, tf2_buffer):
+    def get_surface_wiping_plan(self, tf2_buffer, tool_width_m, tool_length_m):
         strokes = None
         movements = None
         surface_height_m = None
@@ -685,6 +685,9 @@ class ManipulationView():
             m_per_unit = h.m_per_height_unit
             m_per_pix = h.m_per_pix
 
+            tool_width_pix = tool_width_m / m_per_pix
+            tool_length_pix = tool_length_m / m_per_pix
+            
             wrist_frame = 'link_aruco_top_wrist'
             wrist_points_to_image_mat, ip_timestamp = h.get_points_to_image_mat(wrist_frame, tf2_buffer)
             
@@ -714,9 +717,9 @@ class ManipulationView():
                 # Dilate the obstacles to create a safety margin.
                 dilate_obstacles = True
                 if dilate_obstacles:
-                    kernel_width_pix = 3
+                    kernel_radius_pix = int(round(max(tool_width_pix, tool_length_pix)/2.0))
+                    kernel_width_pix = 1 + (2 * kernel_radius_pix)
                     iterations = 1
-                    kernel_radius_pix = (kernel_width_pix - 1) / 2
                     kernel = np.zeros((kernel_width_pix, kernel_width_pix), np.uint8)
                     cv2.circle(kernel, (kernel_radius_pix, kernel_radius_pix), kernel_radius_pix, 255, -1)
                     obstacle_mask = cv2.dilate(obstacle_mask, kernel, iterations=iterations)
@@ -724,9 +727,9 @@ class ManipulationView():
                 # Erode the surface to create a safety margin.
                 erode_surface = True
                 if erode_surface:
-                    kernel_width_pix = 5
+                    kernel_radius_pix = int(round(max(tool_width_pix, tool_length_pix)/2.0))
+                    kernel_width_pix = 1 + (2 * kernel_radius_pix)
                     iterations = 1
-                    kernel_radius_pix = (kernel_width_pix - 1) / 2
                     kernel = np.zeros((kernel_width_pix, kernel_width_pix), np.uint8)
                     cv2.circle(kernel, (kernel_radius_pix, kernel_radius_pix), kernel_radius_pix, 255, -1)
                     surface_mask = cv2.erode(surface_mask, kernel, iterations=iterations)
