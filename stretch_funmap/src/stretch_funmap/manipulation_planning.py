@@ -675,7 +675,7 @@ class ManipulationView():
         return grasp_mobile_base_m, grasp_lift_m, grasp_wrist_extension_m
     
     
-    def get_surface_wiping_plan(self, tf2_buffer, tool_width_m, tool_length_m):
+    def get_surface_wiping_plan(self, tf2_buffer, tool_width_m, tool_length_m, step_size_m):
         strokes = None
         movements = None
         surface_height_m = None
@@ -776,7 +776,6 @@ class ManipulationView():
                 tool_start_xy_pix = tool_current_xy_pix - (max_drive_backward_pix * robot_forward_pix)
                 tool_end_xy_pix = tool_current_xy_pix + (max_drive_forward_pix * robot_forward_pix)
 
-                step_size_m = 0.06 #0.1 #0.02
                 step_size_pix = step_size_m / m_per_pix
                 max_extension_m = 0.5
                 max_extension_pix = max_extension_m / m_per_pix
