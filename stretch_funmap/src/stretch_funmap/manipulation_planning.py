@@ -756,8 +756,8 @@ class ManipulationView():
                 # create a unit length vector in the direction of extension in the image
                 robot_forward_pix = forward_xy / np.linalg.norm(forward_xy)
                 
-                max_drive_forward_m = 0.25
-                max_drive_backward_m = 0.25
+                max_drive_forward_m = 0.4 #0.25
+                max_drive_backward_m = 0.4 #0.25
                 max_drive_forward_pix = max_drive_forward_m / m_per_pix
                 max_drive_backward_pix = max_drive_backward_m / m_per_pix
 
@@ -773,7 +773,7 @@ class ManipulationView():
                 tool_start_xy_pix = tool_current_xy_pix - (max_drive_backward_pix * robot_forward_pix)
                 tool_end_xy_pix = tool_current_xy_pix + (max_drive_forward_pix * robot_forward_pix)
 
-                step_size_m = 0.02
+                step_size_m = 0.06 #0.1 #0.02
                 step_size_pix = step_size_m / m_per_pix
                 max_extension_m = 0.5
                 max_extension_pix = max_extension_m / m_per_pix

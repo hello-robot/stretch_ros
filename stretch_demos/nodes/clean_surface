@@ -101,11 +101,13 @@ class CleanSurfaceNode(hm.HelloNode):
 
         print('********* lift_to_surface_m = {0} **************'.format(lift_to_surface_m))
 
-        tool_width_m = 0.03
-        safety_from_edge = 0.03
-        tool_length_m = 0.03
-
-        if True and (strokes is not None) and (len(strokes) > 5):
+        tool_width_m = 0.06 #0.03
+        #safety_from_edge = 0.06 #0.03
+        tool_length_m = 0.06 #0.03
+        min_extension_m = 0.01
+        max_extension_m = 0.5
+        
+        if True and (strokes is not None) and (len(strokes) > 0):
 
             if (self.lift_position is not None) and (self.wrist_position is not None): 
 
@@ -139,9 +141,20 @@ class CleanSurfaceNode(hm.HelloNode):
                     extension_contact_effort = 40.0 #40.0 from funmap
                     pose = {'joint_lift': (lift_m, lift_contact_effort)}
                     self.move_to_pose(pose, custom_contact_thresholds=True)
+                    
+                    use_correction = True
+                    if use_correction:
+                        # raise due to drop down after contact detection
+                        #rospy.sleep(0.5) # wait for new lift position
+                        rospy.sleep(0.2) # wait for new lift position
+                        lift_m = self.lift_position + 0.01 #0.015
+                        pose = {'joint_lift': lift_m}
+                        self.move_to_pose(pose)
+                        rospy.sleep(0.2) # wait for new lift position
 
                 extension_m = start['end_wrist_extension_m']
-                end_extension_m = initial_wrist_position + extension_m - (tool_length_m/2.0) - safety_from_edge
+                end_extension_m = initial_wrist_position + extension_m - (tool_length_m/2.0)
+                #end_extension_m = initial_wrist_position + extension_m - (tool_length_m/2.0) - safety_from_edge
                 pose = {'wrist_extension': end_extension_m}
                 rospy.loginfo('Extend tool to end of surface.')
                 self.move_to_pose(pose)
@@ -159,17 +172,19 @@ class CleanSurfaceNode(hm.HelloNode):
 
                     extension_m = m['start_wrist_extension_m']
                     start_extension_m = initial_wrist_position + extension_m + (tool_length_m/2.0)
+                    start_extension_m = max(start_extension_m, min_extension_m)
                     pose = {'wrist_extension': start_extension_m}
                     rospy.loginfo('Extend tool above surface.')
                     self.move_to_pose(pose)
 
                     extension_m = m['end_wrist_extension_m']
-                    end_extension_m = initial_wrist_position + extension_m - (tool_length_m/2.0) - safety_from_edge
+                    #end_extension_m = initial_wrist_position + extension_m - (tool_length_m/2.0) - safety_from_edge
+                    end_extension_m = initial_wrist_position + extension_m - (tool_length_m/2.0)
+                    end_extension_m = min(end_extension_m, max_extension_m)
                     pose = {'wrist_extension': end_extension_m}
                     rospy.loginfo('Extend tool to end of surface.')
                     self.move_to_pose(pose)
 
-                    extension_m = m['start_wrist_extension_m']
                     pose = {'wrist_extension': start_extension_m}
                     rospy.loginfo('Retract tool to beginning.')
                     self.move_to_pose(pose)
