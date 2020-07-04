@@ -3,7 +3,7 @@
   <arg name="debug_directory" value="$(env HELLO_FLEET_PATH)/debug/"/>
 
   <!-- REALSENSE D435i -->
-  <include file="$(find stretch_core)/launch/d435i_high_resolution.launch"></include>
+  <include file="$(find stretch_core)/launch/d435i_low_resolution.launch"></include>
   <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen">
     <param name="initial_mode" type="string" value="High Accuracy"/>
   </node>

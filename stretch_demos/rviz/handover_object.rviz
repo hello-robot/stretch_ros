@@ -50,7 +50,7 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
-    - Alpha: 0.75
+    - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
       Enabled: true
@@ -220,6 +220,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        link_puller:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         link_right_wheel:
           Alpha: 1
           Show Axes: false
@@ -241,7 +246,7 @@ Visualization Manager:
       Update Interval: 0
       Value: true
       Visual Enabled: true
-    - Alpha: 0.20000000298023224
+    - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 3.660540819168091
@@ -276,14 +281,14 @@ Visualization Manager:
       Marker Topic: /nearest_mouth/axes
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: base_link
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:

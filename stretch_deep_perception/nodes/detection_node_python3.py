@@ -102,8 +102,9 @@ class DetectionNode:
         include_axes = True
         include_z_axes = False
         axes_array = None
+        axes_scale = 4.0
         if include_axes or include_z_axes: 
-            axes_array = self.marker_collection.get_ros_axes_array(include_z_axes, include_axes)
+            axes_array = self.marker_collection.get_ros_axes_array(include_z_axes, include_axes, axes_scale=axes_scale)
         
         if self.publish_marker_point_clouds: 
             for marker in self.marker_collection:
