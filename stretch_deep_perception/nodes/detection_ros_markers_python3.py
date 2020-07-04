@@ -141,7 +141,7 @@ class DetectionBoxMarker:
         return self.marker
 
 
-    def create_axis_marker(self, axis, id_num, rgba=None, name=None): 
+    def create_axis_marker(self, axis, id_num, rgba=None, name=None, axes_scale=1.0): 
         marker = Marker()
         marker.header.frame_id = self.frame_id
         marker.header.stamp = self.timestamp
@@ -154,11 +154,17 @@ class DetectionBoxMarker:
             # against the documentation "NOTE: only used for text markers
             # string text"
             marker.text = name
-        axis_arrow = {'head_diameter': 0.02,
-                      'shaft_diameter': 0.012,
-                      'head_length': 0.012, 
-                      'length': 0.08}
+        # axis_arrow = {'head_diameter': 0.02,
+        #               'shaft_diameter': 0.012,
+        #               'head_length': 0.012, 
+        #               'length': 0.08}
 
+        axis_arrow = {'head_diameter': 0.02 * axes_scale,
+                      'shaft_diameter': 0.012 * axes_scale,
+                      'head_length': 0.012 * axes_scale, 
+                      'length': 0.08 * axes_scale}
+
+        
         # "scale.x is the shaft diameter, and scale.y is the
         # head diameter. If scale.z is not zero, it specifies
         # the head length." -
@@ -202,7 +208,7 @@ class DetectionBoxMarker:
         name = base_name = '_z_axis'
         return self.create_axis_marker(self.z_axis, id_num, rgba, name)
         
-    def get_ros_axes_markers(self):
+    def get_ros_axes_markers(self, axes_scale=1.0):
         markers = []
         
         if not self.ready:
@@ -219,17 +225,17 @@ class DetectionBoxMarker:
             id_num = 4 * self.detection_box_id
             rgba = [0.0, 0.0, 1.0, 0.5]
             name = base_name = '_z_axis'
-            markers.append(self.create_axis_marker(self.z_axis, id_num, rgba, name))
+            markers.append(self.create_axis_marker(self.z_axis, id_num, rgba, name, axes_scale=axes_scale))
         if self.x_axis is not None:
             id_num = (4 * self.detection_box_id) + 1
             rgba = [1.0, 0.0, 0.0, 0.5]
             name = base_name = '_x_axis'
-            markers.append(self.create_axis_marker(self.x_axis, id_num, rgba, name))
+            markers.append(self.create_axis_marker(self.x_axis, id_num, rgba, name, axes_scale=axes_scale))
         if self.y_axis is not None:
             id_num = (4 * self.detection_box_id) + 2
             rgba = [0.0, 1.0, 0.0, 0.5]
             name = base_name = '_y_axis'
-            markers.append(self.create_axis_marker(self.y_axis, id_num, rgba, name))
+            markers.append(self.create_axis_marker(self.y_axis, id_num, rgba, name, axes_scale=axes_scale))
         
         return markers
     
@@ -286,7 +292,7 @@ class DetectionBoxMarkerCollection:
                     marker_array.markers.append(landmarks_marker)
         return marker_array
 
-    def get_ros_axes_array(self, include_z_axes=True, include_axes=True):
+    def get_ros_axes_array(self, include_z_axes=True, include_axes=True, axes_scale=1.0):
         marker_array = MarkerArray()        
         for key in self.collection:
             marker = self.collection[key]
@@ -296,6 +302,6 @@ class DetectionBoxMarkerCollection:
                     if ros_z_axis_marker is not None:
                         marker_array.markers.append(ros_z_axis_marker)
                 if include_axes:
-                    ros_axes_markers= marker.get_ros_axes_markers()
+                    ros_axes_markers= marker.get_ros_axes_markers(axes_scale=axes_scale)
                     marker_array.markers.extend(ros_axes_markers)
         return marker_array

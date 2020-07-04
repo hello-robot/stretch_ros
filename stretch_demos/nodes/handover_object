@@ -198,8 +198,10 @@ class HandoverObjectNode(hm.HelloNode):
         
         # This rate determines how quickly the head pans back and forth.
         rate = rospy.Rate(0.5)
+        look_around = False
         while not rospy.is_shutdown():
-            self.look_around_callback()
+            if look_around: 
+                self.look_around_callback()
             rate.sleep()
 
         
