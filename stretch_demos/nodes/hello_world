@@ -71,7 +71,7 @@ class HelloWorldNode(hm.HelloNode):
             wrist_position, wrist_velocity, wrist_effort = hm.get_wrist_state(self.joint_states)
         extension_m = wrist_position + max_reach_m
         extension_m = min(extension_m, max_extension_m)
-        extension_contact_effort = 42.0 #42.0 #40.0 from funmap
+        extension_contact_effort = 45.0 #42.0 #40.0 from funmap
         pose = {'wrist_extension': (extension_m, extension_contact_effort)}
         self.move_to_pose(pose, custom_contact_thresholds=True)
         
