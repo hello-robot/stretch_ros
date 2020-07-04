@@ -47,7 +47,7 @@
   <!-- -->
 
   <!-- KEYBOARD TELEOP -->
-  <node name="keyboard_teleop" pkg="stretch_core" type="keyboard_teleop" output="screen" args='--hello_world_on'/>
+  <node name="keyboard_teleop" pkg="stretch_core" type="keyboard_teleop" output="screen" args='--mapping_on --hello_world_on'/>
   <!-- -->
     
 </launch>
