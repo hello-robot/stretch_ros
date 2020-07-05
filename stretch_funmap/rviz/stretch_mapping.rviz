@@ -27,7 +27,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -53,7 +53,7 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
-    - Alpha: 0.5
+    - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
       Enabled: true
@@ -164,35 +164,20 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        link_grasp_center:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        link_gripper:
+        link_dry_erase_holder:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        link_gripper_finger_left:
+        link_dry_erase_marker:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        link_gripper_finger_right:
+        link_dry_erase_tip:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        link_gripper_fingertip_left:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        link_gripper_fingertip_right:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         link_head:
           Alpha: 1
           Show Axes: false
