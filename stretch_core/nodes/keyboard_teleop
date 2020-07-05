@@ -94,6 +94,20 @@ class GetKeyboardCommands:
         ## MOSTLY MAPPING RELATED CAPABILITIES
         ## (There are non-mapping outliers.)
         ####################################################
+        
+        # Sequential performs a fixed number of autonomus mapping iterations
+        if (c == '!') and self.mapping_on:
+            number_iterations = 4
+            for n in range(number_iterations):
+                # Trigger a 3D scan with the D435i
+                trigger_request = TriggerRequest() 
+                trigger_result = node.trigger_head_scan_service(trigger_request)
+                rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+
+                # Trigger driving the robot to the estimated next best place to scan
+                trigger_request = TriggerRequest() 
+                trigger_result = node.trigger_drive_to_scan_service(trigger_request)
+                rospy.loginfo('trigger_result = {0}'.format(trigger_result))
                 
         # Trigger localizing the robot to a new pose anywhere on the current map
         if ((c == '+') or (c == '=')) and self.mapping_on:
@@ -136,8 +150,11 @@ class GetKeyboardCommands:
             trigger_request = TriggerRequest() 
             trigger_result = node.trigger_lower_until_contact_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
-        ####################################################
+            
         
+        ####################################################
+        ## OTHER CAPABILITIES
+        ####################################################
 
         # Trigger Hello World whiteboard writing demo
         if ((c == '`') or (c == '~')) and self.hello_world_on:
@@ -175,6 +192,11 @@ class GetKeyboardCommands:
             trigger_result = node.trigger_deliver_object_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
+            
+        ####################################################
+        ## BASIC KEYBOARD TELEOPERATION COMMANDS
+        ####################################################
+        
         # 8 or up arrow
         if c == '8' or c == '\x1b[A':
             command = {'joint': 'joint_lift', 'delta': self.get_deltas()['translate']}
@@ -238,6 +260,8 @@ class GetKeyboardCommands:
         if c == 'q' or c == 'Q':
             rospy.loginfo('keyboard_teleop exiting...')
             rospy.signal_shutdown('Received quit character (q), so exiting')
+
+        ####################################################
 
         return command
 
