@@ -94,14 +94,6 @@ class GetKeyboardCommands:
         ## MOSTLY MAPPING RELATED CAPABILITIES
         ## (There are non-mapping outliers.)
         ####################################################
-
-        # Sequential performs a fixed number of autonomus mapping iterations
-        if (c == '!') and self.mapping_on:
-            number_iterations = 4
-            for n in range(number_iterations): 
-                trigger_request = TriggerRequest() 
-                trigger_result = node.trigger_global_localization_service(trigger_request)
-                rospy.loginfo('trigger_result = {0}'.format(trigger_result))
                 
         # Trigger localizing the robot to a new pose anywhere on the current map
         if ((c == '+') or (c == '=')) and self.mapping_on:
