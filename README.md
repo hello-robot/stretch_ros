@@ -16,7 +16,7 @@ The *stretch_ros* repository holds ROS related code for the Stretch RE1 mobile m
 [stretch_demos](https://github.com/hello-robot/stretch_ros/tree/master/stretch_demos/README.md) | Demonstrations of simple autonomous manipulation  
 [stretch_description](https://github.com/hello-robot/stretch_ros/blob/master/stretch_description/README.md) | Generate and export URDFs 
 [stretch_funmap](https://github.com/hello-robot/stretch_ros/blob/master/stretch_funmap/README.md) | Demonstrations of Fast Unified Navigation, Manipulation And Planning (FUNMAP) 
-[stretch_navigation](https://github.com/hello-robot/stretch_ros/blob/master/stretch_navigation/README.md) | Common ROS navigation for the Stretch RE1
+[stretch_navigation](https://github.com/hello-robot/stretch_ros/blob/master/stretch_navigation/README.md) | Support for the ROS navigation stack, including move_base, gmapping, and AMCL.
 
 
 
