@@ -26,13 +26,13 @@ We intend for the following high-level summary to provide guidance about the cur
 
 Directory | Testing Status | Notes 
 --- | --- | ---
-hello_helpers | FAIR |
+hello_helpers | GOOD |
 stretch_calibration | GOOD |
-stretch_core | FAIR | limited capabilities and a current development focus
+stretch_core | GOOD | 
 stretch_deep_perception | GOOD |
-stretch_demos | POOR | current development focus
+stretch_demos | FAIR | current development focus
 stretch_description | GOOD |
-stretch_funmap | POOR | current development focus
+stretch_funmap | FAIR | current development focus
 stretch_navigation | GOOD |
 
 ## Licenses
