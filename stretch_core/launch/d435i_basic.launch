@@ -55,7 +55,7 @@
          properly and due to firmware issues needs to reset. If set to
          true, the device will reset prior to usage."
          https://github.com/intel-ros/realsense -->
-    <arg name="initial_reset" value="true"/>
+    <!--<arg name="initial_reset" value="true"/>-->
     
     <!--<arg name="unite_imu_method" value="copy"/> linear_interpolation-->
   </include>

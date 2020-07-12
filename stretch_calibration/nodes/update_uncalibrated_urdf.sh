@@ -6,4 +6,4 @@ echo ""
 
 echo "rosrun xacro xacro `rospack find stretch_description`/urdf/stretch_description.xacro > `rospack find stretch_description`/urdf/stretch_uncalibrated.urdf"
 
-rosrun xacro xacro `rospack find stretch_description`/urdf/stretch_description.xacro use_nominal_extrinsics:=true > `rospack find stretch_description`/urdf/stretch_uncalibrated.urdf
+rosrun xacro xacro `rospack find stretch_description`/urdf/stretch_description.xacro > `rospack find stretch_description`/urdf/stretch_uncalibrated.urdf
