@@ -21,6 +21,7 @@ from control_msgs.msg import FollowJointTrajectoryAction
 from control_msgs.msg import FollowJointTrajectoryResult
 
 from std_srvs.srv import Trigger, TriggerResponse
+from std_srvs.srv import SetBool, SetBoolResponse
 
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import JointState, Imu, MagneticField
@@ -453,6 +454,17 @@ class StretchBodyNode:
             message='Now in position mode.'
             )
 
+    def runstop_service_callback(self, request):
+        if request.data:
+            self.robot.pimu.runstop_event_trigger()
+        else:
+            self.robot.pimu.runstop_event_reset()
+
+        return SetBoolResponse(
+            success=True,
+            message='is_runstopped: {0}'.format(request.data)
+            )
+
     ########### MAIN ############
 
     def main(self):
@@ -578,6 +590,10 @@ class StretchBodyNode:
         self.stop_the_robot_service = rospy.Service('/stop_the_robot',
                                                     Trigger,
                                                     self.stop_the_robot_callback)
+
+        self.runstop_service = rospy.Service('/runstop',
+                                              SetBool,
+                                              self.runstop_service_callback)
 
         try:
             # start loop to command the mobile base velocity, publish
