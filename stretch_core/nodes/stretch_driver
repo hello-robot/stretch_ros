@@ -580,6 +580,7 @@ class StretchBodyNode:
         self.last_twist_time = rospy.get_time()
 
         # start action server for joint trajectories
+        self.fail_out_of_range_goal = rospy.get_param('~fail_out_of_range_goal', True)
         self.joint_trajectory_action = JointTrajectoryAction(self)
         self.joint_trajectory_action.server.start()
 

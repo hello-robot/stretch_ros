@@ -74,7 +74,7 @@ class SimpleCommandGroup:
 
         return True
 
-    def set_goal(self, point, invalid_goal_callback, **kwargs):
+    def set_goal(self, point, invalid_goal_callback, fail_out_of_range_goal, **kwargs):
         """Sets goal for the joint group
 
         Sets and validates the goal point for the joints
@@ -86,6 +86,8 @@ class SimpleCommandGroup:
             the target point for all joints
         invalid_goal_callback: func
             error callback for invalid goal
+        fail_out_of_range_goal: bool
+            whether to bound out-of-range goals to range or fail
 
         Returns
         -------
@@ -102,7 +104,7 @@ class SimpleCommandGroup:
                 invalid_goal_callback(err_str)
                 return False
 
-            self.goal['position'] = hm.bound_ros_command(self.range, goal_pos)
+            self.goal['position'] = hm.bound_ros_command(self.range, goal_pos, fail_out_of_range_goal)
             self.goal['velocity'] = point.velocities[self.index] if len(point.velocities) > self.index else None
             self.goal['acceleration'] = point.accelerations[self.index] if len(point.accelerations) > self.index else None
             self.goal['contact_threshold'] = point.effort[self.index] if len(point.effort) > self.index else None
@@ -277,7 +279,7 @@ class GripperCommandGroup(SimpleCommandGroup):
 
         return True
 
-    def set_goal(self, point, invalid_goal_callback, **kwargs):
+    def set_goal(self, point, invalid_goal_callback, fail_out_of_range_goal, **kwargs):
         self.goal = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
         if self.active:
             goal_pos = point.positions[self.index] if len(point.positions) > self.index else None
@@ -289,7 +291,7 @@ class GripperCommandGroup(SimpleCommandGroup):
                 return False
 
             joint_range = self.range_aperture_m if (self.name == 'gripper_aperture') else self.range_finger_rad
-            self.goal['position'] = hm.bound_ros_command(joint_range, goal_pos)
+            self.goal['position'] = hm.bound_ros_command(joint_range, goal_pos, fail_out_of_range_goal)
             self.goal['velocity'] = point.velocities[self.index] if len(point.velocities) > self.index else None
             self.goal['acceleration'] = point.accelerations[self.index] if len(point.accelerations) > self.index else None
             self.goal['contact_threshold'] = point.effort[self.index] if len(point.effort) > self.index else None
@@ -374,7 +376,7 @@ class TelescopingCommandGroup(SimpleCommandGroup):
 
         return True
 
-    def set_goal(self, point, invalid_goal_callback, **kwargs):
+    def set_goal(self, point, invalid_goal_callback, fail_out_of_range_goal, **kwargs):
         self.goal = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
         if self.active:
             if self.is_telescoping:
@@ -403,7 +405,7 @@ class TelescopingCommandGroup(SimpleCommandGroup):
                 invalid_goal_callback(err_str)
                 return False
 
-            self.goal['position'] = hm.bound_ros_command(self.range, goal_pos)
+            self.goal['position'] = hm.bound_ros_command(self.range, goal_pos, fail_out_of_range_goal)
             if self.goal['position'] is None:
                 err_str = ("Received {0} goal point that is out of bounds. "
                             "Range = {1}, but goal point = {2}.").format(self.name, self.range, goal_pos)
@@ -536,7 +538,7 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
 
         return True
 
-    def set_goal(self, point, invalid_goal_callback, **kwargs):
+    def set_goal(self, point, invalid_goal_callback, fail_out_of_range_goal, **kwargs):
         self.goal = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
         self.goal_translate_mobile_base = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
         self.goal_rotate_mobile_base = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
@@ -583,7 +585,7 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
                     invalid_goal_callback(err_str)
                     return False
 
-                self.goal['position'] = self.ros_to_mechaduino(goal_pos, kwargs['manipulation_origin'])
+                self.goal['position'] = self.ros_to_mechaduino(goal_pos, kwargs['manipulation_origin'], fail_out_of_range_goal)
                 self.goal['velocity'] = point.velocities[self.index] if len(point.velocities) > self.index else None
                 self.goal['acceleration'] = point.accelerations[self.index] if len(point.accelerations) > self.index else None
                 self.goal['contact_threshold'] = point.effort[self.index] if len(point.effort) > self.index else None
@@ -595,8 +597,8 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
 
         return True
 
-    def ros_to_mechaduino(self, ros_ros, manipulation_origin):
-        ros_pos = hm.bound_ros_command(self.range, ros_ros)
+    def ros_to_mechaduino(self, ros_ros, manipulation_origin, fail_out_of_range_goal):
+        ros_pos = hm.bound_ros_command(self.range, ros_ros, fail_out_of_range_goal)
         return (manipulation_origin['x'] + ros_pos) if ros_pos is not None else None
 
     def init_execution(self, robot, robot_status, **kwargs):
