@@ -2,7 +2,7 @@
 
 ## Overview
 
-*stretch_demos* provides simple demonstrations for the Stretch RE1 mobile manipulator from Hello Robot Inc. For an overview of demos, we recommend you look at the following forum post: https://forum.hello-robot.com/t/autonomy-video-details
+*stretch_demos* provides simple demonstrations for the Stretch RE1 mobile manipulator from Hello Robot Inc. For an overview of the demos, we recommend you look at the following forum post: https://forum.hello-robot.com/t/autonomy-video-details
 
 ## Getting Started Demos
 
