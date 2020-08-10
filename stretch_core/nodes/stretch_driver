@@ -456,6 +456,21 @@ class StretchBodyNode:
 
     def runstop_service_callback(self, request):
         if request.data:
+            with self.robot_stop_lock:
+                self.stop_the_robot = True
+
+                self.robot.base.translate_by(0.0)
+                self.robot.base.rotate_by(0.0)
+                self.robot.arm.move_by(0.0)
+                self.robot.lift.move_by(0.0)
+                self.robot.push_command()
+
+                self.robot.head.move_by('head_pan', 0.0)
+                self.robot.head.move_by('head_tilt', 0.0)
+                self.robot.end_of_arm.move_by('wrist_yaw', 0.0)
+                self.robot.end_of_arm.move_by('stretch_gripper', 0.0)
+                self.robot.push_command()
+
             self.robot.pimu.runstop_event_trigger()
         else:
             self.robot.pimu.runstop_event_reset()
