@@ -207,7 +207,7 @@ class CollectHeadCalibrationDataNode:
 
                 if timeout:
                     rospy.logerr('collect_head_calibration_data get_samples: timeout while waiting for sample.')
-                    #raise IOError('Timeout')
+                    raise Exception('Timed out waiting for joint_states/accelerations/markers messages after 10 seconds')
 
                 with self.data_lock:
                     #set backlash joint state

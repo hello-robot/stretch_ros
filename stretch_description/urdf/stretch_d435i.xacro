@@ -2,6 +2,7 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="stretch_d435i">
 
   <xacro:arg name="use_nominal_extrinsics" default="true"/>
+  <xacro:arg name="add_plug" default="false"/>
   <xacro:include filename="$(find realsense2_description)/urdf/_d435.urdf.xacro"/>
 
   <!-- xyz = "
