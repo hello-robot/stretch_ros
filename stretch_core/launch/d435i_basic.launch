@@ -17,6 +17,7 @@
     <arg name="depth_fps" value="15"/>
     <arg name="enable_infra1" value="false"/>
     <arg name="enable_infra2" value="false"/>
+    <arg name="enable_accel" value="true"/>
 
     <arg name="depth_width" value="$(arg depth_width)"/>
     <arg name="depth_height" value="$(arg depth_height)"/>
