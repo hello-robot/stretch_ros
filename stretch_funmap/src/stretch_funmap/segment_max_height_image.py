@@ -29,7 +29,7 @@ def find_object_to_grasp(height_image, display_on=False):
         if display_on: 
             print('No elevated surface found.')
         return None
-
+    
     surface_height_pix = np.max(h_image[surface_mask > 0])
     surface_height_m = m_per_unit * surface_height_pix
     height_image.apply_planar_correction(plane_parameters, surface_height_pix)
@@ -42,11 +42,24 @@ def find_object_to_grasp(height_image, display_on=False):
         rgb_image = height_image.rgb_image.copy()
         rgb_image[surface_mask > 0] = (rgb_image[surface_mask > 0]/2) + [0, 127, 0] 
 
+    #####################################
+    # Select candidate object points
+
+    # Define the minimum height for a candidate object point
     min_object_height_m = 0.01
     min_obstacle_height_m = surface_height_m + min_object_height_m
     min_obstacle_height_pix = min_obstacle_height_m / m_per_unit
 
-    obstacle_selector = h_image > min_obstacle_height_pix
+    # Define the maximum height for a candidate object point
+    robot_camera_height_m = 1.13 #from HeadScan in mapping.py and ManipulationView in manipulation_planning.py)
+    voi_safety_margin_m = 0.02 
+    max_object_height_m = 0.4
+    max_obstacle_height_m = min(robot_camera_height_m - voi_safety_margin_m,
+                                surface_height_m + max_object_height_m)
+    max_obstacle_height_pix = max_obstacle_height_m / m_per_unit
+
+    # Select candidate object points that are within the valid height range
+    obstacle_selector = (h_image > min_obstacle_height_pix) & (h_image < max_obstacle_height_pix)
 
     if display_on: 
         rgb_image = height_image.rgb_image.copy()
@@ -61,11 +74,18 @@ def find_object_to_grasp(height_image, display_on=False):
         rgb_image[surface_mask > 0] = (rgb_image[surface_mask > 0]/2) + [0, 127, 0] 
         rgb_image[obstacle_mask > 0] = (rgb_image[obstacle_mask > 0]/2) + [0, 0, 127] 
 
+    # Find the convex hull of the surface points to represent the full
+    # surface, overcoming occlusion holes, noise, and other phenomena.
     surface_convex_hull_mask = convex_hull_image(surface_mask)
+
+    # Select candidate object points that are both within the valid
+    # height range and on the surface
     obstacles_on_surface_selector = (obstacle_selector & surface_convex_hull_mask) 
     obstacles_on_surface = np.uint8(255.0 * obstacles_on_surface_selector)
 
-    # Dilate and erode the obstacles to agglomerate object parts. 
+    # Dilate and erode the candidate object points to agglomerate
+    # object parts that might be separated due to occlusion, noise,
+    # and other phenomena.
     kernel_width_pix = 5 #3
     iterations = 3 #5
     kernel_radius_pix = (kernel_width_pix - 1) / 2
@@ -78,6 +98,10 @@ def find_object_to_grasp(height_image, display_on=False):
     if use_erosion:
         obstacles_on_surface = cv2.erode(obstacles_on_surface, kernel, iterations=iterations)
 
+    #####################################
+    # Process the candidate object points      
+        
+    # Treat connected components of candidate object points as objects. Fit ellipses to these segmented objects.
     label_image, max_label_index = sk.measure.label(obstacles_on_surface, neighbors=8, background=0, return_num=True, connectivity=None)
     region_properties = sk.measure.regionprops(label_image, intensity_image=None, cache=True, coordinates='xy')
     if display_on:
@@ -85,7 +109,10 @@ def find_object_to_grasp(height_image, display_on=False):
         color_label_image = sk.color.label2rgb(label_image, image=rgb_image, colors=None, alpha=0.3, bg_label=0, bg_color=(0, 0, 0), image_alpha=1, kind='overlay')
         cv2.imshow('color_label_image', color_label_image)
 
-    if len(region_properties) > 0: 
+    # Proceed if an object was found.
+    if len(region_properties) > 0:
+
+        # Select the object with the largest area.
         largest_region = None
         largest_area = 0.0
         for region in region_properties:
@@ -93,16 +120,21 @@ def find_object_to_grasp(height_image, display_on=False):
                 largest_region = region
                 largest_area = region.area
 
+        # Make the object with the largest area the grasp target. In
+        # the future, other criteria could be used, such as the
+        # likelihood that the gripper can actually grasp the
+        # object. For example, the target object might be too large.
         object_region = largest_region
+
+        # Collect and compute various features for the target object.
         object_ellipse = get_ellipse(object_region)
         object_area_m_sqr = object_region.area * pow(m_per_pix, 2)
         min_row, min_col, max_row, max_col = object_region.bbox
         object_bounding_box = {'min_row': min_row, 'min_col': min_col, 'max_row': max_row, 'max_col': max_col}
 
-        # Only compute height statistics using the
-        # original, high-confidence heights above the
-        # surface that are a part of the final object
-        # region.
+        # Only compute height statistics using the original,
+        # high-confidence heights above the surface that are a part of
+        # the final object region.
         object_selector = (label_image == object_region.label)
         object_height_selector = obstacles_on_surface_selector & object_selector
         object_heights_m = (m_per_unit * h_image[object_height_selector]) - surface_height_m
@@ -123,7 +155,7 @@ def find_object_to_grasp(height_image, display_on=False):
         #            'minor': {'axis': minor_axis, 'length': r.minor_axis_length},
         #            'major': {'axis': major_axis, 'length': r.major_axis_length, 'ang_rad': major_ang_rad}}
 
-        # Create object grasp target.
+        # Prepare grasp target information.
         grasp_location_xy_pix = object_ellipse['centroid']
         major_length_pix = object_ellipse['major']['length']
         major_length_m = m_per_pix * major_length_pix
