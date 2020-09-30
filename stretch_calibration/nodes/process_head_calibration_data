@@ -111,21 +111,32 @@ class HeadCalibrator:
                               'joint_head_tilt_looking_up_error_multiplier': 2.0,
                               'parameter_error_total': 1.0}
 
+        # Load and store the original uncalibrated URDF.
         self.original_urdf = urdf_parser.from_xml_file(uncalibrated_urdf_filename)
+
+        # Initialize the new URDF that will altered during optimization.
         self.new_urdf = deepcopy(self.original_urdf)
         
         self.gravity_acceleration_vec = np.array([0.0, 0.0, 1.0])
 
+        ##########
+        # Set the kinematic chains and joints to be used during
+        # optimization. These *_joint and *_chain variables are used
+        # to access and modify the optimized URDF (self.new_urdf)
+        # during optimization.
+
+        # Also, set the original joint positions and rotations. The
+        # optimization applies rigid body transformations to these
+        # original poses.
+
+        # Chain from the base of the robot to the color camera used to
+        # observe the ARUCO markers.
         self.camera_chain = ca.Chain(self.new_urdf, 'base_link', 'camera_color_optical_frame')
 
         # This is the part that connects the pan joint to the top of
         # the mast. There is some variation in how it is mounted to
         # the top of the mast. For example, it can be rotated
         # slightly.
-        self.head_joint = self.camera_chain.get_joint_by_name('joint_head')
-        self.original_head_assembly_xyz = np.array(self.head_joint.origin.xyz)
-        self.original_head_assembly_rpy = np.array(self.head_joint.origin.rpy)
-        self.original_head_assembly_r = Rotation.from_euler('xyz', self.original_head_assembly_rpy)
 
         self.camera_tilt_joint = self.camera_chain.get_joint_by_name('joint_head_tilt')
         self.original_tilt_assembly_xyz = np.array(self.camera_tilt_joint.origin.xyz)
@@ -142,6 +153,7 @@ class HeadCalibrator:
         self.original_camera_mount_rpy = np.array(self.camera_mount_joint.origin.rpy)
         self.original_camera_mount_r = Rotation.from_euler('xyz', self.original_camera_mount_rpy)
 
+        # Chain from the base of the robot to robot's wrist that has ARUCO markers on it. 
         self.wrist_chain = ca.Chain(self.new_urdf, 'base_link', 'link_arm_l0')
 
         if self.calibrate_lift:
@@ -167,6 +179,8 @@ class HeadCalibrator:
             self.original_arm_xyz = np.array(self.arm_joint.origin.xyz)
             self.original_arm_rpy = np.array(self.arm_joint.origin.rpy)
             self.original_arm_r = Rotation.from_euler('xyz', self.original_arm_rpy)
+
+        ##########
             
         # calculate 10 deg of error
         deg_error = 10.0
@@ -179,6 +193,7 @@ class HeadCalibrator:
 
         self.error_measures = []
 
+        # Create error measures to be used during the optimization.
         aruco_urdf = self.new_urdf
         rgba = [0.0, 1.0, 0.0, 0.2]
         self.error_measures.append(ca.ArucoError('wrist_top', 'wrist', 'link_aruco_top_wrist', aruco_urdf, self.meters_per_deg, rgba))
@@ -192,7 +207,8 @@ class HeadCalibrator:
         self.error_measures.append(ca.ArucoError('base_right', 'base', 'link_aruco_right_base', aruco_urdf, self.meters_per_deg, rgba))
         
     def load_data(self, parameters):
-
+        # Load data to use for calibration.
+        
         filenames = glob.glob(self.calibration_directory + 'head_calibration_data' + '_*[0-9].yaml')
         filenames.sort()
         most_recent_filename = filenames[-1]
@@ -235,6 +251,8 @@ class HeadCalibrator:
 
 
     def get_calibration_options(self):
+        # Return the current calibration options
+        
         calibration_options = {'calibrate_lift': self.calibrate_lift,
                                'calibrate_arm': self.calibrate_arm,
                                'calibrate_controller_offsets': self.calibrate_controller_offsets,
@@ -244,7 +262,8 @@ class HeadCalibrator:
         return calibration_options
             
     def get_names_of_parameters_to_fit(self):
-
+        # Return the names of the parameters being fit by the optimization.
+        
         parameter_names = []
         
         if self.calibrate_controller_offsets:
@@ -288,6 +307,14 @@ class HeadCalibrator:
                 'tilt_angle_backlash_transition': self.tilt_angle_backlash_transition_rad}
     
     def parameter_error_term(self, parameters):
+        # Calculate error that is solely a function of the parameter
+        # values. This is used to keep parameters within desired
+        # ranges by assigning high errors when parameters are outside
+        # these ranges using a soft constraint function.
+
+        ###########
+        # Unpack and preprocess the parameters
+        
         i = 0
 
         if self.calibrate_controller_offsets: 
@@ -339,7 +366,11 @@ class HeadCalibrator:
             i += 3
             arm_offset_rotvec_mag = np.linalg.norm(parameters[i:i+3])
             i += 3
+
             
+        ###########
+        # Compute the individual parameter errors and sum them up.
+        
         parameter_error = 0.0
 
         if self.calibrate_controller_offsets: 
@@ -416,7 +447,7 @@ class HeadCalibrator:
     
     
     def update_urdf(self, parameters):
-        # This updates self.new_urdf via the camera's kinematic chain
+        # This updates self.new_urdf via the camera's kinematic chain.
         
         i = 0
 
