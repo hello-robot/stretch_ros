@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>stretch_navigation</name>
-  <version>0.0.1</version>
+  <version>0.2.0</version>
   <description>Standard ROS navigation package using move_base and amcl.</description>
   <maintainer email="support@hello-robot.com">Hello Robot Inc.</maintainer>
   <license>Apache License 2.0</license>

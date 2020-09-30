@@ -5,7 +5,7 @@
 -->
 <package format="2">
   <name>stretch_description</name>
-  <version>0.0.1</version>
+  <version>0.2.0</version>
   <description>The stretch_description package</description>
   
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
