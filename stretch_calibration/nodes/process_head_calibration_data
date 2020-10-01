@@ -206,10 +206,13 @@ class HeadCalibrator:
         rgba = [1.0, 0.0, 1.0, 0.2]
         self.error_measures.append(ca.ArucoError('base_right', 'base', 'link_aruco_right_base', aruco_urdf, self.meters_per_deg, rgba))
         
-    def load_data(self, parameters):
+    def load_data(self, parameters, use_check_calibration_data=False):
         # Load data to use for calibration.
-        
-        filenames = glob.glob(self.calibration_directory + 'head_calibration_data' + '_*[0-9].yaml')
+
+        if use_check_calibration_data:
+            filenames = glob.glob(self.calibration_directory + 'check_head_calibration_data' + '_*[0-9].yaml')
+        else: 
+            filenames = glob.glob(self.calibration_directory + 'head_calibration_data' + '_*[0-9].yaml')
         filenames.sort()
         most_recent_filename = filenames[-1]
         self.head_calibration_data_filename = most_recent_filename
@@ -280,7 +283,6 @@ class HeadCalibrator:
         
         parameter_names.extend(['head_assembly_offset_xyz_x', 'head_assembly_offset_xyz_y', 'head_assembly_offset_xyz_z',
                                 'head_assembly_offset_rotvec_x', 'head_assembly_offset_rotvec_y', 'head_assembly_offset_rotvec_z',
-
                                 'pan_assembly_offset_xyz_x', 'pan_assembly_offset_xyz_y', 'pan_assembly_offset_xyz_z',
                                 'pan_assembly_offset_rotvec_x', 'pan_assembly_offset_rotvec_y', 'pan_assembly_offset_rotvec_z',
                                 'tilt_assembly_offset_xyz_x', 'tilt_assembly_offset_xyz_y', 'tilt_assembly_offset_xyz_z',
@@ -776,7 +778,7 @@ class ProcessHeadCalibrationDataNode:
         }
 
             
-    def main(self):
+    def main(self, use_check_calibration_data):
         
         rospy.init_node('process_head_calibration_data')
         self.node_name = rospy.get_name()        
@@ -841,7 +843,7 @@ class ProcessHeadCalibrationDataNode:
             
             if self.visualize_only:
                 print('Loading the most recent data file.')
-                self.calibrator.load_data(fit_parameters)
+                self.calibrator.load_data(fit_parameters, use_check_calibration_data=use_check_calibration_data)
                 print('Visualizing how well the model fits the data.')
                 print('Wait to make sure that RViz has time to load.')
                 rospy.sleep(5.0)
@@ -979,12 +981,15 @@ if __name__ == '__main__':
     parser.add_argument('--load_prev', action='store_true', help='Do not perform an optimization and instead load the most recent CMA-ES optimization results.')
     parser.add_argument('--only_vis', action='store_true', help='Only visualize the fit of the CMA-ES optimization results. This does not save any results.')
     parser.add_argument('--no_vis', action='store_true', help='Do not calculate or publish any visualizations. This results in faster fitting.')
+    parser.add_argument('--check', action='store_true', help='Use data collected to check the current calibration, instead of data collected to fit a new calibration.')
+    
     args, unknown = parser.parse_known_args()
 
     opt_results_file_to_load = args.load
     load_most_recent_opt_results = args.load_prev
     visualize_only = args.only_vis
     turn_on_visualization = not args.no_vis
-
+    use_check_calibration_data = args.check
+    
     node = ProcessHeadCalibrationDataNode(opt_results_file_to_load = opt_results_file_to_load, load_most_recent_opt_results = load_most_recent_opt_results, visualize_only = visualize_only, visualize=turn_on_visualization)
-    node.main()
+    node.main(use_check_calibration_data)
