@@ -18,9 +18,13 @@ In addition, after changing a tool, this code can be used to generate a new cali
 
    `rosrun stretch_calibration check_head_calibration.sh`
    
+   - The total_error printed on the command line should be less than 0.05. If it is not, an error will be printed on the command line. 
+
    - In RViz the white markers represent the locations for the ArUco markers predicted by the calibrated URDF. The colored markers represent the observed locations of the ArUco markers on the robot's body. For a good fit, the white markers will be close to the colored markers. 
    
-   - The total_error printed on the command line should be less than 0.05. If it is not, an error will be printed on the command line. 
+   ![](../images/calibration_fit_check.png)
+   
+
 
 
 ## Visually Inspecting the Current Calibration
