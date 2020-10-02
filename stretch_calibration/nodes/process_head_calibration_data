@@ -252,6 +252,10 @@ class HeadCalibrator:
             marker_array.markers.extend(self.target_markers)
             self.visualization_markers_pub.publish(marker_array)
 
+    def check_fit_error(self, fit_error):
+        fit_error_threshold = 0.05
+        if fit_error > fit_error_threshold:
+            rospy.logerr('The fit error is unusually high: {0} > {1} (fit_error > fit_error_threshold)'.format(fit_error, fit_error_threshold))
 
     def get_calibration_options(self):
         # Return the current calibration options
@@ -587,8 +591,9 @@ class HeadCalibrator:
     def visualize_fit(self, parameters_to_fit):
         self.visualize = True
         self.infinite_duration_visualization = True
-        self.calculate_error(parameters_to_fit)
-
+        fit_error = self.calculate_error(parameters_to_fit)
+        self.check_fit_error(fit_error)
+        
 
     def update_sample_with_offsets_and_backlash(self, sample):
         # This changes the sample passed as an argument using
@@ -945,6 +950,9 @@ class ProcessHeadCalibrationDataNode:
                 'calibration_data_filename': self.calibrator.head_calibration_data_filename,
                 'error_weights': self.calibrator.error_weights
             }
+
+            fit_error = cma_result['best_parameters_error']
+            self.calibrator.check_fit_error(fit_error)
             
             time_string = ca.create_time_string()
 
