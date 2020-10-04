@@ -453,8 +453,10 @@ class HeadCalibrator:
     
     
     def update_urdf(self, parameters):
-        # This updates self.new_urdf via the camera's kinematic chain.
-        
+        # Updates self.new_urdf using the provided parameter
+        # vector.
+
+        # Unpack the parameter vector into relevant variables.
         i = 0
 
         if self.calibrate_controller_offsets:
@@ -509,7 +511,8 @@ class HeadCalibrator:
             i += 3
             arm_offset_rotvec = parameters[i:i+3]
             i += 3
-            
+
+        # Update the URDF.
         self.camera_pan_joint.origin.xyz = self.original_pan_assembly_xyz + pan_assembly_offset_xyz
         pan_assembly_r = Rotation.from_rotvec(pan_assembly_offset_rotvec) * self.original_pan_assembly_r
         self.camera_pan_joint.origin.rpy = pan_assembly_r.as_euler('xyz')
@@ -534,7 +537,8 @@ class HeadCalibrator:
 
             
     def calculate_normalization(self):
-        # Finds the number of observations that will be used for each error measure
+        # Finds the number of observations that will be used for each
+        # type of error measurement.
         for e in self.error_measures:
             e.reset_observation_count()
         for i, s in enumerate(self.data):
@@ -589,6 +593,9 @@ class HeadCalibrator:
     
                             
     def visualize_fit(self, parameters_to_fit):
+        # Visualize the fit of the provided parameter vector. Also
+        # calculate the fit error, display it, and display an error if
+        # it is too high.
         self.visualize = True
         self.infinite_duration_visualization = True
         fit_error = self.calculate_error(parameters_to_fit)
@@ -628,15 +635,22 @@ class HeadCalibrator:
 
         
     def calculate_error(self, parameters_to_fit, output_error_terms=False):
-
-        error_terms = self.initial_error_terms.copy()
+        # Calculates the fit error for the provide parameter
+        # vector. This can output the total error by itself or both
+        # the total error and the individual unweighted error terms
+        # depending on the output_error_terms argument.
         
+        # Initialize the error terms. 
+        error_terms = self.initial_error_terms.copy()
+
+        # Find the error based solely on the parameter vector values.
         error_terms['parameter_error_total'] += self.parameter_error_term(parameters_to_fit)['total']
 
-        # updates the URDF and fit method variables with the current
-        # parameters
+        # Updates the URDF and related method variables using the
+        # current parameter vector.
         self.update_urdf(parameters_to_fit)
-        
+
+        # Initialize marker array for visualization.
         marker_array = MarkerArray()
         marker_time = rospy.Time.now() 
         marker_id = 0
@@ -647,9 +661,11 @@ class HeadCalibrator:
             # backlash compensation for arm retraction.
             self.target_markers = self.generate_target_visualizations()        
             marker_array.markers.extend(self.target_markers)
-        
+
+        # Iterate through all the observations (samples) in the data.
         for i, s in enumerate(self.data):
-            
+
+            # Only use selected samples.
             if self.use_this_sample(i, s):
 
                 # Do not alter the original data.
@@ -696,20 +712,33 @@ class HeadCalibrator:
                 for e in self.error_measures:
                     if e.detected:
                         if e.location == 'wrist':
+                            # fit_z is only relevant to the wrist,
+                            # which could deflect downward.
                             delta_error, ros_markers, marker_id = e.error(self.camera_transform, fit_z, fit_orientation, marker_id, self.visualize)
                         else:
                             delta_error, ros_markers, marker_id = e.error(self.camera_transform, True, fit_orientation, marker_id, self.visualize)
 
+                        # Typically there will be far fewer
+                        # observations made with the head tilted
+                        # upwards. This weight can help compensate for
+                        # this imbalance.
                         if backlash_state['joint_head_tilt_looking_up']:
-                            error_multiplier = self.error_weights['joint_head_tilt_looking_up_error_multiplier']
+                            tilt_error_multiplier = self.error_weights['joint_head_tilt_looking_up_error_multiplier']
                         else:
-                            error_multiplier = 1.0
-                            
+                            tilt_error_multiplier = 1.0
+
+                        # Add the errors to the relevant error
+                        # terms. For example, there can be both a
+                        # position and an orientation error.
                         for d in delta_error:
                             error_term_name = e.name + '_' + d
-                            error_terms[error_term_name] += (error_multiplier * delta_error[d])
+                            error_terms[error_term_name] += (tilt_error_multiplier * delta_error[d])
+                            
+                        # Collects markers to visualize.
                         marker_array.markers.extend(ros_markers)
 
+        # Calculate the total error by summing the weighted error
+        # terms.
         total_error = 0.0
         for k in error_terms:
             total_error += self.error_weights[k] * error_terms[k]
@@ -722,9 +751,12 @@ class HeadCalibrator:
                     m.lifetime = rospy.Duration()
             self.visualization_markers_pub.publish(marker_array)
 
+        # Returns the total error and the individual, unweighted error
+        # terms.
         if output_error_terms:
             return total_error, error_terms
-        
+
+        # Only returns the total error.
         return total_error
 
     
