@@ -927,11 +927,10 @@ class ProcessHeadCalibrationDataNode:
             end_time = time.time()
             calibration_time_in_minutes = (end_time - start_time)/60.0
             print('Minutes spent calibrating: ', calibration_time_in_minutes)
-            
-            # A results tuple from CMAEvolutionStrategy property result.
 
+            # "
+            # A results tuple from CMAEvolutionStrategy property result.
             # This tuple contains in the given position and as attribute
-            
             #     0 xbest best solution evaluated
             #     1 fbest objective function value of best solution
             #     2 evals_best evaluation count when xbest was evaluated
@@ -939,6 +938,9 @@ class ProcessHeadCalibrationDataNode:
             #     4 iterations
             #     5 xfavorite distribution mean in "phenotype" space, to be considered as current best estimate of the optimum
             #     6 stds effective standard deviations, can be used to compute a lower bound on the expected coordinate-wise distance to the true optimum, which is (very) approximately stds[i] * dimension**0.5 / min(mueff, dimension) / 1.5 / 5 ~ std_i * dimension**0.5 / min(popsize / 2, dimension) / 5, where dimension = CMAEvolutionStrategy.N and mueff = CMAEvolutionStrategy.sp.weights.mueff ~ 0.3 * popsize.
+            # "
+            # documentation copied from
+            # http://cma.gforge.inria.fr/apidocs-pycma/cma.evolution_strategy.CMAEvolutionStrategyResult.html
 
             # Get best error terms
             best_parameters = es.result[0]
