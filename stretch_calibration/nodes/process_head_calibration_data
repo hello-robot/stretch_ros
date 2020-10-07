@@ -687,7 +687,7 @@ class HeadCalibrator:
 
                 # Find the transform from the camera's coordinate
                 # system to the world frame, since all errors are
-                # computed in the world frame.
+                # computed with respect to the world frame.
                 joints = sample['joints']
                 self.camera_transform = self.camera_chain.get_affine_matrix(joints)
 
@@ -708,9 +708,15 @@ class HeadCalibrator:
                 # the objective function.
                 #fit_orientation = False
                 fit_orientation = True
-                
+
+                # Iterate through the error measures in order to
+                # calculate the errors for this sample and add them to
+                # the error terms.
                 for e in self.error_measures:
                     if e.detected:
+                        # Only use this error measure if the sample
+                        # includes the required observation.
+                        
                         if e.location == 'wrist':
                             # fit_z is only relevant to the wrist,
                             # which could deflect downward.
