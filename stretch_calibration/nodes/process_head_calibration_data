@@ -254,8 +254,12 @@ class HeadCalibrator:
 
     def check_fit_error(self, fit_error):
         fit_error_threshold = 0.05
+        fit_warning_threshold = 0.03
         if fit_error > fit_error_threshold:
-            rospy.logerr('The fit error is unusually high: {0} > {1} (fit_error > fit_error_threshold)'.format(fit_error, fit_error_threshold))
+            rospy.logerr('The fit error is very high: {0} > {1} (fit_error > fit_error_threshold)'.format(fit_error, fit_error_threshold))
+        elif fit_error > fit_warning_threshold:
+            rospy.logwarn('The fit error is high: {0} > {1} (fit_error > fit_warning_threshold)'.format(fit_error, fit_warning_threshold))
+        
 
     def get_calibration_options(self):
         # Return the current calibration options
