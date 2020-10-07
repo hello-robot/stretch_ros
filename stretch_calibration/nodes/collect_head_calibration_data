@@ -49,7 +49,12 @@ class CollectHeadCalibrationDataNode:
         self.marker_time = None
         self.data_lock = threading.Lock()
 
-    def calibration_data_callback(self, joint_state, accel, marker_array): 
+    def calibration_data_callback(self, joint_state, accel, marker_array):
+        # Prepare and assign data for calibration to member
+        # variables. The configuration of the robot's joints, the
+        # D435i acceleration, and the 3D fiducial estimates made via
+        # D435i imagery are expected to be synchronized for this
+        # callback.
         with self.data_lock:
             self.data_time = joint_state.header.stamp
             self.joint_state = joint_state
@@ -87,6 +92,7 @@ class CollectHeadCalibrationDataNode:
 
 
     def move_to_pose(self, pose):
+        # Prepare and send a goal pose to which the robot should move.
         joint_names = [key for key in pose]
         self.trajectory_goal.trajectory.joint_names = joint_names
         joint_positions = [pose[key] for key in joint_names]
@@ -95,8 +101,16 @@ class CollectHeadCalibrationDataNode:
         self.trajectory_goal.trajectory.header.stamp = rospy.Time.now()
         self.trajectory_client.send_goal(self.trajectory_goal)
         self.trajectory_client.wait_for_result()
+        
 
     def get_samples(self, pan_angle_center, tilt_angle_center, wrist_extension_center, number_of_samples, first_move=False):
+        # Collect N observations (samples) centered around the
+        # provided head and wrist extension pose. If first_move is
+        # true, it indicates that this is the first movement to a new
+        # region for calibration, which can induce more vibrations and
+        # thus benefit from more time to settle prior to collecting a
+        # sample.
+        
         head_motion_settle_time = 1.0 #5.0
         first_pan_tilt_extra_settle_time = 1.0
         wait_before_each_sample_s = 0.2
@@ -127,7 +141,7 @@ class CollectHeadCalibrationDataNode:
         else:
             joint_head_tilt_looking_up = False
             
-            
+        # represent all head pan and wrist extension backlash states
         backlash_combinations = ((False, False), (False, True), (True, True), (True, False))
 
         pan_backlash_change_rad = 0.07 # ~8 degrees
@@ -135,6 +149,8 @@ class CollectHeadCalibrationDataNode:
         
         samples = []
         
+        # collect samples for all head pan and wrist extension
+        # backlash states
         for joint_head_pan_looked_left, wrist_extension_retracted in backlash_combinations: 
 
             if joint_head_pan_looked_left:
@@ -158,6 +174,9 @@ class CollectHeadCalibrationDataNode:
             rospy.sleep(head_motion_settle_time)
             settled_time = rospy.Time.now()
 
+            # The first move to a pose is typically larger and can
+            # benefit from more settling time due to induced
+            # vibrations.
             if first_move:
                 rospy.sleep(first_pan_tilt_extra_settle_time)
 
@@ -251,9 +270,19 @@ class CollectHeadCalibrationDataNode:
 
 
     
-    
     def calibrate_pan_and_tilt(self, collect_check_data=False):
-
+        # Collects observations of fiducial markers on the robot's
+        # body while moving the head pan, head tilt, arm lift, and arm
+        # extension. There are five markers in total with the
+        # following locations: front left of the mobile base, front
+        # right of the mobile base, top of the shoulder, top of the
+        # wrist, and inside the wrist.
+        #
+        # When collect_check_data is True, fewer samples are collected
+        # with the intention of using them to check the current
+        # calibration. When collect_check_data is False, more samples
+        # are collected with the intention of fully calibrating the
+        # robot.
         
         calibration_data = []
         number_of_samples_per_head_pose = 1 #3
@@ -546,6 +575,8 @@ class CollectHeadCalibrationDataNode:
                 
                     
     def move_to_initial_configuration(self):
+        # The robot is commanded to move to this pose prior to
+        # beginning to collect calibration data.
         initial_pose = {'joint_wrist_yaw': 0.0,
                         'wrist_extension': 0.0,
                         'joint_lift': 0.3,
@@ -561,7 +592,8 @@ class CollectHeadCalibrationDataNode:
         rospy.init_node('collect_head_calibration_data')
         self.node_name = rospy.get_name()        
         rospy.loginfo("{0} started".format(self.node_name))
-        
+
+        # Obtain the ArUco marker ID numbers.
         self.marker_info = rospy.get_param('/aruco_marker_info')
         for k in self.marker_info.keys():
             m = self.marker_info[k]
@@ -588,11 +620,11 @@ class CollectHeadCalibrationDataNode:
 
         self.calibration_directory = rospy.get_param('~calibration_directory')
         rospy.loginfo('Using the following directory for calibration files: {0}'.format(self.calibration_directory))
-        
+
+        # Setup time synchronization for calibration data. 
         joint_state_subscriber = message_filters.Subscriber('/stretch/joint_states', JointState)
         accel_subscriber = message_filters.Subscriber('/camera/accel/sample_corrected', Imu)
         aruco_subscriber = message_filters.Subscriber('/aruco/marker_array', MarkerArray)
-        
         slop_time = 0.1
         self.synchronizer = message_filters.ApproximateTimeSynchronizer([joint_state_subscriber, accel_subscriber, aruco_subscriber], 10, slop_time, allow_headerless=True)
         self.synchronizer.registerCallback(self.calibration_data_callback)
