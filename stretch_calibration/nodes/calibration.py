@@ -48,15 +48,19 @@ import hello_helpers.hello_ros_viz as hr
 
 
 def use_all_data(sample_number, sample):
+    # use all samples
     return True
 
 def use_very_little_data(sample_number, sample):
+    # use every twentieth sample
     if (sample_number % 20) == 0:
         return True
     else:
         return False
 
 def use_all_aruco_and_some_accel(sample_number, sample):
+    # Use all samples with one or more ArUco marker observations, and
+    # a seventh of the remaining samples.
     c = sample['camera_measurements']
 
     wrist_inside_marker_detected = (c['wrist_inside_marker_pose'] != None)
@@ -73,16 +77,12 @@ def use_all_aruco_and_some_accel(sample_number, sample):
     return False
 
 def soft_constraint_error(x, thresh, scale):
+    # Returns a soft constraint error that is zero below the
+    # constraint and increases linearly after the constraint.
     if x > thresh:
         return scale * (x - thresh)
     else:
         return 0.0
-
-def write_urdf_to_file(urdf):
-    urdf_string = urdf.to_xml_string()
-    fid = open('test.urdf', 'w')
-    fid.write(urdf_string)
-    fid.close()
     
 def affine_matrix_difference(t1, t2, size=4):
     error = 0.0
@@ -121,6 +121,8 @@ def axes_error(axes, axes_target):
     return np.sum(errors)/3.0
 
 class Joint:
+    # wrapper for a URDF joint
+    
     def __init__(self, urdf_joint):
         self.joint = urdf_joint
         self.is_joint = True
@@ -153,6 +155,8 @@ class Joint:
         return self.joint.__str__()
 
 class Link:
+    # wrapper for a URDF link
+    
     def __init__(self, urdf_link):
         self.link = urdf_link
         self.is_joint = False
@@ -162,6 +166,8 @@ class Link:
         return self.link.__str__()
     
 class Chain:
+    # wrapper for a URDF chain
+    
     def __init__(self, urdf, start_name, end_name):
         self.urdf = urdf
         self.chain_names = self.urdf.get_chain(start_name, end_name)
@@ -197,14 +203,21 @@ class Chain:
 
 
 class ArucoError:
+    # This object handles error calculations for a single ArUco
+    # marker. For an example of its use, please see
+    # process_head_calibration_data.
+    
     def __init__(self, name, location, aruco_link, urdf, meters_per_deg, rgba):
 
         self.aruco_link = aruco_link
-        self.urdf = urdf
+
         # This creates a wrapper around a mutable URDF object that is
-        # shared across multiple chains
+        # shared across multiple chains. When calibrating the URDF,
+        # the URDF and this chain are updated outside of this
+        # ArucoError object.
         self.marker_frame = '/base_link'
-        self.aruco_chain = Chain(self.urdf, 'base_link', self.aruco_link)
+        self.aruco_chain = Chain(urdf, 'base_link', self.aruco_link)
+        
         self.rgba = rgba
         self.name = name
         self.location = location
@@ -215,14 +228,19 @@ class ArucoError:
         self.number_of_observations = None
 
     def reset_observation_count(self):
+        # Set observation count to zero.
         self.number_of_observations = 0
 
     def increment_observation_count(self, sample):
+        # Increments the observation count if the provided sample
+        # includes an observation of this ArUco marker.
         c = sample['camera_measurements']
         if (c[self.name + '_marker_pose'] != None):
             self.number_of_observations += 1
           
     def update(self, sample, marker_time, unused):
+        # Use the sample to update the ArUco marker's observed pose
+        # and the corresponding robot joint configuration.
         camera_measurements = sample['camera_measurements']
         self.detected = (camera_measurements.get(self.name + '_marker_pose') != None)
         if self.detected is None:
@@ -234,6 +252,10 @@ class ArucoError:
         self.marker_time = marker_time
 
     def get_target_ros_markers(self, sample, marker_id, marker_time, rgba, unused):
+        # If this ArUco marker was observed in the sample, create ROS
+        # markers for visualization of this ArUco marker as predicted
+        # by the current URDF using the robot's configuration for the
+        # sample.
         ros_markers = []
         
         camera_measurements = sample['camera_measurements']
@@ -258,63 +280,45 @@ class ArucoError:
         marker = hr.create_axis_marker(xyz, z_axis, marker_id, self.marker_frame, marker_time, rgba)
         marker_id += 1
         ros_markers.append(marker)
-        
+
+        # A list of ROS markers for visualization, and an ID number
+        # for the last ROS marker generated.
         return ros_markers, marker_id
 
-
-    def get_observed_ros_markers(self, sample, camera_transform, marker_id, marker_time, rgba):
-        # This is used when the camera kinematic change is not being fit
-        # The target/observation structure needs work to cover both head and tool calibration in a nice way.
-        ros_markers = []
-        
-        camera_measurements = sample['camera_measurements']
-        detected = (camera_measurements.get(self.name + '_marker_pose') != None)
-
-        if (detected is None) or (not detected):
-            return [], marker_id
-
-        observed_aruco_pose = camera_measurements[self.name + '_marker_pose']
-        joint_values = sample['joints']
-        marker_time = marker_time
-
-        p = observed_aruco_pose.position
-        observed_xyz = np.dot(camera_transform, np.array([p.x, p.y, p.z, 1.0]))[:3]
-        xyz = observed_xyz
-        marker = hr.create_sphere_marker(xyz, marker_id, self.marker_frame, marker_time, rgba)
-        marker_id += 1
-        ros_markers.append(marker)
-
-        q = observed_aruco_pose.orientation
-        observed_axes = quat_to_rotated_axes(camera_transform[:3,:3], q)
-        z_axis = observed_axes[2]
-        marker = hr.create_axis_marker(xyz, z_axis, marker_id, self.marker_frame, marker_time, rgba)
-        marker_id += 1
-        ros_markers.append(marker)
-        
-        return ros_markers, marker_id
-        
     
     def error(self, camera_transform, fit_z, fit_orientation, marker_id, visualize=True, visualize_targets=False):
-        # The target/observation structure needs work to cover both head and tool calibration in a nice way.
+        # Calculate the error between the observed ArUco marker pose
+        # and the ArUco marker pose predicted by the current URDF (the
+        # target pose). The update method must be called before
+        # calling this method. This method should not be called if the
+        # ArUco marker was not observed. For example, if self.detected
+        # is False, then self.observed_aruco_pose will be None and
+        # this method will fail.
+
+        # Initialize the position and orientation error. If
+        # fit_orientation is False, the orientation error will not be
+        # updated.
         error = {'pos': 0.0,
                  'orient': 0.0}
 
+        # Find the ArUco marker pose predicted by the current URDF
+        # (the target pose).
         target_transform = self.aruco_chain.get_affine_matrix(self.joint_values)
         target_xyz = target_transform[:3,3]
         target_axes = rot_to_axes(target_transform[:3,:3])
 
-        # Transform camera observations into the world coordinate
-        # system through the parametric kinematic chain that is
-        # being calibrated.
+        # Transform the camera observation of the ArUco marker into
+        # the world coordinate system using the provided camera
+        # transform.
         p = self.observed_aruco_pose.position
         observed_xyz = np.dot(camera_transform, np.array([p.x, p.y, p.z, 1.0]))[:3]
-
         if fit_orientation: 
             q = self.observed_aruco_pose.orientation
             observed_axes = quat_to_rotated_axes(camera_transform[:3,:3], q)
 
-        # Calculate errors by comparing the transformed camera
-        # observations with target values.
+        # With respect to the world frame, calculate errors by
+        # comparing the transformed camera observation of the ArUco
+        # marker with the current URDF's ArUco marker prediction.
         if not fit_z:
             # Only fit planar direction to the marker
             # position due to downward deflection of the
@@ -326,15 +330,18 @@ class ArucoError:
             error['pos'] += (self.meters_per_deg * axis_error(vec1, vec2)) / self.number_of_observations
         else:
             if fit_orientation:
-                # Fit the position and angle of the marker
+                # Calculate the position and orientation errors.
                 error['pos'] += np.linalg.norm(observed_xyz - target_xyz) / self.number_of_observations
                 # 0.0 is the best case and 1.0 is the worst case
                 error['orient'] += (self.meters_per_deg * axes_error(observed_axes, target_axes)) / self.number_of_observations
             else:
+                # Only calculate the position error.
                 error['pos'] += np.linalg.norm(observed_xyz - target_xyz) / self.number_of_observations
 
+        # If requested, generate ROS markers to visualize the pose of
+        # the ArUco observation and/or the pose of the ArUco marker
+        # predicted by the current URDF.
         ros_markers = []
-
         if visualize:
             xyz = observed_xyz
             marker = hr.create_sphere_marker(xyz, marker_id, self.marker_frame, self.marker_time, self.rgba)
@@ -360,4 +367,7 @@ class ArucoError:
                     marker_id += 1
                     ros_markers.append(marker)
 
+        # Returns the error dictionary, a list of ROS markers for
+        # visualization, and an ID number for the last ROS marker
+        # generated.
         return error, ros_markers, marker_id

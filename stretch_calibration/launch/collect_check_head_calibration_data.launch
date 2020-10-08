@@ -1,0 +1,58 @@
+<launch>
+
+  <arg name="uncalibrated_urdf_file" value="$(find stretch_description)/urdf/stretch_uncalibrated.urdf"/>
+  <arg name="uncalibrated_controller_yaml_file" value="$(find stretch_core)/config/controller_calibration_head_factory_default.yaml"/>
+  <arg name="calibration_directory" value="$(env HELLO_FLEET_PATH)/$(env HELLO_FLEET_ID)/calibration_ros/"/>
+  
+  <!-- REALSENSE D435i -->
+  <include file="$(find stretch_core)/launch/d435i_high_resolution.launch"></include>
+  <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen">
+    <param name="initial_mode" type="string" value="High Accuracy"/>
+  </node>
+  <!-- -->
+
+  <!-- STRETCH DRIVER -->
+  <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="false"/>
+  <param name="/stretch_driver/fail_out_of_range_goal" type="bool" value="false"/>
+
+  <param name="robot_description"
+	 textfile="$(arg uncalibrated_urdf_file)"/>
+  
+  <node
+      name="joint_state_publisher"
+      pkg="joint_state_publisher"
+      type="joint_state_publisher" >
+    <param name="rate" value="15.0"/>
+    <rosparam param="source_list">
+      [/stretch/joint_states]
+    </rosparam>
+  </node>
+
+  <node
+      name="robot_state_publisher"
+      pkg="robot_state_publisher"
+      type="robot_state_publisher" >
+    <param name="publish_frequency" value="15.0"/>
+  </node>
+  
+  <node name="stretch_driver" pkg="stretch_core" type="stretch_driver" output="screen">
+    <param name="rate" type="double" value="25.0"/>
+    <param name="timeout" type="double" value="0.5"/>
+    <remap from="cmd_vel" to="/stretch/cmd_vel" />
+    <remap from="joint_states" to="/stretch/joint_states" />
+    <param name="controller_calibration_file" type="string" value="$(arg uncalibrated_controller_yaml_file)"/>
+  </node>
+  <!-- -->
+
+  <!-- ARUCO MARKER DETECTOR -->
+  <include file="$(find stretch_core)/launch/stretch_aruco.launch"></include>
+  <!-- -->
+
+  <!-- COLLECT CALIBRATION DATA -->
+  <node name="collect_head_calibration_data" pkg="stretch_calibration" type="collect_head_calibration_data" output="screen" args="--check">
+    <param name="controller_calibration_file" type="string" value="$(arg uncalibrated_controller_yaml_file)"/>
+    <param name="calibration_directory" type="string" value="$(arg calibration_directory)"/>
+  </node>
+  <!-- -->
+  
+</launch>

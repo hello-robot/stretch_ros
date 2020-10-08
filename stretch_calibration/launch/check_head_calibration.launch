@@ -1,0 +1,58 @@
+<launch>
+
+  <arg name="optimization_result_yaml_file"/>
+  <arg name="calibrated_controller_yaml_file"/>
+  <arg name="calibrated_urdf_file"/>
+  
+  <arg name="calibration_directory" value="$(env HELLO_FLEET_PATH)/$(env HELLO_FLEET_ID)/calibration_ros/"/>
+  <arg name="uncalibrated_controller_calibration_filename" value="$(find stretch_core)/config/controller_calibration_head_factory_default.yaml"/>
+  <arg name="uncalibrated_urdf_filename" value="$(find stretch_description)/urdf/stretch_uncalibrated.urdf"/>
+  
+  <!-- PROCESS CALIBRATION DATA -->
+  <rosparam command="load" file="$(find stretch_calibration)/config/head_calibration_options.yaml" />
+  <node name="process_head_calibration_data" pkg="stretch_calibration" type="process_head_calibration_data" output="screen" args="--check --only_vis --load $(arg optimization_result_yaml_file)">
+    <param name="calibration_directory" type="string" value="$(arg calibration_directory)"/>
+    <param name="uncalibrated_controller_calibration_filename" type="string" value="$(arg uncalibrated_controller_calibration_filename)"/>
+    <param name="uncalibrated_urdf_filename" type="string" value="$(arg uncalibrated_urdf_filename)"/>
+  </node>
+  <!-- -->
+  
+  <!-- STRETCH DRIVER -->
+  <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="false"/>
+  
+  <param name="robot_description"
+	 textfile="$(arg calibrated_urdf_file)"/>
+  
+  <node
+      name="joint_state_publisher"
+      pkg="joint_state_publisher"
+      type="joint_state_publisher" >
+    <param name="rate" value="15.0"/>
+    <param name="use_gui" value="False"/>
+    <rosparam param="source_list">
+      [/stretch/joint_states]
+    </rosparam>
+  </node>
+
+  <node
+      name="robot_state_publisher"
+      pkg="robot_state_publisher"
+      type="robot_state_publisher" >
+    <param name="publish_frequency" value="15.0"/>
+  </node>
+  
+  <node name="stretch_driver" pkg="stretch_core" type="stretch_driver" output="screen">
+    <param name="rate" type="double" value="25.0"/>
+    <param name="timeout" type="double" value="0.5"/>
+    <remap from="cmd_vel" to="/stretch/cmd_vel" />
+    <remap from="joint_states" to="/stretch/joint_states" />
+    <param name="controller_calibration_file" type="string" value="$(arg calibrated_controller_yaml_file)"/>
+  </node>
+  <!-- -->
+
+  
+  <!-- VISUALIZE CALIBRATION -->
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_calibration)/rviz/head_calibration.rviz" />
+  <!-- -->
+  
+</launch>
