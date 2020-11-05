@@ -26,7 +26,7 @@ import threading
 import sys
 
 import tf2_ros
-import argparse as ap        
+import argparse as ap
 import numpy as np
 import threading
 import ros_numpy as rn
@@ -47,7 +47,7 @@ class HandoverObjectNode(hm.HelloNode):
         self.wrist_position = None
         self.lift_position = None
         self.manipulation_view = None
-        
+
         marker = Marker()
         self.mouth_marker_type = marker.CUBE
         self.mouth_point = None
@@ -66,14 +66,14 @@ class HandoverObjectNode(hm.HelloNode):
                            for i in range(num_pan_angles)]
         self.pan_angles = self.pan_angles + self.pan_angles[1:-1][::-1]
         self.prev_pan_index = 0
-        
+
         self.move_lock = threading.Lock()
 
-        with self.move_lock: 
+        with self.move_lock:
             self.handover_goal_ready = False
-        
+
     def joint_states_callback(self, joint_states):
-        with self.joint_states_lock: 
+        with self.joint_states_lock:
             self.joint_states = joint_states
         wrist_position, wrist_velocity, wrist_effort = hm.get_wrist_state(joint_states)
         self.wrist_position = wrist_position
@@ -89,9 +89,9 @@ class HandoverObjectNode(hm.HelloNode):
             pose = {'joint_head_pan': pan_angle}
             self.move_to_pose(pose)
             self.prev_pan_index = pan_index
-    
+
     def mouth_position_callback(self, marker_array):
-        with self.move_lock: 
+        with self.move_lock:
 
             for marker in marker_array.markers:
                 if marker.type == self.mouth_marker_type:
@@ -130,7 +130,7 @@ class HandoverObjectNode(hm.HelloNode):
                         # the mouth with respect to the world frame (i.e.,
                         # gravity)
                         target_offset_xyz = np.array([0.0, 0.0, -0.2])
-                    else: 
+                    else:
                         object_height_m = 0.1
                         target_offset_xyz = np.array([0.0, 0.0, -object_height_m])
                     target_xyz = mouth_xyz + target_offset_xyz
@@ -138,7 +138,7 @@ class HandoverObjectNode(hm.HelloNode):
                     fingers_error = target_xyz - fingers_xyz
                     print('fingers_error =', fingers_error)
 
-                    delta_forward_m = fingers_error[0] 
+                    delta_forward_m = fingers_error[0]
                     delta_extension_m = -fingers_error[1]
                     delta_lift_m = fingers_error[2]
 
@@ -163,14 +163,14 @@ class HandoverObjectNode(hm.HelloNode):
 
                     self.handover_goal_ready = True
 
-            
+
     def trigger_handover_object_callback(self, request):
-        with self.move_lock: 
+        with self.move_lock:
             # First, retract the wrist in preparation for handing out an object.
             pose = {'wrist_extension': 0.005}
             self.move_to_pose(pose)
 
-            if self.handover_goal_ready: 
+            if self.handover_goal_ready:
                 pose = {'joint_lift': self.lift_goal_m}
                 self.move_to_pose(pose)
                 tolerance_distance_m = 0.01
@@ -184,27 +184,27 @@ class HandoverObjectNode(hm.HelloNode):
                 message='Completed object handover!'
                 )
 
-    
+
     def main(self):
         hm.HelloNode.main(self, 'handover_object', 'handover_object', wait_for_first_pointcloud=False)
 
         self.joint_states_subscriber = rospy.Subscriber('/stretch/joint_states', JointState, self.joint_states_callback)
-        
+
         self.trigger_deliver_object_service = rospy.Service('/deliver_object/trigger_deliver_object',
                                                             Trigger,
                                                             self.trigger_handover_object_callback)
-        
+
         self.mouth_position_subscriber = rospy.Subscriber('/nearest_mouth/marker_array', MarkerArray, self.mouth_position_callback)
-        
+
         # This rate determines how quickly the head pans back and forth.
         rate = rospy.Rate(0.5)
         look_around = False
         while not rospy.is_shutdown():
-            if look_around: 
+            if look_around:
                 self.look_around_callback()
             rate.sleep()
 
-        
+
 if __name__ == '__main__':
     try:
         parser = ap.ArgumentParser(description='Handover an object.')

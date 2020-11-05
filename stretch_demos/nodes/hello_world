@@ -21,7 +21,7 @@ import time
 import threading
 import sys
 import tf2_ros
-import argparse as ap        
+import argparse as ap
 
 import hello_helpers.hello_misc as hm
 import stretch_funmap.navigate as nv
@@ -38,14 +38,14 @@ class HelloWorldNode(hm.HelloNode):
         self.move_base = nv.MoveBase(self)
         self.letter_height_m = 0.2
         self.letter_top_lift_m = 1.08 #1.05
-        
+
     def joint_states_callback(self, joint_states):
-        with self.joint_states_lock: 
+        with self.joint_states_lock:
             self.joint_states = joint_states
 
     def align_to_surface(self):
         rospy.loginfo('align_to_surface')
-        trigger_request = TriggerRequest() 
+        trigger_request = TriggerRequest()
         trigger_result = self.trigger_align_with_nearest_cliff_service(trigger_request)
         rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
@@ -62,7 +62,7 @@ class HelloWorldNode(hm.HelloNode):
         else:
             rospy.logerr('backoff_from_surface: self.wrist_position is None!')
             return False
-        
+
     def pen_down(self):
         rospy.loginfo('pen_down')
         max_extension_m = 0.5
@@ -74,7 +74,7 @@ class HelloWorldNode(hm.HelloNode):
         extension_contact_effort = 45.0 #42.0 #40.0 from funmap
         pose = {'wrist_extension': (extension_m, extension_contact_effort)}
         self.move_to_pose(pose, custom_contact_thresholds=True)
-        
+
     def pen_up(self):
         rospy.loginfo('pen_up')
         with self.joint_states_lock:
@@ -90,29 +90,29 @@ class HelloWorldNode(hm.HelloNode):
         self.move_to_pose(pose, custom_contact_thresholds=True)
         rospy.sleep(1.0) # Give it time to backoff before the next move. Otherwise it may not backoff.
 
-        
+
     def vertical_line(self, move_down, half=False):
-        if move_down: 
+        if move_down:
             rospy.loginfo('vertical_line moving down')
-        else: 
+        else:
             rospy.loginfo('vertical_line moving up')
-        with self.joint_states_lock: 
+        with self.joint_states_lock:
             i = self.joint_states.name.index('joint_lift')
             lift_position = self.joint_states.position[i]
-        if not half: 
+        if not half:
             length_m = self.letter_height_m
         else:
             length_m = self.letter_height_m / 2.0
-            
+
         if move_down:
             new_lift_position = lift_position - length_m
         else:
             new_lift_position = lift_position + length_m
         pose = {'joint_lift': new_lift_position}
-        self.move_to_pose(pose)                
+        self.move_to_pose(pose)
 
     def horizontal_line(self, move_right, half=False):
-        if move_right: 
+        if move_right:
             rospy.loginfo('horizontal_line moving right')
         else:
             rospy.loginfo('horizontal_line moving left')
@@ -125,8 +125,8 @@ class HelloWorldNode(hm.HelloNode):
         if use_simple_move:
             pose = {'translate_mobile_base': length_m}
             self.move_to_pose(pose)
-        else: 
-            if length_m > 0: 
+        else:
+            if length_m > 0:
                 at_goal = self.move_base.forward(length_m, detect_obstacles=False)
             else:
                 at_goal = self.move_base.backward(length_m, detect_obstacles=False)
@@ -146,7 +146,7 @@ class HelloWorldNode(hm.HelloNode):
         rospy.loginfo('Move arm out of the way of the camera.')
         self.move_to_pose(initial_pose)
 
-        
+
     def move_to_initial_configuration(self):
         initial_pose = {'wrist_extension': 0.01,
                         'joint_lift': self.letter_top_lift_m,
@@ -221,7 +221,7 @@ class HelloWorldNode(hm.HelloNode):
         self.horizontal_line(move_right=False)
         self.pen_up()
         self.horizontal_line(move_right=True)
-                
+
     def trigger_write_hello_callback(self, request):
 
         #self.move_arm_out_of_the_way()
@@ -229,7 +229,7 @@ class HelloWorldNode(hm.HelloNode):
         self.move_to_initial_configuration()
 
         self.align_to_surface()
-        
+
         self.letter_h()
         self.space()
         self.letter_e()
@@ -246,16 +246,16 @@ class HelloWorldNode(hm.HelloNode):
             message='Completed writing hello!'
             )
 
-    
+
     def main(self):
         hm.HelloNode.main(self, 'hello_world', 'hello_world', wait_for_first_pointcloud=False)
 
         self.joint_states_subscriber = rospy.Subscriber('/stretch/joint_states', JointState, self.joint_states_callback)
-        
+
         self.trigger_write_hello_service = rospy.Service('/hello_world/trigger_write_hello',
                                                          Trigger,
                                                          self.trigger_write_hello_callback)
-        
+
         rospy.wait_for_service('/funmap/trigger_align_with_nearest_cliff')
         rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_align_with_nearest_cliff.')
         self.trigger_align_with_nearest_cliff_service = rospy.ServiceProxy('/funmap/trigger_align_with_nearest_cliff', Trigger)
@@ -272,7 +272,7 @@ class HelloWorldNode(hm.HelloNode):
         while not rospy.is_shutdown():
             rate.sleep()
 
-        
+
 if __name__ == '__main__':
     try:
         parser = ap.ArgumentParser(description='Hello World demo for stretch.')

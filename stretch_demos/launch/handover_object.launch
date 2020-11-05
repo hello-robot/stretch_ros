@@ -8,7 +8,7 @@
     <param name="initial_mode" type="string" value="High Accuracy"/>
   </node>
   <!-- -->
-  
+
   <!-- STRETCH DRIVER -->
   <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="false"/>
   <param name="/stretch_driver/fail_out_of_range_goal" type="bool" value="false"/>
@@ -32,7 +32,7 @@
   <!-- LASER RANGE FINDER -->
   <include file="$(find stretch_core)/launch/rplidar.launch" />
   <!-- -->
-  
+
   <!-- LASER SCAN MATCHER FOR ODOMETRY -->
   <include file="$(find stretch_core)/launch/stretch_scan_matcher.launch" />
   <!-- -->
@@ -40,11 +40,11 @@
   <!-- HANDOVER POSITION DETECTOR -->
   <node name="detect_handover_position" pkg="stretch_deep_perception" type="detect_nearest_mouth_python3.py" output="screen" />
   <!-- -->
-  
+
   <!-- HANDOVER OBJECT -->
   <node name="handover_object" pkg="stretch_demos" type="handover_object" output="screen"/>
   <!-- -->
-  
+
   <!-- KEYBOARD TELEOP -->
   <node name="keyboard_teleop" pkg="stretch_core" type="keyboard_teleop" output="screen" args='--deliver_object_on'/>
   <!-- -->
@@ -52,5 +52,5 @@
   <!-- VISUALIZE -->
   <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_demos)/rviz/handover_object.rviz" />
   <!-- -->
-    
+
 </launch>

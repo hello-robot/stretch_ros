@@ -28,10 +28,10 @@ def stow_and_lower_arm(node):
 
     # gripper backwards stow
     pose = {'joint_wrist_yaw': 3.3}
-    
+
     # gripper forward stow needs a better forward range of motion to work well
     node.move_to_pose(pose)
-    
+
     # avoid blocking the laser range finder with the gripper
     pose = {'joint_lift': 0.22}
     node.move_to_pose(pose)
@@ -42,13 +42,13 @@ def draw_robot_pose(robot_xya_pix, image, m_per_pix, color=(0, 0, 255)):
     radius = 10
     x = int(round(robot_xya_pix[0]))
     y = int(round(robot_xya_pix[1]))
-    a = robot_xya_pix[2]    
+    a = robot_xya_pix[2]
     print('robot (x, y, a_deg) = ({0}, {1}, {2})'.format(x,y, 180.0*(a/np.pi)))
     color_image_input = (len(image.shape) == 3)
-    if color_image_input: 
+    if color_image_input:
         cv2.circle(image, (x,y), radius, color, 1)
     else:
-        if len(color) == 1: 
+        if len(color) == 1:
             cv2.circle(image, (x,y), radius, color, 1)
         else:
             cv2.circle(image, (x,y), radius, 255, 1)
@@ -56,14 +56,14 @@ def draw_robot_pose(robot_xya_pix, image, m_per_pix, color=(0, 0, 255)):
     direction_length_pix = direction_length_m / m_per_pix
     x2 = int(round(x + (direction_length_pix * np.cos(a))))
     y2 = int(round(y + (direction_length_pix * -np.sin(a))))
-    if color_image_input: 
+    if color_image_input:
         cv2.line(image, (x, y), (x2, y2), color, 2)
     else:
-        if len(color) == 1: 
+        if len(color) == 1:
             cv2.line(image, (x, y), (x2, y2), color, 2)
-        else: 
+        else:
             cv2.line(image, (x, y), (x2, y2), 255, 2)
-            
+
 def display_head_scan(title, head_scan, scale_divisor=None, robot_xya_pix_list=None):
     image = head_scan.max_height_im.image
     h, w = image.shape
@@ -77,8 +77,8 @@ def display_head_scan(title, head_scan, scale_divisor=None, robot_xya_pix_list=N
                     color_im,
                     head_scan.max_height_im.m_per_pix)
     if robot_xya_pix_list is not None:
-        for xya in robot_xya_pix_list: 
-            draw_robot_pose(xya, 
+        for xya in robot_xya_pix_list:
+            draw_robot_pose(xya,
                             color_im,
                             head_scan.max_height_im.m_per_pix,
                             color=(0, 255, 0))
@@ -97,13 +97,13 @@ def localize_with_reduced_images(head_scan, merged_map, global_localization=True
     # current map. This attempts to localize the robot on
     # the map by reducing the sizes of the scan and the
     # map in order to more efficiently search for a match
-    # globally. 
+    # globally.
 
     # Currently, because this code is under development,
     # it only localizes and does not merge the new scan
     # into the current map.
 
-    if global_localization: 
+    if global_localization:
         full_localization = True
         grid_search = True
         recenter = True
@@ -111,7 +111,7 @@ def localize_with_reduced_images(head_scan, merged_map, global_localization=True
         full_localization = False
         grid_search = False
         recenter = False
-            
+
     hs_0 = copy.deepcopy(merged_map)
     hs_1 = copy.deepcopy(head_scan)
 
@@ -119,7 +119,7 @@ def localize_with_reduced_images(head_scan, merged_map, global_localization=True
     mhi_1 = hs_1.max_height_im
 
     h, w = mhi_0.image.shape
-    
+
     nh = h/divisor
     nw = w/divisor
 
@@ -161,7 +161,7 @@ def localize_with_reduced_images(head_scan, merged_map, global_localization=True
             trans_mat = np.identity(4)
             trans_mat[:2, 3] = -delta_xy
             hs_1.image_to_map_mat = np.matmul(hs_1.image_to_map_mat, trans_mat)
-        else: 
+        else:
             m_per_pix = mhi_1.m_per_pix * divisor
             mask = mhi_1.image > 0
             center_y, center_x = hs_1.robot_xy_pix
@@ -181,11 +181,11 @@ def localize_with_reduced_images(head_scan, merged_map, global_localization=True
             x1 = int(round(x0 + subwindow_size))
             y0 = int(round(((h - subwindow_size) / 2)))
             y1 = int(round(y0 + subwindow_size))
-            if (x0 > 0) and (y0 > 0): 
+            if (x0 > 0) and (y0 > 0):
                 mhi_1.image = mhi_1.image[y0:y1, x0:x1].copy()
                 mhi_1.camera_depth_image = mhi_1.camera_depth_image[y0:y1, x0:x1].copy()
                 delta_xy = delta_xy - np.array([x0, y0])
-                
+
             hs_1.robot_xy_pix = hs_1.robot_xy_pix + delta_xy
             trans_mat = np.identity(4)
             trans_mat[:2, 3] = -delta_xy
@@ -241,12 +241,12 @@ def localize_with_reduced_images(head_scan, merged_map, global_localization=True
     print('Total time to match to the loaded map =', total_time)
 
     scaled_merged_map = hs_0
-    scaled_scan = hs_1 
-    
+    scaled_scan = hs_1
+
     return original_robot_map_frame_pose, corrected_robot_map_frame_pose, original_robot_map_image_pose, corrected_robot_map_image_pose, scaled_scan, scaled_merged_map
 
 
-        
+
 class HeadScan:
     def __init__(self, max_height_im=None, voi_side_m=8.0, voi_origin_m=None):
         if max_height_im is not None:
@@ -263,9 +263,9 @@ class HeadScan:
             # manipulable surfaces. Also, when the top of the viewing frustum
             # is parallel to the ground it will be at or close to the top of
             # the volume of interest.
-            
+
             robot_head_above_ground = 1.13
-            
+
             # How far below the expected floor height the volume of interest
             # should extend is less clear. Sunken living rooms and staircases
             # can go well below the floor and a standard stair step should be
@@ -284,26 +284,26 @@ class HeadScan:
             # will be classified as traversable floor. This risk is mitigated
             # by separate point cloud based obstacle detection while moving
             # and cliff sensors.
-            
+
             lowest_distance_below_ground = 0.05 #5cm
-            
+
             total_height = robot_head_above_ground + lowest_distance_below_ground
-            # 8m x 8m region 
+            # 8m x 8m region
             voi_side_m = voi_side_m
             voi_axes = np.identity(3)
-            if voi_origin_m is None: 
+            if voi_origin_m is None:
                 voi_origin = np.array([-voi_side_m/2.0, -voi_side_m/2.0, -lowest_distance_below_ground])
             voi = rm.ROSVolumeOfInterest('map', voi_origin, voi_axes, voi_side_m, voi_side_m, total_height)
 
             m_per_pix = 0.006
             pixel_dtype = np.uint8
-            
+
             self.max_height_im = rm.ROSMaxHeightImage(voi, m_per_pix, pixel_dtype, use_camera_depth_image=True)
             self.max_height_im.create_blank_rgb_image()
-            
+
         self.max_height_im.print_info()
 
-        
+
     def make_robot_footprint_unobserved(self):
         # replace robot points with unobserved points
         self.max_height_im.make_robot_footprint_unobserved(self.robot_xy_pix[0], self.robot_xy_pix[1], self.robot_ang_rad)
@@ -311,7 +311,7 @@ class HeadScan:
     def make_robot_mast_blind_spot_unobserved(self):
         # replace robot points with unobserved points
         self.max_height_im.make_robot_mast_blind_spot_unobserved(self.robot_xy_pix[0], self.robot_xy_pix[1], self.robot_ang_rad)
-        
+
     def capture_point_clouds(self, node, pose, capture_params):
         head_settle_time = capture_params['head_settle_time']
         num_point_clouds_per_pan_ang = capture_params['num_point_clouds_per_pan_ang']
@@ -322,7 +322,7 @@ class HeadScan:
             head_settle_time = head_settle_time
             num_point_clouds_per_pan_ang = 1
             time_between_point_clouds = time_between_point_clouds
-        
+
         node.move_to_pose(pose)
         rospy.sleep(head_settle_time)
         settle_time = rospy.Time.now()
@@ -338,18 +338,18 @@ class HeadScan:
             cloud_time = node.point_cloud.header.stamp
             cloud_frame = node.point_cloud.header.frame_id
             point_cloud = ros_numpy.numpify(node.point_cloud)
-            if (cloud_time is not None) and (cloud_time != prev_cloud_time) and (cloud_time >= settle_time): 
+            if (cloud_time is not None) and (cloud_time != prev_cloud_time) and (cloud_time >= settle_time):
                 only_xyz = False
                 if only_xyz:
                     xyz = ros_numpy.point_cloud2.get_xyz_points(point_cloud)
                     self.max_height_im.from_points_with_tf2(xyz, cloud_frame, node.tf2_buffer)
-                else: 
+                else:
                     rgb_points = ros_numpy.point_cloud2.split_rgb_field(point_cloud)
                     self.max_height_im.from_rgb_points_with_tf2(rgb_points, cloud_frame, node.tf2_buffer)
                 num_point_clouds += 1
                 prev_cloud_time = cloud_time
             not_finished = num_point_clouds < num_point_clouds_per_pan_ang
-            if not_finished: 
+            if not_finished:
                 rospy.sleep(time_between_point_clouds)
 
 
@@ -358,13 +358,13 @@ class HeadScan:
 
         pose = {'joint_head_pan': far_right_pan, 'joint_head_tilt': head_tilt}
         node.move_to_pose(pose)
-        
+
         pan_left = np.linspace(far_right_pan, far_left_pan, num_pan_steps)
 
         for pan_ang in pan_left:
             pose = {'joint_head_pan': pan_ang}
             self.capture_point_clouds(node, pose, capture_params)
-            
+
         # look at the ground right around the robot to detect any
         # nearby obstacles
 
@@ -379,7 +379,7 @@ class HeadScan:
         scan_end_time = time.time()
         scan_duration = scan_end_time - scan_start_time
         rospy.loginfo('The head scan took {0} seconds.'.format(scan_duration))
-            
+
         #####################################
         # record robot pose information and potentially useful transformations
         self.robot_xy_pix, self.robot_ang_rad, self.timestamp = self.max_height_im.get_robot_pose_in_image(node.tf2_buffer)
@@ -397,16 +397,16 @@ class HeadScan:
 
         self.make_robot_mast_blind_spot_unobserved()
         self.make_robot_footprint_unobserved()
-                
-        
+
+
     def execute_full(self, node, fast_scan=False):
-        far_right_pan = -3.6 
-        far_left_pan = 1.45 
-        head_tilt = -0.8 
-        num_pan_steps = 7 
+        far_right_pan = -3.6
+        far_left_pan = 1.45
+        head_tilt = -0.8
+        num_pan_steps = 7
 
         if fast_scan:
-            num_pan_steps = 5 
+            num_pan_steps = 5
 
         capture_params = {
             'fast_scan': fast_scan,
@@ -419,11 +419,11 @@ class HeadScan:
 
 
     def execute_front(self, node, fast_scan=False):
-        far_right_pan = -1.2 
-        far_left_pan = 1.2 
+        far_right_pan = -1.2
+        far_left_pan = 1.2
         head_tilt = -0.8
         num_pan_steps = 3
-        
+
         capture_params = {
             'fast_scan': fast_scan,
             'head_settle_time': 0.5,
@@ -433,7 +433,7 @@ class HeadScan:
 
         self.execute(head_tilt, far_left_pan, far_right_pan, num_pan_steps, capture_params, node)
 
-    
+
     def execute_minimal(self, node, fast_scan=False):
         far_right_pan = 0.1
         far_left_pan = 0.1
@@ -441,7 +441,7 @@ class HeadScan:
         num_pan_steps = 1
 
         look_at_self = True
-        
+
         capture_params = {
             'fast_scan': fast_scan,
             'head_settle_time': 0.5,
@@ -450,8 +450,8 @@ class HeadScan:
         }
 
         self.execute(head_tilt, far_left_pan, far_right_pan, num_pan_steps, capture_params, node, look_at_self)
-        
-        
+
+
     def save( self, base_filename, save_visualization=True ):
         print('HeadScan: Saving to base_filename =', base_filename)
         # save scan to disk
@@ -466,19 +466,19 @@ class HeadScan:
                 'robot_xy_pix' : self.robot_xy_pix.tolist(),
                 'robot_ang_rad' : robot_ang_rad,
                 'timestamp' : {'secs':self.timestamp.secs, 'nsecs':self.timestamp.nsecs},
-                'base_link_to_image_mat' : self.base_link_to_image_mat.tolist(), 
-                'base_link_to_map_mat' : self.base_link_to_map_mat.tolist(), 
-                'image_to_map_mat' : self.image_to_map_mat.tolist(), 
-                'image_to_base_link_mat' : self.image_to_base_link_mat.tolist(), 
-                'map_to_image_mat' : self.map_to_image_mat.tolist(), 
+                'base_link_to_image_mat' : self.base_link_to_image_mat.tolist(),
+                'base_link_to_map_mat' : self.base_link_to_map_mat.tolist(),
+                'image_to_map_mat' : self.image_to_map_mat.tolist(),
+                'image_to_base_link_mat' : self.image_to_base_link_mat.tolist(),
+                'map_to_image_mat' : self.map_to_image_mat.tolist(),
                 'map_to_base_mat' : self.map_to_base_mat.tolist()}
-        
+
         fid = open(base_filename + '.yaml', 'w')
         yaml.dump(data, fid)
         fid.close()
         print('Finished saving.')
 
-        
+
     @classmethod
     def from_file(self, base_filename):
         print('HeadScan.from_file: base_filename =', base_filename)
@@ -496,7 +496,7 @@ class HeadScan:
         head_scan.timestamp = rospy.Time()
         head_scan.timestamp.set(data['timestamp']['secs'], data['timestamp']['nsecs'])
         head_scan.base_link_to_image_mat = np.array(data['base_link_to_image_mat'])
-        head_scan.base_link_to_map_mat = np.array(data['base_link_to_map_mat']) 
+        head_scan.base_link_to_map_mat = np.array(data['base_link_to_map_mat'])
         head_scan.image_to_map_mat = np.array(data['image_to_map_mat'])
         head_scan.image_to_base_link_mat = np.array(data['image_to_base_link_mat'])
         head_scan.map_to_image_mat = np.array(data['map_to_image_mat'])

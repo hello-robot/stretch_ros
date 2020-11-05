@@ -27,7 +27,7 @@ def create_line_strip(points, id_num, frame_id, timestamp, rgba=[1.0, 0.0, 0.0, 
 
     c = marker.color
     c.r, c.g, c.b, c.a = rgba
-    
+
     marker.points = []
     for p in points:
         ros_p = Point()
@@ -36,7 +36,7 @@ def create_line_strip(points, id_num, frame_id, timestamp, rgba=[1.0, 0.0, 0.0, 
         ros_p.z = p[2]
         marker.points.append(ros_p)
     return marker
-        
+
 def create_sphere_marker(xyz, id_num, frame_id, timestamp, rgba=[1.0, 0.0, 0.0, 1.0], diameter_m=0.01, duration_s=0.0):
     # a marker duration of 0 should last forever
     marker = Marker()
@@ -57,7 +57,7 @@ def create_sphere_marker(xyz, id_num, frame_id, timestamp, rgba=[1.0, 0.0, 0.0, 
     c.r, c.g, c.b, c.a = rgba
     return marker
 
-def create_axis_marker(xyz, axis, id_num, frame_id, timestamp, rgba, length=0.02, duration_s=0.0, arrow_scale=1.0): 
+def create_axis_marker(xyz, axis, id_num, frame_id, timestamp, rgba, length=0.02, duration_s=0.0, arrow_scale=1.0):
     marker = Marker()
     marker.header.frame_id = frame_id
     marker.header.stamp = timestamp
@@ -92,7 +92,7 @@ def create_axis_marker(xyz, axis, id_num, frame_id, timestamp, rgba, length=0.02
 def create_points_marker(points_xyz, id_num, frame_id, timestamp,
                          points_rgba=None, duration_s=0.0,
                          default_rgba=(0.0, 1.0, 0.0, 1.0),
-                         point_width=0.005): 
+                         point_width=0.005):
     marker = Marker()
     marker.header.frame_id = frame_id
     marker.header.stamp = timestamp
@@ -105,10 +105,10 @@ def create_points_marker(points_xyz, id_num, frame_id, timestamp,
     # height"
     marker.scale.x = point_width
     marker.scale.y = point_width
-    
+
     points = []
     colors = []
-    for name, xyz in points_xyz.items(): 
+    for name, xyz in points_xyz.items():
         p = Point()
         x, y, z = xyz
         p.x = x
@@ -116,12 +116,12 @@ def create_points_marker(points_xyz, id_num, frame_id, timestamp,
         p.z = z
         points.append(p)
         c = ColorRGBA()
-        if points_rgba is None: 
+        if points_rgba is None:
             c.r, c.g, c.b, c.a = default_rgba
         else:
             c.r, c.g, c.b, c.a = points_rgba[name]
         colors.append(c)
-            
+
     marker.points = points
     marker.colors = colors
     return marker

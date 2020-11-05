@@ -43,22 +43,22 @@ def register_images(max_height_image_to_warp, max_height_image_target, image_to_
                       angle_deg_constraints=None,
                       grid_search=False):
 
-    if target_x_constraints is None: 
+    if target_x_constraints is None:
         target_x_constraints=[-1000, 1000]
-    if target_y_constraints is None: 
+    if target_y_constraints is None:
         target_y_constraints=[-1000, 1000]
-    if angle_deg_constraints is None: 
+    if angle_deg_constraints is None:
         angle_deg_constraints=[-360.0, 360.0]
-    
+
     m_per_pix = max_height_image_target.m_per_pix
     m_per_height_unit = max_height_image_target.m_per_height_unit
     image_to_warp = max_height_image_to_warp.image
 
-    weight_by_height = True 
+    weight_by_height = True
 
     target_image = max_height_image_target.image
-    blur_size = (3,3) 
-    image_to_warp = cv2.GaussianBlur(np.float64(image_to_warp), blur_size, 0) 
+    blur_size = (3,3)
+    image_to_warp = cv2.GaussianBlur(np.float64(image_to_warp), blur_size, 0)
     target_image_not_smoothed = target_image
     target_image = cv2.GaussianBlur(np.float64(target_image), blur_size, 0)
     target_image[target_image_not_smoothed == 0] = 0
@@ -67,7 +67,7 @@ def register_images(max_height_image_to_warp, max_height_image_target, image_to_
     # this upper bound becomes less meaningful, since it becomes
     # unachievable and feasible values become much smaller.
     # match_score_upper_bound = np.sum(target_image)
-    
+
     # Estimate the upper bound with the image to warp, since it will usually be a smaller local scan.
     match_score_upper_bound = np.sum(image_to_warp)
 
@@ -86,26 +86,26 @@ def register_images(max_height_image_to_warp, max_height_image_target, image_to_
 
     def scale_in(v, min_val, max_val):
         return (v * (max_val - min_val)) + min_val
-    
+
     def scale_parameters_in(s):
         # Transform the optimized parameters back to their original
         # forms.
-        x = scale_in(s[0], target_x_constraints[0], target_x_constraints[1]) 
-        y = scale_in(s[1], target_y_constraints[0], target_y_constraints[1]) 
-        a = scale_in(s[2], angle_deg_constraints[0], angle_deg_constraints[1]) 
+        x = scale_in(s[0], target_x_constraints[0], target_x_constraints[1])
+        y = scale_in(s[1], target_y_constraints[0], target_y_constraints[1])
+        a = scale_in(s[2], angle_deg_constraints[0], angle_deg_constraints[1])
         return [x,y,a]
 
     def scale_parameters_out(s):
         # Scale the parameters so that they are between 0 and 1 during
         # the optimization when the constraints are met.
-        x = scale_out(s[0], target_x_constraints[0], target_x_constraints[1]) 
-        y = scale_out(s[1], target_y_constraints[0], target_y_constraints[1]) 
-        a = scale_out(s[2], angle_deg_constraints[0], angle_deg_constraints[1]) 
+        x = scale_out(s[0], target_x_constraints[0], target_x_constraints[1])
+        y = scale_out(s[1], target_y_constraints[0], target_y_constraints[1])
+        a = scale_out(s[2], angle_deg_constraints[0], angle_deg_constraints[1])
         return [x,y,a]
-        
+
     def constraints_satisfied(target_x, target_y, angle_deg):
         # Return true if all the constraints are satisfied. Otherwise, return false.
-        # When satisfying the constraints, the parameters will be between 0 and 1. 
+        # When satisfying the constraints, the parameters will be between 0 and 1.
         target_x_in_range = (0.0 <= target_x) and (target_x <= 1.0)
         target_y_in_range = (0.0 <= target_y) and (target_y <= 1.0)
         angle_deg_in_range = (0.0 <= angle_deg) and (angle_deg <= 1.0)
@@ -118,7 +118,7 @@ def register_images(max_height_image_to_warp, max_height_image_target, image_to_
         if parameter > 1.0:
             penalty += scale * (penalty - 1.0)
         return penalty
-    
+
     def constraints_penalty_normalized_input(target_x, target_y, angle_deg):
         # Penalize violation of the constraints. When satisfying the
         # constraints, the parameters will be between 0 and 1.
@@ -128,7 +128,7 @@ def register_images(max_height_image_to_warp, max_height_image_target, image_to_
         penalty += compute_penalty_normalized_input(target_y, scale)
         penalty += compute_penalty_normalized_input(angle_deg, scale)
         return penalty
-    
+
     def compute_position_penalty(parameter, constraints, scale):
         penalty = 0.0
         if parameter < constraints[0]:
@@ -136,7 +136,7 @@ def register_images(max_height_image_to_warp, max_height_image_target, image_to_
         if parameter > constraints[1]:
             penalty += scale * abs(parameter - constraints[1])
         return penalty
-    
+
     def compute_angle_penalty(parameter, constraints, scale):
         penalty = 0.0
         if parameter < constraints[0]:
@@ -144,7 +144,7 @@ def register_images(max_height_image_to_warp, max_height_image_target, image_to_
         if parameter > constraints[1]:
             penalty += scale * abs(parameter - constraints[1])
         return penalty
-    
+
     def constraints_penalty(target_x, target_y, angle_deg):
         # Penalize violation of the constraints. When satisfying the
         # constraints, the parameters will be between 0 and 1.
@@ -154,7 +154,7 @@ def register_images(max_height_image_to_warp, max_height_image_target, image_to_
         penalty += compute_position_penalty(target_y, target_y_constraints, scale)
         penalty += compute_angle_penalty(angle_deg, angle_deg_constraints, scale)
         return penalty
-    
+
     def fast_cost_func(s):
         #penalty = constraints_penalty_normalized_input(*s)
         s = scale_parameters_in(s)
@@ -187,18 +187,18 @@ def register_images(max_height_image_to_warp, max_height_image_target, image_to_
         initial_solution = []
 
         w,h = max_height_image_target.image.shape
-        
+
         # grid of starting positions across the map
         n = 4
         border = w/(2.0*n)
         x_values = np.linspace(border, w - border, n)
         y_values = np.linspace(border, h - border, n)
         a_values = [0.0, 120.0, 240.0]
-        
+
         initial_solution_list = []
         for x in x_values:
             for y in y_values:
-                for a in a_values: 
+                for a in a_values:
                     initial_solution_list.append([x, y, a])
 
         print('len(initial_solution_list) =', len(initial_solution_list))
@@ -208,7 +208,7 @@ def register_images(max_height_image_to_warp, max_height_image_target, image_to_
         for initial_solution in initial_solution_list:
             initial_solution = scale_parameters_out(initial_solution)
             result = cma.fmin(fast_cost_func, initial_solution, initial_standard_deviation, options)
-            if best_result is None: 
+            if best_result is None:
                 best_parameters = scale_parameters_in(result[0])
                 best_error = result[1]
                 best_result = result
@@ -222,7 +222,7 @@ def register_images(max_height_image_to_warp, max_height_image_target, image_to_
         result = best_result
     else:
         options = {'tolfun': 0.001}
-        initial_standard_deviation = 0.02 
+        initial_standard_deviation = 0.02
         initial_solution = [init_target_x, init_target_y, init_angle_deg]
         initial_solution = scale_parameters_out(initial_solution)
         result = cma.fmin(fast_cost_func, initial_solution, initial_standard_deviation, options)
@@ -252,11 +252,11 @@ def register_images(max_height_image_to_warp, max_height_image_target, image_to_
 
     print('cma_result =')
     print(cma_result)
-    
+
     s_min = scale_parameters_in(cma_result['best_parameters'])
     print('best_parameters =', s_min)
     print('')
-    
+
     return (s_min[0], s_min[1], s_min[2]), cma_result['best_parameters_error']
 
 
@@ -320,7 +320,7 @@ def unaligned_merge_scan_1_into_scan_2(scan_1, scan_2, display_on=False, show_un
     if display_on:
         cv2.imshow('Naive merge', merged.image)
 
-        
+
 def unaligned_blended_scan_1_into_scan_2(scan_1, scan_2, display_on=False, show_unaligned=False):
     mhi_1 = scan_1.max_height_im
     mhi_2 = scan_2.max_height_im
@@ -347,13 +347,13 @@ def unaligned_blended_scan_1_into_scan_2(scan_1, scan_2, display_on=False, show_
     if display_on:
         cv2.imshow('Unaligned camera depth merge', merged.image)
 
-        
+
 def estimate_scan_1_to_scan_2_transform(scan_1, scan_2, display_on=False, show_unaligned=False,
                                         full_localization=False, init_target=None,
                                         grid_search=False, small_search=False):
     mhi_2 = scan_2.max_height_im
     mhi_1 = scan_1.max_height_im
-  
+
     h, w = mhi_1.image.shape
 
     if full_localization:
@@ -372,21 +372,21 @@ def estimate_scan_1_to_scan_2_transform(scan_1, scan_2, display_on=False, show_u
         mhi_to_warp_center = [scan_1.robot_xy_pix[0], scan_1.robot_xy_pix[1]]
         if init_target is None:
             init_target = [scan_1.robot_xy_pix[0], scan_1.robot_xy_pix[1], 0.0]
-            
-        if not small_search: 
+
+        if not small_search:
             position_constraint_m = 1.2
             angle_constraint_deg = 45.0
-        else: 
+        else:
             position_constraint_m = 0.6
             angle_constraint_deg = 30.0
-            
+
         position_constraint_pix = position_constraint_m / mhi_2.m_per_pix
     mhi_to_warp = mhi_1
     mhi_target = mhi_2
 
     print('init_target =', init_target)
-        
-    registration, cost = register_images(mhi_to_warp, mhi_target, mhi_to_warp_center, 
+
+    registration, cost = register_images(mhi_to_warp, mhi_target, mhi_to_warp_center,
                                          verbose = True,
                                          target_x_constraints=[-position_constraint_pix, position_constraint_pix],
                                          target_y_constraints=[-position_constraint_pix, position_constraint_pix],
@@ -396,7 +396,7 @@ def estimate_scan_1_to_scan_2_transform(scan_1, scan_2, display_on=False, show_u
     target_x, target_y, angle_deg = registration
     print('target_x =', target_x, ', target_y =', target_y, ', angle_deg =', angle_deg)
     affine_matrix = cv2.getRotationMatrix2D((mhi_to_warp_center[0], mhi_to_warp_center[1]), angle_deg, 1.0)
-    affine_matrix[:, 2] += np.array((target_x, target_y)) - mhi_to_warp_center    
+    affine_matrix[:, 2] += np.array((target_x, target_y)) - mhi_to_warp_center
 
     # calculate pose of the robot in the new combined map (this
     # assumes that the pose in the map_to_warp is the current pose of
@@ -421,7 +421,7 @@ def estimate_scan_1_to_scan_2_transform(scan_1, scan_2, display_on=False, show_u
     print('map_xy_1 =', map_xy_1)
     print('map_ang_rad =', map_ang_rad)
     print('map_quat =', map_quat)
-    
+
     x, y, a = transform_xya_to_xya_3d(scan_2.image_to_map_mat, scan_1.robot_xy_pix[0], scan_1.robot_xy_pix[1], scan_1.robot_ang_rad)
 
     original_robot_map_pose = [x, y, a]
@@ -437,7 +437,7 @@ def blend_max_height_image_1_into_max_height_image_2(mhi_1, mhi_2):
     # This assumes that both max height images have camera_depth_images
     assert(mhi_1.camera_depth_image is not None)
     assert(mhi_2.camera_depth_image is not None)
-    
+
     # 1 has an observation and 0 does not have an observation.
     unobserved_selector = (mhi_2.image == 0) & (mhi_1.image != 0)
     # 1 has an observation and the camera was closer than in 0. No
@@ -461,7 +461,7 @@ def merge_scan_1_into_scan_2(scan_1, scan_2, display_on=False, show_unaligned=Fa
                                                                                                            init_target=init_target,
                                                                                                            grid_search=grid_search,
                                                                                                            small_search=small_search)
-    
+
     mhi_2 = scan_2.max_height_im
     mhi_1 = scan_1.max_height_im
 
@@ -471,12 +471,12 @@ def merge_scan_1_into_scan_2(scan_1, scan_2, display_on=False, show_unaligned=Fa
     warped_image_1 = cv2.warpAffine(mhi_to_warp.image, affine_matrix, mhi_to_warp.image.shape, flags=cv2.INTER_NEAREST)
     warped_camera_depth_image_1 = cv2.warpAffine(mhi_to_warp.camera_depth_image, affine_matrix,
                                                  mhi_to_warp.camera_depth_image.shape, flags=cv2.INTER_NEAREST)
-    if (mhi_1.rgb_image is not None) and (mhi_2.rgb_image is not None): 
+    if (mhi_1.rgb_image is not None) and (mhi_2.rgb_image is not None):
         warped_rgb_image_1 = cv2.warpAffine(mhi_to_warp.rgb_image, affine_matrix,
                                             mhi_to_warp.rgb_image.shape[:2], flags=cv2.INTER_NEAREST)
     else:
         warped_rgb_image_1 = None
-    
+
     if display_on:
         h,w = mhi_target.image.shape
         color_im = np.zeros((h, w, 3), np.uint8)
@@ -493,7 +493,7 @@ def merge_scan_1_into_scan_2(scan_1, scan_2, display_on=False, show_unaligned=Fa
 
     warped_mhi = TempMaxHeightImage()
     blend_max_height_image_1_into_max_height_image_2(warped_mhi, mhi_2)
-    
+
     if display_on:
         h,w = mhi_2.image.shape
         color_im = np.zeros((h, w, 3), np.uint8)
@@ -514,7 +514,7 @@ def merge_scan_1_into_scan_2(scan_1, scan_2, display_on=False, show_unaligned=Fa
         cv2.line(color_im, (x, y), (x2, y2), [0,255,255], 1)
         cv2.imshow('Mhi_2 max height image', color_im)
 
-    if not output_affine: 
+    if not output_affine:
         return original_robot_map_pose, corrected_robot_map_pose
-    else: 
+    else:
         return original_robot_map_pose, corrected_robot_map_pose, affine_matrix

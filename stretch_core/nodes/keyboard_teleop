@@ -45,9 +45,9 @@ class GetKeyboardCommands:
         if self.step_size == 'small':
             deltas = {'rad': self.small_rad, 'translate': self.small_translate}
         if self.step_size == 'medium':
-            deltas = {'rad': self.medium_rad, 'translate': self.medium_translate} 
+            deltas = {'rad': self.medium_rad, 'translate': self.medium_translate}
         if self.step_size == 'big':
-            deltas = {'rad': self.big_rad, 'translate': self.big_translate} 
+            deltas = {'rad': self.big_rad, 'translate': self.big_translate}
         return deltas
 
     def print_commands(self):
@@ -89,114 +89,114 @@ class GetKeyboardCommands:
 
         c = kb.getch()
         #rospy.loginfo('c =', c)
-        
+
         ####################################################
         ## MOSTLY MAPPING RELATED CAPABILITIES
         ## (There are non-mapping outliers.)
         ####################################################
-        
+
         # Sequential performs a fixed number of autonomus mapping iterations
         if (c == '!') and self.mapping_on:
             number_iterations = 4
             for n in range(number_iterations):
                 # Trigger a 3D scan with the D435i
-                trigger_request = TriggerRequest() 
+                trigger_request = TriggerRequest()
                 trigger_result = node.trigger_head_scan_service(trigger_request)
                 rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
                 # Trigger driving the robot to the estimated next best place to scan
-                trigger_request = TriggerRequest() 
+                trigger_request = TriggerRequest()
                 trigger_result = node.trigger_drive_to_scan_service(trigger_request)
                 rospy.loginfo('trigger_result = {0}'.format(trigger_result))
-                
+
         # Trigger localizing the robot to a new pose anywhere on the current map
         if ((c == '+') or (c == '=')) and self.mapping_on:
-            trigger_request = TriggerRequest() 
+            trigger_request = TriggerRequest()
             trigger_result = node.trigger_global_localization_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
         # Trigger localizing the robot to a new pose that is near its current pose on the map
         if ((c == '-') or (c == '_')) and self.mapping_on:
-            trigger_request = TriggerRequest() 
+            trigger_request = TriggerRequest()
             trigger_result = node.trigger_local_localization_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
         # Trigger driving the robot to the estimated next best place to perform a 3D scan
         if ((c == '\\') or (c == '|')) and self.mapping_on:
-            trigger_request = TriggerRequest() 
+            trigger_request = TriggerRequest()
             trigger_result = node.trigger_drive_to_scan_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
         # Trigger performing a 3D scan using the D435i
         if (c == ' ') and self.mapping_on:
-            trigger_request = TriggerRequest() 
+            trigger_request = TriggerRequest()
             trigger_result = node.trigger_head_scan_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
         # Trigger rotating the mobile base to align with the nearest 3D cliff detected visually
         if ((c == '[') or (c == '{')) and self.mapping_on:
-            trigger_request = TriggerRequest() 
+            trigger_request = TriggerRequest()
             trigger_result = node.trigger_align_with_nearest_cliff_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
         # DEPRECATED: Trigger extend arm until contact
         if ((c == ']') or (c == '}')) and self.mapping_on:
-            trigger_request = TriggerRequest() 
+            trigger_request = TriggerRequest()
             trigger_result = node.trigger_reach_until_contact_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
         # DEPRECATED: Trigger lower arm until contact
         if ((c == ':') or (c == ';')) and self.mapping_on:
-            trigger_request = TriggerRequest() 
+            trigger_request = TriggerRequest()
             trigger_result = node.trigger_lower_until_contact_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
-            
-        
+
+
         ####################################################
         ## OTHER CAPABILITIES
         ####################################################
 
         # Trigger Hello World whiteboard writing demo
         if ((c == '`') or (c == '~')) and self.hello_world_on:
-            trigger_request = TriggerRequest() 
+            trigger_request = TriggerRequest()
             trigger_result = node.trigger_write_hello_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
         # Trigger open drawer demo with downward hook motion
         if ((c == 'z') or (c == 'Z')) and self.open_drawer_on:
-            trigger_request = TriggerRequest() 
+            trigger_request = TriggerRequest()
             trigger_result = node.trigger_open_drawer_down_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
         # Trigger open drawer demo with upward hook motion
         if ((c == '.') or (c == '>')) and self.open_drawer_on:
-            trigger_request = TriggerRequest() 
+            trigger_request = TriggerRequest()
             trigger_result = node.trigger_open_drawer_up_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
         # Trigger clean surface demo
         if ((c == '/') or (c == '?')) and self.clean_surface_on:
-            trigger_request = TriggerRequest() 
+            trigger_request = TriggerRequest()
             trigger_result = node.trigger_clean_surface_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
-            
-        # Trigger grasp object demo    
+
+        # Trigger grasp object demo
         if ((c == '\'') or (c == '\"')) and self.grasp_object_on:
-            trigger_request = TriggerRequest() 
+            trigger_request = TriggerRequest()
             trigger_result = node.trigger_grasp_object_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
-        # Trigger deliver object demo    
+        # Trigger deliver object demo
         if ((c == 'y') or (c == 'Y')) and self.deliver_object_on:
-            trigger_request = TriggerRequest() 
+            trigger_request = TriggerRequest()
             trigger_result = node.trigger_deliver_object_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
-            
+
         ####################################################
         ## BASIC KEYBOARD TELEOPERATION COMMANDS
         ####################################################
-        
+
         # 8 or up arrow
         if c == '8' or c == '\x1b[A':
             command = {'joint': 'joint_lift', 'delta': self.get_deltas()['translate']}
@@ -217,7 +217,7 @@ class GetKeyboardCommands:
             # 6 or right arrow
             if c == '6' or c == '\x1b[C':
                 command = {'joint': 'translate_mobile_base', 'inc': -self.get_deltas()['translate']}
-            # 1 or end key 
+            # 1 or end key
             if c == '7' or c == '\x1b[H':
                 command = {'joint': 'rotate_mobile_base', 'inc': self.get_deltas()['rad']}
             # 3 or pg down 5~
@@ -290,7 +290,7 @@ class KeyboardTeleopNode(hm.HelloNode):
             point.time_from_start = rospy.Duration(0.0)
             trajectory_goal = FollowJointTrajectoryGoal()
             trajectory_goal.goal_time_tolerance = rospy.Time(1.0)
-            
+
             joint_name = command['joint']
             trajectory_goal.trajectory.joint_names = [joint_name]
             if 'inc' in command:
@@ -313,7 +313,7 @@ class KeyboardTeleopNode(hm.HelloNode):
     def main(self):
         hm.HelloNode.main(self, 'keyboard_teleop', 'keyboard_teleop', wait_for_first_pointcloud=False)
 
-        if self.mapping_on: 
+        if self.mapping_on:
             rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /funmap/trigger_head_scan.')
 
             rospy.wait_for_service('/funmap/trigger_head_scan')
@@ -344,7 +344,7 @@ class KeyboardTeleopNode(hm.HelloNode):
             rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_lower_until_contact.')
             self.trigger_lower_until_contact_service = rospy.ServiceProxy('/funmap/trigger_lower_until_contact', Trigger)
 
-        if self.hello_world_on: 
+        if self.hello_world_on:
             rospy.wait_for_service('/hello_world/trigger_write_hello')
             rospy.loginfo('Node ' + self.node_name + ' connected to /hello_world/trigger_write_hello.')
             self.trigger_write_hello_service = rospy.ServiceProxy('/hello_world/trigger_write_hello', Trigger)
@@ -358,7 +358,7 @@ class KeyboardTeleopNode(hm.HelloNode):
             rospy.loginfo('Node ' + self.node_name + ' connected to /open_drawer/trigger_open_drawer_up.')
             self.trigger_open_drawer_up_service = rospy.ServiceProxy('/open_drawer/trigger_open_drawer_up', Trigger)
 
-            
+
         if self.clean_surface_on:
             rospy.wait_for_service('/clean_surface/trigger_clean_surface')
             rospy.loginfo('Node ' + self.node_name + ' connected to /clean_surface/trigger_clean_surface.')

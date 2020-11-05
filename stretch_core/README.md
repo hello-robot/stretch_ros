@@ -2,7 +2,7 @@
 
 ## Overview
 
-*stretch_core* provides the core ROS interfaces to the Stretch RE1 mobile manipulator from Hello Robot Inc. It includes the following nodes: 
+*stretch_core* provides the core ROS interfaces to the Stretch RE1 mobile manipulator from Hello Robot Inc. It includes the following nodes:
 
 *stretch_driver* : node that communicates with the low-level Python library (stretch_body) to interface with the Stretch RE1
 
@@ -14,4 +14,4 @@
 
 ## License
 
-For license information, please see the LICENSE files. 
+For license information, please see the LICENSE files.

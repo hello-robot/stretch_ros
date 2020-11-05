@@ -75,7 +75,7 @@ class HelloNode:
 
     def point_cloud_callback(self, point_cloud):
         self.point_cloud = point_cloud
-    
+
     def move_to_pose(self, pose, async=False, custom_contact_thresholds=False):
         joint_names = [key for key in pose]
         point = JointTrajectoryPoint()
@@ -84,7 +84,7 @@ class HelloNode:
         trajectory_goal = FollowJointTrajectoryGoal()
         trajectory_goal.goal_time_tolerance = rospy.Time(1.0)
         trajectory_goal.trajectory.joint_names = joint_names
-        if not custom_contact_thresholds: 
+        if not custom_contact_thresholds:
             joint_positions = [pose[key] for key in joint_names]
             point.positions = joint_positions
             trajectory_goal.trajectory.points = [point]
@@ -100,7 +100,7 @@ class HelloNode:
             trajectory_goal.trajectory.points = [point]
         trajectory_goal.trajectory.header.stamp = rospy.Time.now()
         self.trajectory_client.send_goal(trajectory_goal)
-        if not async: 
+        if not async:
             self.trajectory_client.wait_for_result()
             #print('Received the following result:')
             #print(self.trajectory_client.get_result())
@@ -110,14 +110,14 @@ class HelloNode:
         # robot on the floor. This is typically called with respect to
         # the odom frame or the map frame. x and y are in meters and
         # the angle is in radians.
-        
+
         # Navigation planning is performed with respect to a height of
         # 0.0, so the heights of transformed points are 0.0. The
         # simple method of handling the heights below assumes that the
         # frame is aligned such that the z axis is normal to the
         # floor, so that ignoring the z coordinate is approximately
         # equivalent to projecting a point onto the floor.
-        
+
         # Query TF2 to obtain the current estimated transformation
         # from the robot's base_link frame to the frame.
         robot_to_odom_mat, timestamp = get_p1_to_p2_matrix('base_link', floor_frame, self.tf2_buffer)
@@ -145,17 +145,17 @@ class HelloNode:
         if not server_reached:
             rospy.signal_shutdown('Unable to connect to arm action server. Timeout exceeded.')
             sys.exit()
-        
+
         self.tf2_buffer = tf2_ros.Buffer()
         self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
-        
+
         self.point_cloud_subscriber = rospy.Subscriber('/camera/depth/color/points', PointCloud2, self.point_cloud_callback)
         self.point_cloud_pub = rospy.Publisher('/' + node_topic_namespace + '/point_cloud2', PointCloud2, queue_size=1)
 
         rospy.wait_for_service('/stop_the_robot')
         rospy.loginfo('Node ' + self.node_name + ' connected to /stop_the_robot service.')
         self.stop_the_robot_service = rospy.ServiceProxy('/stop_the_robot', Trigger)
-        
+
         if wait_for_first_pointcloud:
             # Do not start until a point cloud has been received
             point_cloud_msg = self.point_cloud
@@ -172,7 +172,7 @@ def create_time_string():
     return time_string
 
 
-def get_recent_filenames(filename_without_time_suffix, filename_extension, remove_extension=False): 
+def get_recent_filenames(filename_without_time_suffix, filename_extension, remove_extension=False):
     filenames = glob.glob(filename_without_time_suffix + '_*[0-9]' + '.' + filename_extension)
     filenames.sort()
     if remove_extension:
@@ -181,7 +181,7 @@ def get_recent_filenames(filename_without_time_suffix, filename_extension, remov
 
 
 def get_most_recent_filename(filename_without_time_suffix, filename_extension, remove_extension=False):
-    filenames = get_recent_filenames(filename_without_time_suffix, filename_extension, remove_extension=remove_extension) 
+    filenames = get_recent_filenames(filename_without_time_suffix, filename_extension, remove_extension=remove_extension)
     most_recent_filename = filenames[-1]
     return most_recent_filename
 

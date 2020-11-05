@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Prior to running this script make sure you have used stretch_calibration to create a calibrated URDF. This script also requires rpl, which can be installed with "sudo apt install rpl".
-echo "Prior to running this script make sure you have used stretch_calibration to create a calibrated URDF. This script also requires rpl, which can be installed with sudo apt install rpl." 
+echo "Prior to running this script make sure you have used stretch_calibration to create a calibrated URDF. This script also requires rpl, which can be installed with sudo apt install rpl."
 echo ""
 
 # Move previous exported_urdf to exported_urdf_previous.
@@ -12,7 +12,7 @@ echo ""
 
 # Create new exported URDF directories.
 echo "Create new exported URDF directories."
-echo "mkdir ./exported_urdf/" 
+echo "mkdir ./exported_urdf/"
 mkdir ./exported_urdf/
 echo "mkdir ./exported_urdf/meshes/"
 mkdir ./exported_urdf/meshes/

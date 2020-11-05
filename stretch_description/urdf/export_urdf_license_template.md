@@ -10,7 +10,7 @@ Unless required by applicable law or agreed to in writing, the Contents distribu
 
 Patents pending and trademark rights cover the Contents. As stated by the detailed License, "Patent and trademark rights are not licensed under this Public License."
 
-The Contents may incorporate some parts of the "RealSense Camera description package for Intel 3D D400 cameras" released with an Apache 2.0 license and Copyright 2017 Intel Corporation. The details of the Apache 2.0 license can be found via the following link:  
+The Contents may incorporate some parts of the "RealSense Camera description package for Intel 3D D400 cameras" released with an Apache 2.0 license and Copyright 2017 Intel Corporation. The details of the Apache 2.0 license can be found via the following link:
 
 https://www.apache.org/licenses/LICENSE-2.0
 

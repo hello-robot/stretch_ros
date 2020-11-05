@@ -3,7 +3,7 @@
   <arg name="urdf_file" value="$(find stretch_description)/urdf/stretch.urdf"/>
   <arg name="controller_yaml_file" value="$(find stretch_core)/config/controller_calibration_head.yaml"/>
   <arg name="calibration_directory" value="$(env HELLO_FLEET_PATH)/$(env HELLO_FLEET_ID)/calibration_ros/"/>
-  
+
   <!-- REALSENSE D435i -->
   <include file="$(find stretch_core)/launch/d435i_low_resolution.launch"></include>
   <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen">
@@ -14,7 +14,7 @@
   <!-- STRETCH DRIVER -->
   <param name="robot_description"
 	 textfile="$(arg urdf_file)"/>
-  
+
   <node
       name="joint_state_publisher"
       pkg="joint_state_publisher"
@@ -32,7 +32,7 @@
       type="state_publisher" >
     <param name="publish_frequency" value="15.0"/>
   </node>
-  
+
   <node name="stretch_driver" pkg="stretch_core" type="stretch_driver" output="screen">
     <param name="rate" type="double" value="25.0"/>
     <param name="timeout" type="double" value="0.5"/>
@@ -54,5 +54,5 @@
   <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_core)/rviz/stretch_simple_test.rviz">
   </node>
   <!-- -->
-  
+
 </launch>

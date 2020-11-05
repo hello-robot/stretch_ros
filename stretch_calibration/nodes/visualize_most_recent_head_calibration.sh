@@ -39,6 +39,6 @@ echo "Found $MOSTRECENT_URDF"
 echo "-----------------------------------------------------------"
 
 echo "Launch the visualization using these three files."
-echo "roslaunch stretch_calibration visualize_head_calibration.launch optimization_result_yaml_file:=$MOSTRECENT_OPTIMIZATION_FILE calibrated_controller_yaml_file:=$MOSTRECENT_CONTROLLER_FILE calibrated_urdf_file:=$MOSTRECENT_URDF" 
+echo "roslaunch stretch_calibration visualize_head_calibration.launch optimization_result_yaml_file:=$MOSTRECENT_OPTIMIZATION_FILE calibrated_controller_yaml_file:=$MOSTRECENT_CONTROLLER_FILE calibrated_urdf_file:=$MOSTRECENT_URDF"
 
 roslaunch stretch_calibration visualize_head_calibration.launch optimization_result_yaml_file:=$MOSTRECENT_OPTIMIZATION_FILE calibrated_controller_yaml_file:=$MOSTRECENT_CONTROLLER_FILE calibrated_urdf_file:=$MOSTRECENT_URDF

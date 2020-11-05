@@ -15,7 +15,7 @@ def numba_check_line_path(start_xy, end_xy, distance_map, distance_threshold):
 
     if not in_bounds(end_xy, h, w):
         return None
-    
+
     diff_xy = end_xy - start_xy
     length = np.sqrt( (diff_xy[0] * diff_xy[0]) + (diff_xy[1] * diff_xy[1]) )
     delta_xy = diff_xy / length
@@ -24,7 +24,7 @@ def numba_check_line_path(start_xy, end_xy, distance_map, distance_threshold):
 
     x, y = start_xy
     end_x, end_y = end_xy
-    
+
     while (x <= end_x) and (y <= end_y):
         x_i = int(round(x))
         y_i = int(round(y))
@@ -46,7 +46,7 @@ def numba_find_contact_along_line_path(start_xy, end_xy, mask_image):
 
     if not in_bounds(end_xy, h, w):
         return None, (None, None)
-    
+
     diff_xy = end_xy - start_xy
     length = np.sqrt( (diff_xy[0] * diff_xy[0]) + (diff_xy[1] * diff_xy[1]) )
     delta_xy = diff_xy / length
@@ -60,7 +60,7 @@ def numba_find_contact_along_line_path(start_xy, end_xy, mask_image):
     end_x_i = int(round(end_x))
     end_y_i = int(round(end_y))
 
-    while not ((x_i == end_x_i) and (y_i == end_y_i)):  
+    while not ((x_i == end_x_i) and (y_i == end_y_i)):
         x_i = int(round(x))
         y_i = int(round(y))
         val = mask_image[y_i, x_i]
@@ -84,7 +84,7 @@ def numba_find_line_path_on_surface(start_xy, end_xy, surface_mask_image, obstac
         return None, None, None
 
     h, w = s_h, s_w
-    
+
     if not in_bounds(start_xy, h, w):
         return None, None, None
 
@@ -108,8 +108,8 @@ def numba_find_line_path_on_surface(start_xy, end_xy, surface_mask_image, obstac
     first_surface_contact_xy = None
     last_surface_contact_xy = None
     first_obstacle_contact_xy = None
-    
-    while not ((x_i == end_x_i) and (y_i == end_y_i)):  
+
+    while not ((x_i == end_x_i) and (y_i == end_y_i)):
         x_i = int(round(x))
         y_i = int(round(y))
         if surface_mask_image[y_i, x_i] > 0:
@@ -123,4 +123,4 @@ def numba_find_line_path_on_surface(start_xy, end_xy, surface_mask_image, obstac
         x += dx
         y += dy
     return first_surface_contact_xy, last_surface_contact_xy, first_obstacle_contact_xy
-    
+

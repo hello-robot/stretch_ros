@@ -10,7 +10,7 @@ class HeadPoseEstimator:
         # Load the models
         models_dir = models_directory
         print('Using the following directory to load object detector models:', models_dir)
-        
+
         # file with network architecture and other information
         head_detection_model_prototxt_filename = models_dir + '/head_detection/deploy.prototxt'
         # file with network weights
@@ -22,7 +22,7 @@ class HeadPoseEstimator:
         print('caffemodel file =', head_detection_model_caffemodel_filename)
         self.head_detection_model = cv2.dnn.readNetFromCaffe(head_detection_model_prototxt_filename, head_detection_model_caffemodel_filename)
         dm.print_model_info(self.head_detection_model, 'head_detection_model')
-        
+
         # attempt to use Neural Compute Stick 2
         if use_neural_compute_stick:
             print('HeadPoseEstimator.__init__: Attempting to use an Intel Neural Compute Stick 2 using the following command: self.head_detection_model.setPreferableTarget(cv2.dnn.DNN_TARGET_MYRIAD)')
@@ -32,7 +32,7 @@ class HeadPoseEstimator:
         head_pose_weights_filename = head_pose_model_dir + 'head-pose-estimation-adas-0001.bin'
         head_pose_config_filename = head_pose_model_dir + 'head-pose-estimation-adas-0001.xml'
         self.head_pose_model = cv2.dnn.readNet(head_pose_weights_filename, head_pose_config_filename)
-        
+
         if use_neural_compute_stick:
             print('Not attempting to use a Intel Neural Compute Stick 2 for head pose estimation due to potential errors.')
 
@@ -48,9 +48,9 @@ class HeadPoseEstimator:
 
         dm.print_model_info(self.head_pose_model, 'head_pose_model')
 
-        
+
         dm.print_model_info(self.landmarks_model, 'landmarks_model')
-        
+
         self.landmark_names = ['right_eye_left', 'right_eye_right',
                                'left_eye_right', 'left_eye_left', 'nose_tip',
                                'nose_bottom', 'nose_right', 'nose_left', 'mouth_right',
@@ -62,7 +62,7 @@ class HeadPoseEstimator:
                                'chin_right', 'chin_middle', 'chin_left',
                                'left_cheek_28', 'left_cheek_29', 'left_cheek_30', 'left_cheek_31',
                                'left_cheek_32', 'left_cheek_33', 'left_cheek_34']
-    
+
 
     def get_landmark_names(self):
         return self.landmark_names
@@ -107,7 +107,7 @@ class HeadPoseEstimator:
 
         return boxes
 
-    
+
     def get_sub_image(self, rgb_image, bounding_box, enlarge_box=True, enlarge_scale=1.15):
         if enlarge_box:
             scale = enlarge_scale
@@ -136,7 +136,7 @@ class HeadPoseEstimator:
             x1 = min(orig_w, x1)
             y0 = max(0, y0)
             y1 = min(orig_h, y1)
-        else: 
+        else:
             x0 = int(round(bounding_box[0]))
             y0 = int(round(bounding_box[1]))
             x1 = int(round(bounding_box[2]))
@@ -146,7 +146,7 @@ class HeadPoseEstimator:
         image_to_crop = rgb_image
         sub_image = image_to_crop[y0:y1, x0:x1, :]
         return sub_image, actual_bounding_box
-    
+
 
     def estimate_head_pose(self, rgb_image, bounding_box, enlarge_box=True, enlarge_scale=1.15):
         face_crop_image, actual_bounding_box = self.get_sub_image(rgb_image, bounding_box, enlarge_box=enlarge_box, enlarge_scale=enlarge_scale)
@@ -167,7 +167,7 @@ class HeadPoseEstimator:
             pitch = pitch * np.pi/180.0
             roll = roll * np.pi/180.0
             yaw = yaw * np.pi/180.0
-            
+
             return yaw, pitch, roll
 
         return None, None, None
@@ -210,7 +210,7 @@ class HeadPoseEstimator:
         thickness = 2
         cv2.rectangle(image, (x0, y0), (x1, y1), color, thickness)
 
-        
+
     def draw_head_pose(self, image, yaw, pitch, roll, bounding_box):
         x0, y0, x1, y1 = bounding_box
         face_x = (x1 + x0) / 2.0
@@ -225,7 +225,7 @@ class HeadPoseEstimator:
         h, w, c = image.shape
         camera_center = (w/2.0, h/2.0)
         #For rendering with an unknown camera
-        focal_length = 50.0 
+        focal_length = 50.0
         camera_matrix = np.array([[focal_length, 0.0,          camera_center[0]],
                                   [0.0,          focal_length, camera_center[1]],
                                   [0.0,          0.0,          1.0]])
@@ -255,7 +255,7 @@ class HeadPoseEstimator:
         p1 = tuple(np.int32(np.round(z_axis)))
         cv2.line(image, p0, p1, (255, 0, 0), 2)
 
-        
+
     def draw_landmarks(self, image, landmarks):
         for name, xy in landmarks.items():
             x = xy[0]
@@ -278,9 +278,9 @@ class HeadPoseEstimator:
             font_scale = 1.0
             line_color = [0, 0, 0]
             line_width = 1
-            font = cv2.FONT_HERSHEY_PLAIN 
+            font = cv2.FONT_HERSHEY_PLAIN
 
-            
+
     def apply_to_image(self, rgb_image, draw_output=False):
         if draw_output:
             output_image = rgb_image.copy()
@@ -291,17 +291,17 @@ class HeadPoseEstimator:
         boxes = self.detect_faces(rgb_image)
         facial_landmark_names = self.landmark_names.copy()
         for bounding_box in boxes:
-            if draw_output: 
+            if draw_output:
                 self.draw_bounding_box(output_image, bounding_box)
             yaw, pitch, roll = self.estimate_head_pose(rgb_image, bounding_box, enlarge_box=True, enlarge_scale=1.15)
-            if yaw is not None: 
+            if yaw is not None:
                 ypr = (yaw, pitch, roll)
-                if draw_output: 
+                if draw_output:
                     self.draw_head_pose(output_image, yaw, pitch, roll, bounding_box)
             else:
                 ypr = None
             landmarks, landmark_names = self.detect_facial_landmarks(rgb_image, bounding_box, enlarge_box=True, enlarge_scale=1.15)
-            if (landmarks is not None) and draw_output: 
+            if (landmarks is not None) and draw_output:
                 self.draw_landmarks(output_image, landmarks)
             heads.append({'box':bounding_box, 'ypr':ypr, 'landmarks':landmarks})
 

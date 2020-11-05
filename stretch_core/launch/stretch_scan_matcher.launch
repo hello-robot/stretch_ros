@@ -3,7 +3,7 @@
   <!-- laser_scan_matcher -->
   <node pkg="laser_scan_matcher" type="laser_scan_matcher_node" name="laser_scan_matcher_node" output="screen">
     <remap from="odom" to="odometry/filtered"/>
-    
+
     <param name="max_iterations" value="10"/>
     <!--<param name="fixed_frame" value="map"/>-->
     <param name="fixed_frame" value="odom"/>

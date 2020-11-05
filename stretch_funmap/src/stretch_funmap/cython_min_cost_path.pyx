@@ -6,7 +6,7 @@ from cpython cimport bool
 import cython
 
 # manual compilation
-# cython ./cython_min_cost_path.pyx 
+# cython ./cython_min_cost_path.pyx
 # gcc -shared -pthread -fPIC -fwrapv -O2 -Wall -fno-strict-aliasing -I/usr/include/python2.7 -o cython_min_cost_path.so cython_min_cost_path.c
 
 # other compiler commands in attempt to improve efficiency
@@ -74,16 +74,16 @@ def cython_cost_map(np.ndarray[DTYPE0_t, ndim=2] distance_image):
     cdef float max_cost
     cdef float none_shall_pass
     min_cost, max_cost, none_shall_pass = cython_costs()
-    
+
     cdef float max_cost_minus_min_cost = max_cost - min_cost
-    
+
     cdef int height = distance_image.shape[0]
     cdef int width = distance_image.shape[1]
 
     cdef float val
     cdef int x
     cdef int y
-    
+
     # cost
     # as distance -> inf, cost -> min_cost
     # distance -> min_robot_distance -> cost -> typical_max_cost + min_cost
@@ -96,13 +96,13 @@ def cython_cost_map(np.ndarray[DTYPE0_t, ndim=2] distance_image):
             val = distance_image[y,x]
             if val <= 0.0:
                 val = none_shall_pass
-            else: 
+            else:
                 val = min_cost + (max_cost_minus_min_cost/(val + 1.0))
                 if val < min_cost_in_image:
                     min_cost_in_image = val
             cost_image[y,x] = val
-            
-            
+
+
     # create impassable border at the edges of the image to keep the
     # search in bounds
     cost_image[:,0] = none_shall_pass
@@ -112,7 +112,7 @@ def cython_cost_map(np.ndarray[DTYPE0_t, ndim=2] distance_image):
     return cost_image
 
 def cython_4_way_connectivity():
-    #   0 
+    #   0
     # 1   2
     #   3
 
@@ -121,7 +121,7 @@ def cython_4_way_connectivity():
     opposite_direction[1] = 2
     opposite_direction[2] = 1
     opposite_direction[3] = 0
-    
+
     cdef np.ndarray[DTYPE2_t, ndim=2] direction_to_xy = np.zeros((4, 2), dtype=DTYPE2)
     direction_to_xy[0] = [0, -1]
     direction_to_xy[1] = [-1, 0]
@@ -167,7 +167,7 @@ def cython_8_way_connectivity():
 
     cdef int no_direction = 255
     cdef int start_marker = 250
-    
+
     return directions, no_direction, start_marker, direction_to_xy, opposite_direction
 
 
@@ -179,7 +179,7 @@ def cython_direction_image_to_path(np.ndarray[DTYPE1_t, ndim=2] direction_image,
     cdef np.ndarray[DTYPE2_t, ndim=1] directions
     cdef int no_direction
     cdef int start_marker
-    
+
     directions, no_direction, start_marker, direction_to_xy, opposite_direction = cython_4_way_connectivity()
 
     cdef bool at_end = False
@@ -192,7 +192,7 @@ def cython_direction_image_to_path(np.ndarray[DTYPE1_t, ndim=2] direction_image,
     if direction_image[end_y, end_x] == no_direction:
         path = None
         return path
-    
+
     # path found
     current_x, current_y = end_xy
     path = []
@@ -203,7 +203,7 @@ def cython_direction_image_to_path(np.ndarray[DTYPE1_t, ndim=2] direction_image,
         current_y = direction_to_xy[n, 1] + current_y
     path.append([current_x, current_y])
     path.reverse()
-        
+
     return path
 
 
@@ -225,10 +225,10 @@ def cython_min_cost_path(np.ndarray[DTYPE0_t, ndim=2] distance_image,
     # The returned path consists of a list of pixel coordinates in
     # the distance_map, path = [[x0,y0], [x1,y1], ...], that define a
     # minimum cost path from pixel coordinate start_xy to pixel
-    # coordinate end_xy. 
+    # coordinate end_xy.
 
     cost_image = cython_cost_map(distance_image)
-    
+
     cdef float min_cost
     cdef float max_cost
     cdef float none_shall_pass
@@ -239,11 +239,11 @@ def cython_min_cost_path(np.ndarray[DTYPE0_t, ndim=2] distance_image,
     cdef np.ndarray[DTYPE2_t, ndim=1] directions
     cdef int no_direction
     cdef int start_marker
-    
+
     directions, no_direction, start_marker, direction_to_xy, opposite_direction = cython_4_way_connectivity()
 
     cdef np.ndarray[DTYPE1_t, ndim=2] direction_image = np.full_like(distance_image, no_direction, dtype=DTYPE1)
-    
+
     h = []
     cdef bool at_end = False
     cdef int current_x = start_xy[0]
@@ -257,7 +257,7 @@ def cython_min_cost_path(np.ndarray[DTYPE0_t, ndim=2] distance_image,
     cdef int backwards_direction
     cdef float path_cost = -1.0
     cdef int k
-    
+
     he.heappush(h, (total_cost, current_x, current_y, came_from_here))
 
     while h:
@@ -286,10 +286,10 @@ def cython_min_cost_path(np.ndarray[DTYPE0_t, ndim=2] distance_image,
         # no path found
         path = None
         return path
-    
+
     path = cython_direction_image_to_path(direction_image, end_xy)
     return path
-    
+
 
 def cython_all_paths(np.ndarray[DTYPE0_t, ndim=2] distance_image,
                      np.ndarray[DTYPE3_t, ndim=1] start_xy):
@@ -313,9 +313,9 @@ def cython_all_paths(np.ndarray[DTYPE0_t, ndim=2] distance_image,
     # cost, c[xi,yi]. The cost of a path is the sum of these
     # costs, Sum(cost(path[i])).
     #
-    
+
     cost_image = cython_cost_map(distance_image)
-    
+
     cdef float min_cost
     cdef float max_cost
     cdef float none_shall_pass
@@ -327,10 +327,10 @@ def cython_all_paths(np.ndarray[DTYPE0_t, ndim=2] distance_image,
     cdef int no_direction
     cdef int start_marker
     directions, no_direction, start_marker, direction_to_xy, opposite_direction = cython_4_way_connectivity()
-    
+
     cdef np.ndarray[DTYPE1_t, ndim=2] direction_image = np.full_like(distance_image, no_direction, dtype=DTYPE1)
     cdef np.ndarray[DTYPE4_t, ndim=2] path_length_image = np.zeros_like(distance_image, dtype=DTYPE4)
-    
+
     h = []
     cdef int current_x = start_xy[0]
     cdef int current_y = start_xy[1]
@@ -343,7 +343,7 @@ def cython_all_paths(np.ndarray[DTYPE0_t, ndim=2] distance_image,
     cdef int k
     cdef int path_length = 0
     cdef int new_path_length
-    
+
     he.heappush(h, (total_cost, path_length, current_x, current_y, came_from_here))
 
     while h:

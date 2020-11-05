@@ -12,14 +12,14 @@
     <param name="uncalibrated_urdf_filename" type="string" value="$(arg uncalibrated_urdf_filename)"/>
   </node>
   <!-- -->
-  
+
   <!-- STRETCH DRIVER -->
   <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="false"/>
   <include file="$(find stretch_core)/launch/stretch_driver.launch"></include>
   <!-- -->
-  
+
   <!-- VISUALIZE CALIBRATION -->
   <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_calibration)/rviz/head_calibration.rviz" />
   <!-- -->
-  
+
 </launch>

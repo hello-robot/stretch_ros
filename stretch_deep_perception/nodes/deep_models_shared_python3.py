@@ -22,7 +22,7 @@ def print_model_info(model, text_name):
     print('{0} input layer ='.format(text_name), input_layer)
     input_layer_name = layer_names[0]
     print('{0} input layer name ='.format(text_name), input_layer_name)
-        
+
     for layer_name in output_layer_names:
         out_layer = model.getLayer(layer_name)
         print('{0} out_layer ='.format(text_name), out_layer)

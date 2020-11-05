@@ -41,7 +41,7 @@
       </geometry>
     </collision>
   </link>
-  
+
   <joint
     name="joint_aruco_right_base"
     type="fixed">
@@ -56,7 +56,7 @@
       xyz="0 0 0" />
   </joint>
 
-  
+
   <link
     name="link_aruco_left_base">
     <inertial>
@@ -97,7 +97,7 @@
       </geometry>
     </collision>
   </link>
-  
+
   <joint
     name="joint_aruco_left_base"
     type="fixed">
@@ -111,7 +111,7 @@
     <axis
       xyz="0 0 0" />
   </joint>
-  
+
   <link
     name="link_aruco_shoulder">
     <inertial>
@@ -279,5 +279,5 @@
 
 </robot>
 
-  
+
 

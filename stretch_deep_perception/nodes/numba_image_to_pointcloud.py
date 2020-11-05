@@ -15,7 +15,7 @@ def numba_image_to_pointcloud(depth_image, bounding_box, camera_matrix):
         x_max = x_min
     if y_max < y_min:
         y_max = y_min
-        
+
     f_x = camera_matrix[0,0]
     c_x = camera_matrix[0,2]
     f_y = camera_matrix[1,1]
@@ -23,7 +23,7 @@ def numba_image_to_pointcloud(depth_image, bounding_box, camera_matrix):
 
     out_w = (x_max - x_min) + 1
     out_h = (y_max - y_min) + 1
-    points = np.empty((out_h * out_w, 3), dtype=np.float32) 
+    points = np.empty((out_h * out_w, 3), dtype=np.float32)
 
     i = 0
     x = x_min
@@ -37,5 +37,5 @@ def numba_image_to_pointcloud(depth_image, bounding_box, camera_matrix):
             i += 1
             y += 1
         x += 1
-    
+
     return points

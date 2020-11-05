@@ -109,11 +109,11 @@
     <axis
       xyz="1 0 0" />
   </joint>
-  
+
   <link
       name="link_dry_erase_tip">
   </link>
-  
+
   <joint
     name="joint_dry_erase_tip"
     type="fixed">
@@ -125,9 +125,9 @@
     <child
       link="link_dry_erase_tip" />
   </joint>
-  
-  
+
+
 </robot>
 
-  
+
 

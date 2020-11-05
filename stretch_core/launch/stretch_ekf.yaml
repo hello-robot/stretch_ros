@@ -19,7 +19,7 @@ two_d_mode: true #true #false
 # unspecified.
 transform_time_offset: 0.0
 
-# Use this parameter to provide specify how long the tf listener should wait for a transform to become available. 
+# Use this parameter to provide specify how long the tf listener should wait for a transform to become available.
 # Defaults to 0.0 if unspecified.
 transform_timeout: 0.0
 
@@ -95,7 +95,7 @@ odom0_config: [true,  true,  true,
                false, false, false,
                false, false, false]
 
-               
+
 # If you have high-frequency data or are running with a low frequency parameter value, then you may want to increase
 # the size of the subscription queue so that more measurements are fused.
 odom0_queue_size: 1 #2

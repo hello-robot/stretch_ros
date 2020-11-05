@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="stretch_laser_range_finder">
-  
+
   <link
     name="laser">
     <inertial>
@@ -41,7 +41,7 @@
       </geometry>
     </collision>
   </link>
-  
+
   <joint
     name="joint_laser"
     type="fixed">
@@ -58,5 +58,5 @@
 
 </robot>
 
-  
+
 

@@ -23,7 +23,7 @@
     <arg name="depth_height" value="$(arg depth_height)"/>
     <arg name="color_width" value="$(arg color_width)"/>
     <arg name="color_height" value="$(arg color_height)"/>
-  
+
     <arg name="color_fps" value="15"/>
 
     <!-- publish depth streams aligned to other streams -->
@@ -31,7 +31,7 @@
 
     <!-- publish an RGBD point cloud -->
     <arg name="filters" value="pointcloud"/>
-    
+
     <!-- "tf_prefix: By default all frame's ids have the same prefix -
          camera_. This allows changing it per camera."
          https://github.com/intel-ros/realsense -->
@@ -42,7 +42,7 @@
          pointcloud are enabled."
          https://github.com/intel-ros/realsense -->
     <arg name="enable_sync" value="true"/>
-    
+
     <!-- "You can have a full depth to pointcloud, coloring the
          regions beyond the texture with zeros..." -->
     <!-- Set to true in order to make use of the full field of view of
@@ -57,7 +57,7 @@
          true, the device will reset prior to usage."
          https://github.com/intel-ros/realsense -->
     <!--<arg name="initial_reset" value="true"/>-->
-    
+
     <!--<arg name="unite_imu_method" value="copy"/> linear_interpolation-->
   </include>
 

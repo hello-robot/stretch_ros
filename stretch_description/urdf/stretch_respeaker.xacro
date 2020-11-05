@@ -44,7 +44,7 @@
   <joint
     name="joint_respeaker"
     type="fixed">
-    <!-- rpy="   ?   rotate_sound_source_direction    ?   " --> 
+    <!-- rpy="   ?   rotate_sound_source_direction    ?   " -->
     <origin
       xyz="1.09074743137871E-05 1.36992 0.00303572796911382"
       rpy="1.57079632679553 0.0 3.14159265358916" />
@@ -55,8 +55,8 @@
     <axis
       xyz="0 0 0" />
   </joint>
-  
+
 </robot>
 
-  
+
 

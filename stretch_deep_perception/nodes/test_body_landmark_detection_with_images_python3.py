@@ -16,13 +16,13 @@ if __name__ == '__main__':
     assert(int(sys.version[0]) >= 3)
 
     models_directory = do.get_directory()
-    print('Using the following directory for deep learning models:', models_directory)        
+    print('Using the following directory for deep learning models:', models_directory)
     use_neural_compute_stick = do.use_neural_compute_stick()
     if use_neural_compute_stick:
         print('Attempt to use an Intel Neural Compute Stick 2.')
     else:
         print('Not attempting to use an Intel Neural Compute Stick 2.')
-    
+
     only_display_result_images = True
 
     input_dir = './test_images/'
@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     detector = bl.BodyLandmarkDetector(models_directory,
                                        use_neural_compute_stick=use_neural_compute_stick)
-        
+
     for i, f in enumerate(filenames):
         print('loading image =', f)
         rgb_image = cv2.imread(f)
@@ -50,4 +50,4 @@ if __name__ == '__main__':
                 detector.draw_skeleton(out_rgb, body)
 
             cv2.imwrite(output_dir + 'skeleton_' + str(i) + '.png', out_rgb)
-                
+

@@ -1,7 +1,7 @@
 <launch>
 
   <arg name="debug_directory" value="$(env HELLO_FLEET_PATH)/debug/"/>
-  
+
   <!-- REALSENSE D435i -->
   <include file="$(find stretch_core)/launch/d435i_high_resolution.launch"></include>
   <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen">
@@ -19,7 +19,7 @@
   <!-- FRUSTUM FIELD OF VIEW VISUALIZATION -->	
   <node name="d435i_frustum_visualizer" pkg="stretch_core" type="d435i_frustum_visualizer" output="screen" />
   <!-- -->
-  
+
   <!-- NEAREST MOUTH DETECTOR -->
   <node name="nearest_mouth_detector" pkg="stretch_deep_perception" type="detect_nearest_mouth_python3.py" output="screen">
     <param name="debug_directory" type="string" value="$(arg debug_directory)"/>
@@ -29,9 +29,9 @@
   <!-- KEYBOARD TELEOP -->
   <node name="keyboard_teleop" pkg="stretch_core" type="keyboard_teleop" output="screen"/>
   <!-- -->
-  
+
   <!-- VISUALIZE DETECTION -->
   <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_deep_perception)/rviz/nearest_mouth_detection.rviz" />
   <!-- -->
-  
+
 </launch>

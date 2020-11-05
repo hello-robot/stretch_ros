@@ -12,12 +12,12 @@ class ObjectDetector:
         # Load the models
         models_dir = models_directory + 'darknet/'
         print('Using the following directory to load object detector models:', models_dir)
-        
-        if use_tiny_yolo3: 
+
+        if use_tiny_yolo3:
             model_filename = models_dir + 'tiny_yolo_v3/yolov3-tiny.weights'
             config_filename = models_dir + 'tiny_yolo_v3/yolov3-tiny.cfg'
             classes_filename = models_dir + 'tiny_yolo_v3/object_detection_classes_yolov3.txt'
-            input_width = 416 
+            input_width = 416
             input_height = 416
         else:
             model_filename = models_dir + 'yolo_v3/yolov3.weights'
@@ -25,7 +25,7 @@ class ObjectDetector:
             classes_filename = models_dir + 'yolo_v3/object_detection_classes_yolov3.txt'
             input_width = 608
             input_height = 608
-            
+
         self.input_width = input_width
         self.input_height = input_height
 
@@ -39,7 +39,7 @@ class ObjectDetector:
             print('using YOLO V3 Tiny')
         else:
             print('using YOLO V3')
-                    
+
         print('models_dir =', models_dir)
         print('model_filename =', model_filename)
         print('config_filename =', config_filename)
@@ -51,14 +51,14 @@ class ObjectDetector:
         self.object_class_labels = raw_classes_text.rstrip('\n').split('\n')
         self.num_object_classes = len(self.object_class_labels)
         self.object_detection_model = cv2.dnn.readNet(model_filename, config_filename, 'darknet')
-        
+
         # attempt to use Neural Compute Stick 2
         if use_neural_compute_stick:
             print('ObjectDetector.__init__: Attempting to use an Intel Neural Compute Stick 2 using the following command: self.object_detection_model.setPreferableTarget(cv2.dnn.DNN_TARGET_MYRIAD)')
             self.object_detection_model.setPreferableTarget(cv2.dnn.DNN_TARGET_MYRIAD)
 
         dm.print_model_info(self.object_detection_model, 'object_detection_model')
-        
+
         self.output_layer_names = self.object_detection_model.getUnconnectedOutLayersNames()
 
     def get_landmark_names(self):
@@ -69,17 +69,17 @@ class ObjectDetector:
 
     def get_landmark_color_dict(self):
         return None
-    
+
     def apply_to_image(self, rgb_image, draw_output=False):
 
         original_height, original_width, num_color = rgb_image.shape
-        
+
         object_image_blob = cv2.dnn.blobFromImage(rgb_image,
                                                   1.0,
                                                   size=(self.input_width, self.input_height),
                                                   swapRB=self.rgb,
                                                   ddepth=cv2.CV_8U)
-        
+
         self.object_detection_model.setInput(object_image_blob, scalefactor=self.scale, mean=self.mean)
         object_detections = self.object_detection_model.forward(self.output_layer_names)
 
@@ -95,9 +95,9 @@ class ObjectDetector:
         #                       array with shape (17328, 85) ]
 
         # each element of the list has a constant shape RxC
-        
+
         # Each of the R rows represents a detection
-        
+
         # [0:5] (the first 4 numbers) specify a bounding box
         # [box_center_x, box_center_y, box_width, box_height], where
         # each element is a scalar between 0.0 and 1.0 that can be
@@ -137,7 +137,7 @@ class ObjectDetector:
                     class_label = self.object_class_labels[object_class_id]
 
                     box_center_x, box_center_y, box_width, box_height = detection[:4]
-                    
+
                     x_min = (box_center_x - (box_width / 2.0)) * original_width
                     y_min = (box_center_y - (box_height / 2.0)) * original_height
                     x_max = x_min + (box_width * original_width)
@@ -147,11 +147,11 @@ class ObjectDetector:
                     y_min = bound_y(int(round(y_min)))
                     x_max = bound_x(int(round(x_max)))
                     y_max = bound_y(int(round(y_max)))
-                    
+
                     box = (x_min, y_min, x_max, y_max)
 
                     print(class_label, ' detected')
-                    
+
                     results.append({'class_id': object_class_id,
                                     'label': class_label,
                                     'confidence': confidence,
@@ -162,7 +162,7 @@ class ObjectDetector:
             output_image = rgb_image.copy()
             for detection_dict in results:
                 self.draw_detection(output_image, detection_dict)
-                    
+
         return results, output_image
 
 
@@ -189,7 +189,7 @@ class ObjectDetector:
         label_y_min = y_min
         label_x_max = x_min + (label_width + (2 * label_background_border))
         label_y_max = y_min + (label_height + baseline + (2 * label_background_border))
-        
+
         text_x = label_x_min + label_background_border
         text_y = (label_y_min + label_height) + label_background_border
 

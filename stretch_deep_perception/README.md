@@ -2,7 +2,7 @@
 
 ## Overview
 
-*stretch_deep_perception* provides demonstration code that uses open deep learning models to perceive the world. 
+*stretch_deep_perception* provides demonstration code that uses open deep learning models to perceive the world.
 
 This code depends on the stretch_deep_perception_models repository, which should be installed under ~/stretch_user/ on your Stretch RE1 robot.
 
@@ -18,7 +18,7 @@ There are four demonstrations for you to try.
 First, try running the face detection demonstration via the following command:
 
 ```
-roslaunch stretch_deep_perception stretch_detect_faces.launch 
+roslaunch stretch_deep_perception stretch_detect_faces.launch
 ```
 
 RViz should show you the robot, the point cloud from the camera, and information about detected faces. If it detects a face, it should show a 3D planar model of the face and 3D facial landmarks. These deep learning models come from OpenCV and the Open Model Zoo (https://github.com/opencv/open_model_zoo).
@@ -28,7 +28,7 @@ You can use the keyboard_teleop commands within the terminal that you ran roslau
 
 ```
              i (tilt up)
-	     
+	
 j (pan left)               k (pan right)
 
              , (tilt down)
@@ -40,7 +40,7 @@ Now shut down everything that was launched by pressing q and Ctrl-C in the termi
 
 ### Object Detection Demo
 
-Second, try running the object detection demo, which uses the tiny YOLO v3 object detection network (https://pjreddie.com/darknet/yolo/). RViz will display planar detection regions. Detection class labels will be printed to the terminal. 
+Second, try running the object detection demo, which uses the tiny YOLO v3 object detection network (https://pjreddie.com/darknet/yolo/). RViz will display planar detection regions. Detection class labels will be printed to the terminal.
 
 ```
 roslaunch stretch_deep_perception stretch_detect_objects.launch
@@ -54,7 +54,7 @@ Third, try running the body landmark point detection demo. The deep learning mod
 
 
 ```
-roslaunch stretch_deep_perception stretch_detect_body_landmarks.launch 
+roslaunch stretch_deep_perception stretch_detect_body_landmarks.launch
 ```
 
 Once you're ready for the next demo, shut down everything that was launched by pressing q and Ctrl-C in the terminal.
@@ -65,11 +65,11 @@ Finally, try running the nearest mouth detection demo. RViz will display a 3D fr
 
 We have used this frame of reference to deliver food near a person's mouth. This has the potential to be useful for assistive feeding. However, use of this detector in this way could be risky. Please be very careful and aware that you are using it at your own risk.
 
-A less risky use of this detection is for object delivery. stretch_demos has a demonstration that delivers an object based on this frame of reference by holding out the object some distance from the mouth location and below the mouth location with respect to the world frame. This works well and is inspired by similar methods used with the robot EL-E at Georgia Tech [1]. 
+A less risky use of this detection is for object delivery. stretch_demos has a demonstration that delivers an object based on this frame of reference by holding out the object some distance from the mouth location and below the mouth location with respect to the world frame. This works well and is inspired by similar methods used with the robot EL-E at Georgia Tech [1].
 
 
 ```
-roslaunch stretch_deep_perception stretch_detect_nearest_mouth.launch 
+roslaunch stretch_deep_perception stretch_detect_nearest_mouth.launch
 ```
 
 ## References
@@ -79,4 +79,4 @@ roslaunch stretch_deep_perception stretch_detect_nearest_mouth.launch
 
 ## License
 
-For license information, please see the LICENSE files. 
+For license information, please see the LICENSE files.

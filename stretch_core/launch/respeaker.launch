@@ -1,7 +1,7 @@
 <launch>
 
   <!-- This launch file is based on sample_respeaker.launch from the official respeaker_ros package. -->
-  
+
   <!-- publish tf of respeaker -->
   <arg name="publish_tf" default="true"/>
   <!-- launch sound_play node -->

@@ -38,18 +38,18 @@ class OpenDrawerNode(hm.HelloNode):
         self.letter_height_m = 0.2
         self.wrist_position = None
         self.lift_position = None
-        
+
     def joint_states_callback(self, joint_states):
-        with self.joint_states_lock: 
+        with self.joint_states_lock:
             self.joint_states = joint_states
         wrist_position, wrist_velocity, wrist_effort = hm.get_wrist_state(joint_states)
-        self.wrist_position = wrist_position        
+        self.wrist_position = wrist_position
         lift_position, lift_velocity, lift_effort = hm.get_lift_state(joint_states)
         self.lift_position = lift_position
-        
+
     def align_to_surface(self):
         rospy.loginfo('align_to_surface')
-        trigger_request = TriggerRequest() 
+        trigger_request = TriggerRequest()
         trigger_result = self.trigger_align_with_nearest_cliff_service(trigger_request)
         rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
@@ -62,7 +62,7 @@ class OpenDrawerNode(hm.HelloNode):
         extension_contact_effort = 45.0 #42.0 #40.0 from funmap
         pose = {'wrist_extension': (extension_m, extension_contact_effort)}
         self.move_to_pose(pose, custom_contact_thresholds=True)
-        
+
     def lower_hook_until_contact(self):
         rospy.loginfo('lower_hook_until_contact')
         max_drop_m = 0.15
@@ -90,7 +90,7 @@ class OpenDrawerNode(hm.HelloNode):
         self.move_to_pose(pose, custom_contact_thresholds=True)
 
         #rospy.sleep(1.0) # needed to correct for bounce after contact
-        
+
         use_correction = True
         if use_correction:
             # raise due to drop down after contact detection
@@ -99,7 +99,7 @@ class OpenDrawerNode(hm.HelloNode):
             pose = {'joint_lift': lift_m}
             self.move_to_pose(pose)
             rospy.sleep(0.5) # wait for new lift position
-        
+
     def backoff_from_surface(self):
         rospy.loginfo('backoff_from_surface')
         if self.wrist_position is not None:
@@ -136,7 +136,7 @@ class OpenDrawerNode(hm.HelloNode):
         else:
             rospy.logerr('pull_open: self.wrist_position is None!')
             return False
-        
+
     def move_to_initial_configuration(self):
         initial_pose = {'wrist_extension': 0.01,
                         'joint_wrist_yaw': 1.570796327,
@@ -146,7 +146,7 @@ class OpenDrawerNode(hm.HelloNode):
 
     def trigger_open_drawer_down_callback(self, request):
         return self.open_drawer('down')
-        
+
     def trigger_open_drawer_up_callback(self, request):
         return self.open_drawer('up')
 
@@ -163,11 +163,11 @@ class OpenDrawerNode(hm.HelloNode):
                 message='Failed to backoff from the surface.'
             )
 
-        if direction == 'down': 
+        if direction == 'down':
             self.lower_hook_until_contact()
         elif direction == 'up':
             self.raise_hook_until_contact()
-            
+
         success = self.pull_open()
         if not success:
             return TriggerResponse(
@@ -176,21 +176,21 @@ class OpenDrawerNode(hm.HelloNode):
             )
 
         push_drawer_closed = False
-        if push_drawer_closed: 
+        if push_drawer_closed:
             rospy.sleep(3.0)
             self.push_closed()
-        
+
         return TriggerResponse(
             success=True,
             message='Completed opening the drawer!'
             )
 
-    
+
     def main(self):
         hm.HelloNode.main(self, 'open_drawer', 'open_drawer', wait_for_first_pointcloud=False)
 
         self.joint_states_subscriber = rospy.Subscriber('/stretch/joint_states', JointState, self.joint_states_callback)
-        
+
         self.trigger_open_drawer_service = rospy.Service('/open_drawer/trigger_open_drawer_down',
                                                          Trigger,
                                                          self.trigger_open_drawer_down_callback)
@@ -198,8 +198,8 @@ class OpenDrawerNode(hm.HelloNode):
         self.trigger_open_drawer_service = rospy.Service('/open_drawer/trigger_open_drawer_up',
                                                          Trigger,
                                                          self.trigger_open_drawer_up_callback)
-        
-        
+
+
         rospy.wait_for_service('/funmap/trigger_align_with_nearest_cliff')
         rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_align_with_nearest_cliff.')
         self.trigger_align_with_nearest_cliff_service = rospy.ServiceProxy('/funmap/trigger_align_with_nearest_cliff', Trigger)
@@ -211,12 +211,12 @@ class OpenDrawerNode(hm.HelloNode):
         rospy.wait_for_service('/funmap/trigger_lower_until_contact')
         rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_lower_until_contact.')
         self.trigger_lower_until_contact_service = rospy.ServiceProxy('/funmap/trigger_lower_until_contact', Trigger)
-        
+
         rate = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
             rate.sleep()
 
-        
+
 if __name__ == '__main__':
     try:
         parser = ap.ArgumentParser(description='Open Drawer behavior for stretch.')

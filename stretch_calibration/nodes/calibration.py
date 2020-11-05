@@ -83,7 +83,7 @@ def soft_constraint_error(x, thresh, scale):
         return scale * (x - thresh)
     else:
         return 0.0
-    
+
 def affine_matrix_difference(t1, t2, size=4):
     error = 0.0
     for i in range(size):
@@ -91,7 +91,7 @@ def affine_matrix_difference(t1, t2, size=4):
             error += abs(t1[i,j] - t2[i,j])
     return error
 
-def rot_to_axes(r): 
+def rot_to_axes(r):
     x_axis = np.reshape(r[:3,0], (3,1))
     y_axis = np.reshape(r[:3,1], (3,1))
     z_axis = np.reshape(r[:3,2], (3,1))
@@ -122,12 +122,12 @@ def axes_error(axes, axes_target):
 
 class Joint:
     # wrapper for a URDF joint
-    
+
     def __init__(self, urdf_joint):
         self.joint = urdf_joint
         self.is_joint = True
         self.is_link = False
-        
+
     def get_affine_matrix(self, value):
         axis = self.joint.axis
         rpy = self.joint.origin.rpy
@@ -156,7 +156,7 @@ class Joint:
 
 class Link:
     # wrapper for a URDF link
-    
+
     def __init__(self, urdf_link):
         self.link = urdf_link
         self.is_joint = False
@@ -164,10 +164,10 @@ class Link:
 
     def __str__(self):
         return self.link.__str__()
-    
+
 class Chain:
     # wrapper for a URDF chain
-    
+
     def __init__(self, urdf, start_name, end_name):
         self.urdf = urdf
         self.chain_names = self.urdf.get_chain(start_name, end_name)
@@ -192,7 +192,7 @@ class Chain:
                 if e.joint.name == name:
                     return e.joint
         return None
-                
+
     def get_affine_matrix(self, joint_value_dict):
         affine_matrix = np.identity(4)
         for e in self.chain:
@@ -206,7 +206,7 @@ class ArucoError:
     # This object handles error calculations for a single ArUco
     # marker. For an example of its use, please see
     # process_head_calibration_data.
-    
+
     def __init__(self, name, location, aruco_link, urdf, meters_per_deg, rgba):
 
         self.aruco_link = aruco_link
@@ -217,7 +217,7 @@ class ArucoError:
         # ArucoError object.
         self.marker_frame = '/base_link'
         self.aruco_chain = Chain(urdf, 'base_link', self.aruco_link)
-        
+
         self.rgba = rgba
         self.name = name
         self.location = location
@@ -237,7 +237,7 @@ class ArucoError:
         c = sample['camera_measurements']
         if (c[self.name + '_marker_pose'] != None):
             self.number_of_observations += 1
-          
+
     def update(self, sample, marker_time, unused):
         # Use the sample to update the ArUco marker's observed pose
         # and the corresponding robot joint configuration.
@@ -246,7 +246,7 @@ class ArucoError:
         if self.detected is None:
             self.detected = False
             self.observed_aruco_pose = None
-        else: 
+        else:
             self.observed_aruco_pose = camera_measurements[self.name + '_marker_pose']
         self.joint_values = sample['joints']
         self.marker_time = marker_time
@@ -257,7 +257,7 @@ class ArucoError:
         # by the current URDF using the robot's configuration for the
         # sample.
         ros_markers = []
-        
+
         camera_measurements = sample['camera_measurements']
         detected = (camera_measurements.get(self.name + '_marker_pose') != None)
 
@@ -285,7 +285,7 @@ class ArucoError:
         # for the last ROS marker generated.
         return ros_markers, marker_id
 
-    
+
     def error(self, camera_transform, fit_z, fit_orientation, marker_id, visualize=True, visualize_targets=False):
         # Calculate the error between the observed ArUco marker pose
         # and the ArUco marker pose predicted by the current URDF (the
@@ -312,7 +312,7 @@ class ArucoError:
         # transform.
         p = self.observed_aruco_pose.position
         observed_xyz = np.dot(camera_transform, np.array([p.x, p.y, p.z, 1.0]))[:3]
-        if fit_orientation: 
+        if fit_orientation:
             q = self.observed_aruco_pose.orientation
             observed_axes = quat_to_rotated_axes(camera_transform[:3,:3], q)
 
@@ -347,13 +347,13 @@ class ArucoError:
             marker = hr.create_sphere_marker(xyz, marker_id, self.marker_frame, self.marker_time, self.rgba)
             marker_id += 1
             ros_markers.append(marker)
-            
-            if fit_orientation: 
+
+            if fit_orientation:
                 z_axis = observed_axes[2]
                 marker = hr.create_axis_marker(xyz, z_axis, marker_id, self.marker_frame, self.marker_time, self.rgba)
                 marker_id += 1
                 ros_markers.append(marker)
-                
+
             if visualize_targets:
                 target_rgba = [1.0, 1.0, 1.0, 1.0]
                 xyz = target_xyz
@@ -361,7 +361,7 @@ class ArucoError:
                 marker_id += 1
                 ros_markers.append(marker)
 
-                if fit_orientation: 
+                if fit_orientation:
                     z_axis = target_axes[2]
                     marker = hr.create_axis_marker(xyz, z_axis, marker_id, self.marker_frame, self.marker_time, target_rgba)
                     marker_id += 1

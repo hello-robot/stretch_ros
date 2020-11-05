@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="stretch_main">
-  
+
   <link
     name="base_link">
     <inertial>
@@ -41,7 +41,7 @@
       </geometry>
     </collision>
   </link>
-  
+
   <link
     name="link_right_wheel">
     <inertial>
@@ -82,7 +82,7 @@
       </geometry>
     </collision>
   </link>
-  
+
   <joint
     name="joint_right_wheel"
     type="continuous">
@@ -96,7 +96,7 @@
     <axis
       xyz="0 0 1" />
   </joint>
-  
+
   <link
     name="link_left_wheel">
     <inertial>
@@ -137,7 +137,7 @@
       </geometry>
     </collision>
   </link>
-  
+
   <joint
     name="joint_left_wheel"
     type="continuous">
@@ -151,7 +151,7 @@
     <axis
       xyz="0 0 1" />
   </joint>
-  
+
   <link
     name="link_mast">
     <inertial>
@@ -192,7 +192,7 @@
       </geometry>
     </collision>
   </link>
-  
+
   <joint
     name="joint_mast"
     type="fixed">
@@ -206,7 +206,7 @@
     <axis
       xyz="0 0 0" />
   </joint>
-  
+
   <link
     name="link_lift">
     <inertial>
@@ -247,7 +247,7 @@
       </geometry>
     </collision>
   </link>
-  
+
   <joint
     name="joint_lift"
     type="prismatic">
@@ -265,7 +265,7 @@
   <!-- copied value did not reach the top of mesh model with GUI sliders and RViz -->
   <limit effort="100" lower="0.0" upper="1.1" velocity="1.0"/>
   </joint>
-  
+
   <link
     name="link_arm_l4">
     <inertial>
@@ -306,7 +306,7 @@
       </geometry>
     </collision>
   </link>
-  
+
   <joint
     name="joint_arm_l4"
     type="fixed">
@@ -320,7 +320,7 @@
     <axis
       xyz="0 0 0" />
   </joint>
-  
+
   <link
     name="link_arm_l3">
     <inertial>
@@ -361,7 +361,7 @@
       </geometry>
     </collision>
   </link>
-  
+
   <joint
     name="joint_arm_l3"
     type="prismatic">
@@ -377,7 +377,7 @@
     <!-- 0.13 = 0.52/4-->
     <limit effort="100" lower="0.0" upper="0.13" velocity="1.0"/>
   </joint>
-  
+
   <link
     name="link_arm_l2">
     <inertial>
@@ -434,7 +434,7 @@
     <!-- 0.13 = 0.52/4-->
     <limit effort="100" lower="0.0" upper="0.13" velocity="1.0"/>
   </joint>
-  
+
   <link
     name="link_arm_l1">
     <inertial>
@@ -475,7 +475,7 @@
       </geometry>
     </collision>
   </link>
-  
+
   <joint
     name="joint_arm_l1"
     type="prismatic">
@@ -491,7 +491,7 @@
     <!-- 0.13 = 0.52/4-->
     <limit effort="100" lower="0.0" upper="0.13" velocity="1.0"/>
   </joint>
-  
+
   <link
     name="link_arm_l0">
     <inertial>
@@ -532,7 +532,7 @@
       </geometry>
     </collision>
   </link>
-  
+
   <joint
     name="joint_arm_l0"
     type="prismatic">
@@ -548,7 +548,7 @@
     <!-- 0.13 = 0.52/4-->
     <limit effort="100" lower="0.0" upper="0.13" velocity="1.0"/>
   </joint>
-  
+
   <link
     name="link_wrist_yaw">
     <inertial>
@@ -589,7 +589,7 @@
       </geometry>
     </collision>
   </link>
-  
+
   <joint
     name="joint_wrist_yaw"
     type="revolute">
@@ -610,7 +610,7 @@
     -->
     <limit effort="100" lower="-1.75" upper="4.0" velocity="1.0"/>
   </joint>
-  
+
   <link
     name="link_head">
     <inertial>
@@ -722,7 +722,7 @@
     <!-- unconstrained range for now -->
     <limit effort="100" lower="-3.9" upper="1.5" velocity="1.0"/>
   </joint>
-  
+
   <link
     name="link_head_tilt">
     <inertial>
@@ -763,7 +763,7 @@
       </geometry>
     </collision>
   </link>
-  
+
   <joint
     name="joint_head_tilt"
     type="revolute">
@@ -782,5 +782,5 @@
 
 </robot>
 
-  
+
 

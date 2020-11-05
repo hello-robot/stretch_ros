@@ -59,7 +59,7 @@
     <axis
       xyz="0 0 0" />
   </joint>
-  
+
   <link
     name="link_gripper_finger_left">
     <inertial>
@@ -100,7 +100,7 @@
       </geometry>
     </collision>
   </link>
-  
+
   <joint
     name="joint_gripper_finger_left"
     type="revolute">
@@ -115,7 +115,7 @@
       xyz="0 0 1" />
     <limit effort="100" lower="-0.6" upper="0.6" velocity="1.0"/>
   </joint>
-  
+
   <link
     name="link_gripper_fingertip_left">
     <inertial>
@@ -156,7 +156,7 @@
       </geometry>
     </collision>
   </link>
-  
+
   <joint
     name="joint_gripper_fingertip_left"
     type="fixed">
@@ -170,7 +170,7 @@
     <axis
       xyz="0 0 0" />
   </joint>
-  
+
   <link
     name="link_gripper_finger_right">
     <inertial>
@@ -211,7 +211,7 @@
       </geometry>
     </collision>
   </link>
-  
+
   <joint
     name="joint_gripper_finger_right"
     type="revolute">
@@ -226,7 +226,7 @@
       xyz="0 0 1" />
     <limit effort="100" lower="-0.6" upper="0.6" velocity="1.0"/>
   </joint>
-  
+
   <link
     name="link_gripper_fingertip_right">
     <inertial>
@@ -267,7 +267,7 @@
       </geometry>
     </collision>
   </link>
-  
+
   <joint
     name="joint_gripper_fingertip_right"
     type="fixed">
@@ -282,11 +282,11 @@
       xyz="0 0 0" />
   </joint>
 
-  
+
   <link
       name="link_grasp_center">
   </link>
-  
+
   <joint
     name="joint_grasp_center"
     type="fixed">
@@ -298,8 +298,8 @@
     <child
       link="link_grasp_center" />
   </joint>
-  
+
 </robot>
 
-  
+
 

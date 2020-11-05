@@ -17,7 +17,7 @@ from numba_height_image import numba_create_segment_image_uint8
 import hello_helpers.fit_plane as fp
 
 
-def find_object_to_grasp(height_image, display_on=False): 
+def find_object_to_grasp(height_image, display_on=False):
     h_image = height_image.image
     m_per_unit = height_image.m_per_height_unit
     m_per_pix = height_image.m_per_pix
@@ -26,21 +26,21 @@ def find_object_to_grasp(height_image, display_on=False):
     surface_mask, plane_parameters = find_closest_flat_surface(height_image, robot_xy_pix, display_on=False)
 
     if surface_mask is None:
-        if display_on: 
+        if display_on:
             print('No elevated surface found.')
         return None
-    
+
     surface_height_pix = np.max(h_image[surface_mask > 0])
     surface_height_m = m_per_unit * surface_height_pix
     height_image.apply_planar_correction(plane_parameters, surface_height_pix)
     h_image = height_image.image
-    if display_on: 
+    if display_on:
         cv2.imshow('corrected height image', h_image)
         cv2.imshow('rgb image', height_image.rgb_image)
 
-    if display_on: 
+    if display_on:
         rgb_image = height_image.rgb_image.copy()
-        rgb_image[surface_mask > 0] = (rgb_image[surface_mask > 0]/2) + [0, 127, 0] 
+        rgb_image[surface_mask > 0] = (rgb_image[surface_mask > 0]/2) + [0, 127, 0]
 
     #####################################
     # Select candidate object points
@@ -52,7 +52,7 @@ def find_object_to_grasp(height_image, display_on=False):
 
     # Define the maximum height for a candidate object point
     robot_camera_height_m = 1.13 #from HeadScan in mapping.py and ManipulationView in manipulation_planning.py)
-    voi_safety_margin_m = 0.02 
+    voi_safety_margin_m = 0.02
     max_object_height_m = 0.4
     max_obstacle_height_m = min(robot_camera_height_m - voi_safety_margin_m,
                                 surface_height_m + max_object_height_m)
@@ -61,18 +61,18 @@ def find_object_to_grasp(height_image, display_on=False):
     # Select candidate object points that are within the valid height range
     obstacle_selector = (h_image > min_obstacle_height_pix) & (h_image < max_obstacle_height_pix)
 
-    if display_on: 
+    if display_on:
         rgb_image = height_image.rgb_image.copy()
-        rgb_image[surface_mask > 0] = (rgb_image[surface_mask > 0]/2) + [0, 127, 0] 
-        rgb_image[obstacle_selector] = (rgb_image[obstacle_selector]/2) + [0, 0, 127] 
+        rgb_image[surface_mask > 0] = (rgb_image[surface_mask > 0]/2) + [0, 127, 0]
+        rgb_image[obstacle_selector] = (rgb_image[obstacle_selector]/2) + [0, 0, 127]
         cv2.imshow('obstacles', rgb_image)
 
     obstacle_mask = np.uint8(obstacle_selector)
 
-    if display_on: 
+    if display_on:
         rgb_image = height_image.rgb_image.copy()
-        rgb_image[surface_mask > 0] = (rgb_image[surface_mask > 0]/2) + [0, 127, 0] 
-        rgb_image[obstacle_mask > 0] = (rgb_image[obstacle_mask > 0]/2) + [0, 0, 127] 
+        rgb_image[surface_mask > 0] = (rgb_image[surface_mask > 0]/2) + [0, 127, 0]
+        rgb_image[obstacle_mask > 0] = (rgb_image[obstacle_mask > 0]/2) + [0, 0, 127]
 
     # Find the convex hull of the surface points to represent the full
     # surface, overcoming occlusion holes, noise, and other phenomena.
@@ -80,7 +80,7 @@ def find_object_to_grasp(height_image, display_on=False):
 
     # Select candidate object points that are both within the valid
     # height range and on the surface
-    obstacles_on_surface_selector = (obstacle_selector & surface_convex_hull_mask) 
+    obstacles_on_surface_selector = (obstacle_selector & surface_convex_hull_mask)
     obstacles_on_surface = np.uint8(255.0 * obstacles_on_surface_selector)
 
     # Dilate and erode the candidate object points to agglomerate
@@ -99,8 +99,8 @@ def find_object_to_grasp(height_image, display_on=False):
         obstacles_on_surface = cv2.erode(obstacles_on_surface, kernel, iterations=iterations)
 
     #####################################
-    # Process the candidate object points      
-        
+    # Process the candidate object points
+
     # Treat connected components of candidate object points as objects. Fit ellipses to these segmented objects.
     label_image, max_label_index = sk.measure.label(obstacles_on_surface, neighbors=8, background=0, return_num=True, connectivity=None)
     region_properties = sk.measure.regionprops(label_image, intensity_image=None, cache=True, coordinates='xy')
@@ -146,7 +146,7 @@ def find_object_to_grasp(height_image, display_on=False):
             print('object max height = {0} cm'.format(object_max_height_m * 100.0))
             print('object mean height = {0} cm'.format(object_mean_height_m * 100.0))
             rgb_image = height_image.rgb_image.copy()
-            rgb_image[surface_convex_hull_mask > 0] = (rgb_image[surface_convex_hull_mask > 0]/2) + [0, 127, 0] 
+            rgb_image[surface_convex_hull_mask > 0] = (rgb_image[surface_convex_hull_mask > 0]/2) + [0, 127, 0]
             rgb_image[label_image == object_region.label] = [0, 0, 255]
             draw_ellipse_axes_from_region(rgb_image, largest_region, color=[255, 255, 255])
             cv2.imshow('object to grasp', rgb_image)
@@ -180,9 +180,9 @@ def find_object_to_grasp(height_image, display_on=False):
         fingertip_diameter_m = 0.03
         grasp_location_above_surface_m = max(0.0, object_mean_height_m - (fingertip_diameter_m/2.0))
         grasp_location_z_pix = surface_height_pix + (grasp_location_above_surface_m / m_per_unit)
-        
+
         max_object_height_above_surface_m = object_max_height_m
-        
+
         grasp_target = {'location_xy_pix': grasp_location_xy_pix,
                         'elongated': grasp_elongated,
                         'width_pix' : grasp_width_pix,
@@ -210,21 +210,21 @@ def draw_grasp(rgb_image, grasp_target):
     surface_convex_hull_mask = grasp_target['surface_convex_hull_mask']
     object_selector = grasp_target['object_selector']
     object_ellipse = grasp_target['object_ellipse']
-    rgb_image[surface_convex_hull_mask > 0] = (rgb_image[surface_convex_hull_mask > 0]/2) + [0, 127, 0] 
+    rgb_image[surface_convex_hull_mask > 0] = (rgb_image[surface_convex_hull_mask > 0]/2) + [0, 127, 0]
     rgb_image[object_selector] = [0, 0, 255]
     draw_ellipse_axes(rgb_image, object_ellipse, color=[255, 255, 255])
-    
-    
+
+
 def find_closest_flat_surface(height_image, robot_xy_pix, display_on=False):
     h = height_image
-    
+
     height, width = h.image.shape
     robot_xy_pix = [width/2, 0]
 
     best_surface = None
     a = None
-    
-    if display_on: 
+
+    if display_on:
         color_im = np.zeros((height, width, 3), np.uint8)
         color_im[:,:,0] = h.image
         color_im[:,:,1] = h.image
@@ -246,22 +246,22 @@ def find_closest_flat_surface(height_image, robot_xy_pix, display_on=False):
     image_rgb = h.rgb_image
 
     #~0.1 or ~0.2 for tabletop
-    #~0.3 for room 
+    #~0.3 for room
     segmentation_scale = 0.3
 
     segments_image, segment_info, height_to_segment_id = segment(image, m_per_unit, zero_height, segmentation_scale, verbose=False)
     if segment_info is None:
         return None, None
-        
+
     floor_id, floor_mask = find_floor(segment_info, segments_image, verbose=False)
-    
+
     remove_floor = True
     if remove_floor:
         segments_image[floor_mask > 0] = 0
 
     label_image, max_label_index = sk.measure.label(segments_image, neighbors=8, background=0, return_num=True, connectivity=None)
     region_properties = sk.measure.regionprops(label_image, intensity_image=image, cache=True, coordinates='xy')
-    if display_on: 
+    if display_on:
         color_label_image = sk.color.label2rgb(label_image, image=image_rgb, colors=None, alpha=0.3, bg_label=0, bg_color=(0, 0, 0), image_alpha=1, kind='overlay')
 
 
@@ -301,12 +301,12 @@ def find_closest_flat_surface(height_image, robot_xy_pix, display_on=False):
     for s in surfaces:
         i = s['label']
         surface_label_image[label_image == i] = i
-    if display_on: 
+    if display_on:
         surface_label_image_rgb = sk.color.label2rgb(surface_label_image, image=None, colors=None, alpha=0.3, bg_label=0, bg_color=(0, 0, 0), image_alpha=1, kind='overlay')
 
         best_surface_image_rgb = np.zeros(surface_label_image_rgb.shape, np.uint8)
 
-    if len(surfaces) > 0: 
+    if len(surfaces) > 0:
         # Find the surface that is closest to the robot, but
         # is not the robot's own body.
 
@@ -330,7 +330,7 @@ def find_closest_flat_surface(height_image, robot_xy_pix, display_on=False):
         min_error_m = np.min(fit_error_m)
         max_error_m = np.max(fit_error_m)
         mean_error_m = np.mean(fit_error_m)
-        if display_on: 
+        if display_on:
             print('-- first fit errors --')
             print('min_error_m =', min_error_m)
             print('max_error_m =', max_error_m)
@@ -343,7 +343,7 @@ def find_closest_flat_surface(height_image, robot_xy_pix, display_on=False):
         best_surface[best_surface > 0] = surface_temp
 
         fit_twice = True
-        if fit_twice: 
+        if fit_twice:
             a, X, z = fp.fit_plane_to_height_image(image, best_surface)
             fit_error, z_fit = fp.fit_plane_to_height_image_error(a, X, z)
             fit_error = np.abs(fit_error)
@@ -352,7 +352,7 @@ def find_closest_flat_surface(height_image, robot_xy_pix, display_on=False):
             min_error_m = np.min(fit_error_m)
             max_error_m = np.max(fit_error_m)
             mean_error_m = np.mean(fit_error_m)
-            if display_on: 
+            if display_on:
                 print('-- second fit errors --')
                 print('min_error_m =', min_error_m)
                 print('max_error_m =', max_error_m)
@@ -364,7 +364,7 @@ def find_closest_flat_surface(height_image, robot_xy_pix, display_on=False):
             surface_temp[~surface_points] = 0
             best_surface[best_surface > 0] = surface_temp
 
-        if display_on: 
+        if display_on:
             original_max_error = np.max(original_fit_error)
             original_min_error = np.min(original_fit_error)
             display_fit_error = np.uint8(255.0 * ((original_fit_error - original_min_error) / (original_max_error - original_min_error)))
@@ -382,20 +382,20 @@ def find_closest_flat_surface(height_image, robot_xy_pix, display_on=False):
     if display_on:
         visualize_title = ''
         segments_color_image, key_image = render_segments(segments_image, segment_info, output_key_image=True)
-        if key_image is not None: 
+        if key_image is not None:
             cv2.imshow(visualize_title + 'segmented image key', key_image)
             cv2.imshow(visualize_title + 'segmented image', segments_color_image)
             cv2.imshow(visualize_title + 'color_label_image', color_label_image)
             cv2.imshow(visualize_title + 'surface_label_image_rgb', surface_label_image_rgb)
             cv2.imshow(visualize_title + 'best_surface_image_rgb', best_surface_image_rgb)
 
-    if display_on: 
+    if display_on:
         cv2.imshow('depth image with detected line', color_im)
 
     plane_mask = best_surface
     plane_parameters = a
     return plane_mask, plane_parameters
-    
+
 
 def render_segments(segments_image, segment_info, output_key_image=False):
     segment_ids = [segment_id for segment_id in segment_info]
@@ -408,8 +408,8 @@ def render_segments(segments_image, segment_info, output_key_image=False):
     selector = (segments_image == 0)
     if np.count_nonzero(selector) > 0:
         segments_color_image[selector] = [0,0,0]
-    
-    if output_key_image: 
+
+    if output_key_image:
         segment_values = np.sort(np.unique(segments_image))[1:]
         segment_values_norm = np.sort(np.unique(segments_norm)[1:])
         segment_heights_mm = np.array([segment_info[v]['height_m'] for v in segment_values])
@@ -432,7 +432,7 @@ def render_segments(segments_image, segment_info, output_key_image=False):
                         font, font_scale, line_color, line_width, cv2.LINE_AA)
     else:
         key_image_color = None
-    return segments_color_image, key_image_color        
+    return segments_color_image, key_image_color
 
 
 def draw_histogram(hist, image_width, image_height, border=10, color=[255,255,255], bins_to_mark=[]):
@@ -448,7 +448,7 @@ def draw_histogram(hist, image_width, image_height, border=10, color=[255,255,25
         ul_y = int(image_height - (border + round(v * bin_height)))
         lr_x = int(border + round((i+1) * bin_width))
         lr_y = image_height - border
-        if i in bins_to_mark: 
+        if i in bins_to_mark:
             bin_color = [0, 0, 255]
         else:
             bin_color = color
@@ -481,12 +481,12 @@ def histogram_segment(segments_image, image,
                       segment_info,
                       verbose=False, visualize=False):
     # image: Currently resetricted to be a uint8 max height image.
-    
+
     # There should not be images as large as 20,000 X 20,000 pixels,
     # so this epsilon should represent less than a single normalized
     # vote in the histogram.
     epsilon = 1.0/(20000.0 * 20000.0)
-    
+
     # Number of bins in the histogram.
     num_bins = len(value_hist)
 
@@ -504,7 +504,7 @@ def histogram_segment(segments_image, image,
     # no observations for a max height image).
     height_to_segment_id = np.zeros(256, np.uint8)
 
-    if verbose: 
+    if verbose:
         print('value_hist =')
         print(value_hist)
 
@@ -516,39 +516,39 @@ def histogram_segment(segments_image, image,
     # of heights that were not observed and thus have counts of zero
     # in the height histogram.
     #
-    # Example: 
+    # Example:
     # [0, 0, 0, 128, 100, 0, 0, 1, 1] => [1, 1, 1, 0, 0, 2, 2, 0, 0]
     #
 
     value_hist_is_zero = (value_hist <= epsilon)
     zero_segments, num_zero_segments = nd.measurements.label(value_hist_is_zero)
 
-    if verbose: 
+    if verbose:
         print('zero_segments =', zero_segments)
-    
+
     # Segment bumps. This code assigns contiguous regions between
     # local minima distinct segment IDs. These regions should
     # correpond to bumps. If they were continous functions the second
     # derivative over these regions would <= 0.
     #
-    # Find local minima in the histogram. 
+    # Find local minima in the histogram.
     min_bins = si.argrelmin(value_hist)[0]
     # Initialize with ones.
     bumps = np.ones_like(value_hist)
-    # Set local minima locations to 0. 
+    # Set local minima locations to 0.
     bumps[min_bins] = 0
-    # Set zero regions to 0. 
+    # Set zero regions to 0.
     bumps[value_hist_is_zero] = 0
-    # Segment the remaining regions of contigous 1's. 
+    # Segment the remaining regions of contigous 1's.
     bump_segments, num_bump_segments = nd.measurements.label(bumps)
 
-    if verbose: 
+    if verbose:
         print('bump_segments =', bump_segments)
 
     # The local minima have not yet been assigned segment IDs. The
     # goal is to assign each height a segment ID. This code assigns
     # local minima to adjacent segments. The local minima occur at the
-    # borders of bump regions. 
+    # borders of bump regions.
     for min_index in min_bins:
         # Set left_index to the index for a bin to the left of the
         # local minimum bin.
@@ -640,19 +640,19 @@ def histogram_segment(segments_image, image,
         # Look up the histogram bin associated with the segment bin.
         value = value_hist[i]
 
-        # Check if this is a new bin segment. 
+        # Check if this is a new bin segment.
         if bin_segment_id != v:
             # This is a new bin segment, so store the old bin segment
             # and initialize a new bin segment.
-            
+
             # Update and store the previous bin segment.
             bin_segment['right_bin'] = i - 1
             bin_segments.append(bin_segment)
-            
+
             # Initialize a new bin segment.
             bin_segment = {'left_bin': i,
                            'max_bin': i,
-                           'max_value': value_hist[i], 
+                           'max_value': value_hist[i],
                            'right_bin': None}
             bin_segment_id = v
         else:
@@ -680,13 +680,13 @@ def histogram_segment(segments_image, image,
     # histogram to the original representation.
     for c in bin_segments:
         assert(segment_id <= 255)
-        
+
         # Retrieve the left bin, right bin, and max bin entries
         left_bin = c['left_bin']
         right_bin = c['right_bin']
         max_value = c['max_value']
         max_bin = c['max_bin']
-        
+
         # For a zero segment (i.e., a segment with no associated
         # observations) the max_value will be zero since the entire
         # segment only has zero values. For a zero segment, set the
@@ -706,19 +706,19 @@ def histogram_segment(segments_image, image,
             # Record the bin in the segment with the most weight (most
             # observations), its weight, and the height to which it
             # corresponds.
-            segment_info[segment_id] = {'bin_index':max_bin, 'bin_value':value_hist[max_bin], 'height_unit':best_value} 
+            segment_info[segment_id] = {'bin_index':max_bin, 'bin_value':value_hist[max_bin], 'height_unit':best_value}
             # Assign the the segment ID to the appropriate range of height_to_segment_id
             #
             min_height = int(round(min_value))
             max_height = int(round(max_value))
-            
+
             # Slicing makes upperbound safe.
             height_to_segment_id[min_height : max_height + 1] = segment_id
 
             # Increment the segment ID
             segment_id = segment_id + 1
             assert(segment_id <= 255)
-            
+
             if visualize:
                 visualize_hist(value_hist, segments_image, height_to_segment_id, [max_bin])
 
@@ -738,12 +738,12 @@ def histogram_segment(segments_image, image,
         right_bin = c['right_bin']
         max_value = c['max_value']
         max_bin = c['max_bin']
-        
+
         # For a zero segment (i.e., a segment with no associated
         # observations) the max_value will be zero since the entire
         # segment only has zero values. For a zero segment, set the
         # maximum bin to be in the middle of the segment.
-        if max_value > epsilon: 
+        if max_value > epsilon:
             # Find heights associated with the left of the min bin, the
             # right of the max bin, and center of the most heavily
             # weighted bin.
@@ -754,7 +754,7 @@ def histogram_segment(segments_image, image,
             # Record the bin in the segment with the most weight (most
             # observations), its weight, and the height to which it
             # corresponds.
-            segment_info[segment_id] = {'bin_index':max_bin, 'bin_value':value_hist[max_bin], 'height_unit':best_value} 
+            segment_info[segment_id] = {'bin_index':max_bin, 'bin_value':value_hist[max_bin], 'height_unit':best_value}
             # Assign the segment ID to the appropriate range of height_to_segment_id
             min_height = int(round(min_value))
             max_height = int(round(max_value))
@@ -764,11 +764,11 @@ def histogram_segment(segments_image, image,
 
             # Increment the segment ID
             segment_id = segment_id + 1
-            
+
             if visualize:
                 visualize_hist(value_hist, segments_image, height_to_segment_id, [max_bin])
 
-    if verbose: 
+    if verbose:
         print('height_to_segment_id =', height_to_segment_id)
     if False:
         z = (height_to_segment_id == 0)
@@ -776,14 +776,14 @@ def histogram_segment(segments_image, image,
         print('np.sum(height_to_segment_id == 0) :', test)
         if test > 0:
             print('(height_to_segment_id == 0) :', z)
-    
+
     # Create an image for which each pixel holds the segment_id. This
     # implementation requires fewer than 255 distinct segments to
     # work.
     out = numba_create_segment_image_uint8(segments_image, image, height_to_segment_id)
     if out is None:
         print('ERROR: numba_create_segment_image_uint8 failed!')
-    
+
     return height_to_segment_id
 
 
@@ -793,7 +793,7 @@ def segment(image, m_per_unit, zero_height_m, segmentation_scale=0.1, verbose=Fa
     mm_per_unit = 1000.0 * m_per_unit
     dist_threshold_mm = 70.0
     dist_threshold = dist_threshold_mm / mm_per_unit
-    if verbose: 
+    if verbose:
         print('dist_threshold =', dist_threshold)
 
     # use a constant range in an attempt to achieve more consistent
@@ -807,15 +807,15 @@ def segment(image, m_per_unit, zero_height_m, segmentation_scale=0.1, verbose=Fa
     range_width = ((range_max - range_min) + 1)
     # using whole numbers should avoid nonuniform distribution of the
     # bins across the possible values
-    whole_number_multiplier = 2 
-    num_bins =  whole_number_multiplier * range_width 
+    whole_number_multiplier = 2
+    num_bins =  whole_number_multiplier * range_width
     bin_per_unit = num_bins / float(range_width)
     values = image[image!=0].flatten()
 
     if len(values) <= 0:
         print('*** ERROR: segment called using image with all zero entries ***')
         return None, None, None
-    
+
     value_hist, bin_edges = np.histogram(values, bins=num_bins, range=(range_min, range_max), normed=False, weights=None, density=True)
 
     scale = segmentation_scale
@@ -831,7 +831,7 @@ def segment(image, m_per_unit, zero_height_m, segmentation_scale=0.1, verbose=Fa
     height_to_segment_id = None
     height_to_segment_id = histogram_segment(segments_image, image,
                                              value_hist, bin_edges,
-                                             segment_info, verbose)        
+                                             segment_info, verbose)
     for segment_id in segment_info:
         height_unit = segment_info[segment_id]['height_unit']
         height_m = (m_per_unit * height_unit) - zero_height_m
@@ -846,7 +846,7 @@ def test_segment(image, mm_per_unit, zero_height_unit, segmentation_scale=0.1, v
 
     dist_threshold_mm = 70.0
     dist_threshold = dist_threshold_mm / mm_per_unit
-    if verbose: 
+    if verbose:
         print('dist_threshold =', dist_threshold)
 
     # Create Histogram
@@ -863,17 +863,17 @@ def test_segment(image, mm_per_unit, zero_height_unit, segmentation_scale=0.1, v
     # using whole numbers should avoid nonuniform distribution of the
     # bins across the possible values
     whole_number_multiplier = 2
-    num_bins =  whole_number_multiplier * range_width 
+    num_bins =  whole_number_multiplier * range_width
     bin_per_unit = num_bins / float(range_width)
     values = image[image!=0].flatten()
     value_hist, bin_edges = np.histogram(values, bins=num_bins, range=(range_min, range_max), normed=False, weights=None, density=True)
-    
+
     # Simple Bimodal Histogram for Testing
     value_hist[:] = 0
     value_hist[75] = 100.0
     value_hist[175] = 100.0
 
-    scale = segmentation_scale 
+    scale = segmentation_scale
     sigma = scale * (bin_per_unit * dist_threshold)
     # "... about 68 percent ... are within one standard deviation of
     # the mean ..., about 95 percent are within two standard
@@ -884,10 +884,10 @@ def test_segment(image, mm_per_unit, zero_height_unit, segmentation_scale=0.1, v
 
     segment_info = {}
     height_to_segment_id = None
-    
+
     height_to_segment_id = histogram_segment(segments_image, image,
                                              value_hist, bin_edges,
-                                             segment_info, verbose=verbose, visualize=visualize)        
+                                             segment_info, verbose=verbose, visualize=visualize)
     for segment_id in segment_info:
         height_unit = segment_info[segment_id]['height_unit']
         height_m = m_per_unit * (height_unit - zero_height_unit)
@@ -923,13 +923,13 @@ def get_ellipse(region_properties):
     ellipse = {'centroid': centroid,
                'minor': {'axis': minor_axis, 'length': r.minor_axis_length},
                'major': {'axis': major_axis, 'length': r.major_axis_length, 'ang_rad': major_ang_rad}}
-    
+
     return ellipse
 
 def draw_ellipse_axes(image, ellipse, color=[255, 255, 255], draw_line_contrast=True):
     minor_axis = np.int32(np.round(np.array(ellipse['minor']['axis'])))
     major_axis = np.int32(np.round(np.array(ellipse['major']['axis'])))
-    if draw_line_contrast: 
+    if draw_line_contrast:
         cv2.line(image, tuple(minor_axis[0]), tuple(minor_axis[1]), [0,0,0], 3)
         cv2.line(image, tuple(major_axis[0]), tuple(major_axis[1]), [0,0,0], 3)
     cv2.line(image, tuple(minor_axis[0]), tuple(minor_axis[1]), color, 1)
@@ -940,14 +940,14 @@ def draw_ellipse_axes_from_region(image, region_properties, color=[255, 255, 255
     ellipse = get_ellipse(region_properties)
     minor_axis = np.int32(np.round(np.array(ellipse['minor']['axis'])))
     major_axis = np.int32(np.round(np.array(ellipse['major']['axis'])))
-    if draw_line_contrast: 
+    if draw_line_contrast:
         cv2.line(image, tuple(minor_axis[0]), tuple(minor_axis[1]), [0,0,0], 3)
         cv2.line(image, tuple(major_axis[0]), tuple(major_axis[1]), [0,0,0], 3)
     cv2.line(image, tuple(minor_axis[0]), tuple(minor_axis[1]), color, 1)
     cv2.line(image, tuple(major_axis[0]), tuple(major_axis[1]), color, 1)
-    
 
-def draw_text(image, text, x, y): 
+
+def draw_text(image, text, x, y):
     font = cv2.FONT_HERSHEY_PLAIN
     font_scale = 1.0
     line_width = 2
@@ -962,17 +962,17 @@ def full_segment(image, image_rgb, segmentation_scale, m_per_unit, zero_height=0
     segments_image, segment_info, height_to_segment_id = segment(image, m_per_unit, zero_height, segmentation_scale, verbose)
     label_image, max_label_index = sk.measure.label(segments_image, neighbors=8, background=0, return_num=True, connectivity=None)
     region_properties = sk.measure.regionprops(label_image, intensity_image=image, cache=True, coordinates='xy')
-    if image_rgb is None: 
+    if image_rgb is None:
         color_label_image = sk.color.label2rgb(label_image, image=None, colors=None, alpha=0.3, bg_label=0, bg_color=(0, 0, 0), image_alpha=1, kind='overlay')
     else:
         color_label_image = sk.color.label2rgb(label_image, image=image_rgb, colors=None, alpha=0.3, bg_label=0, bg_color=(0, 0, 0), image_alpha=1, kind='overlay')
 
     if visualize:
         segments_color_image, key_image = render_segments(segments_image, segment_info, output_key_image=True)
-        if key_image is not None: 
+        if key_image is not None:
             cv2.imshow(visualize_title + 'segmented image key', key_image)
             cv2.imshow(visualize_title + 'segmented image', segments_color_image)
-            
+
     return region_properties, label_image, max_label_index, color_label_image
 
 
@@ -987,7 +987,7 @@ def compute_floor_mask(max_height_im):
     # z_f = 0.0 corresponds with the modeled ground plane.
     zero_height = -max_height_im.voi.origin[2]
 
-    # Segment the height image in order to find the floor. 
+    # Segment the height image in order to find the floor.
     #~0.1 or ~0.2 for tabletop scale
     #~0.3 for room scale
     segmentation_scale = 0.3
@@ -996,20 +996,20 @@ def compute_floor_mask(max_height_im):
 
     # Remove small obstacles from the floor mask, including
     # regions that are too far below the floor.
-    use_mean = False 
-    if use_mean: 
+    use_mean = False
+    if use_mean:
         mean_floor_height_pix = np.mean(max_height_im.image[floor_mask > 0])
         mean_floor_height_m = m_per_unit * mean_floor_height_pix
         print('mean_floor_height_m =', mean_floor_height_m)
         floor_height_pix = mean_floor_height_pix
-    else: 
+    else:
         median_floor_height_pix = np.median(max_height_im.image[floor_mask > 0])
         median_floor_height_m = m_per_unit * median_floor_height_pix
         print('median_floor_height_m =', median_floor_height_m)
         floor_height_pix = median_floor_height_pix
 
     avoid_small_obstacles = False
-    if avoid_small_obstacles: 
+    if avoid_small_obstacles:
         small_obstacle_threshold_m = 0.04
         small_obstacle_selector = ((max_height_im.image > (floor_height_pix + (small_obstacle_threshold_m/m_per_unit))) |
                                    (max_height_im.image < (floor_height_pix - (small_obstacle_threshold_m/m_per_unit))))
@@ -1066,7 +1066,7 @@ def process_max_height_image(max_height_im, robot_x_pix, robot_y_pix, robot_ang_
 
     image = max_height_im.image
     image_rgb = max_height_im.rgb_image
-    if image.dtype != np.uint8: 
+    if image.dtype != np.uint8:
         image = np.uint8(255.0 * (max_height_im.image/np.max(max_height_im)))
     verbose = False
 
@@ -1080,10 +1080,10 @@ def process_max_height_image(max_height_im, robot_x_pix, robot_y_pix, robot_ang_
     if floor_id is not None:
         m_per_pix = max_height_im.m_per_pix
 
-        # The best case minimum width of the robot in meters when moving forward and backward. 
+        # The best case minimum width of the robot in meters when moving forward and backward.
         min_robot_width_m = 0.3
 
-        if display_on: 
+        if display_on:
             cv2.imshow('floor mask before drawing robot footprint', floor_mask)
 
         distance_map, traversable_mask = na.distance_map_simple( floor_mask, m_per_pix, min_robot_width_m, robot_x_pix, robot_y_pix, robot_ang_rad, display_on=display_on, verbose=True )
@@ -1091,10 +1091,10 @@ def process_max_height_image(max_height_im, robot_x_pix, robot_y_pix, robot_ang_
     visualize_title = ''
     if display_on:
         segments_color_image, key_image = render_segments(segments_image, segment_info, output_key_image=True)
-        if key_image is not None: 
+        if key_image is not None:
             cv2.imshow(visualize_title + 'segmented image key', key_image)
             cv2.imshow(visualize_title + 'segmented image', segments_color_image)
-    if display_on: 
+    if display_on:
         cv2.waitKey(1000)
 
     return distance_map, traversable_mask

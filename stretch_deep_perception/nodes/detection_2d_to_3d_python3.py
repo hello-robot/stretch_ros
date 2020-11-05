@@ -9,13 +9,13 @@ from numba_image_to_pointcloud import numba_image_to_pointcloud
 import hello_helpers.fit_plane as fp
 
 
-def filter_points(points_array, camera_matrix, box_2d, min_box_side_m, max_box_side_m): 
+def filter_points(points_array, camera_matrix, box_2d, min_box_side_m, max_box_side_m):
     # Decompose the camera matrix.
     f_x = camera_matrix[0,0]
     c_x = camera_matrix[0,2]
     f_y = camera_matrix[1,1]
     c_y = camera_matrix[1,2]
-    
+
     # These need to be flipped with respect to the basic update
     # function to account for the rotation applied as part of the
     # head orientation estimation.
@@ -42,12 +42,12 @@ def filter_points(points_array, camera_matrix, box_2d, min_box_side_m, max_box_s
         max_z = median_z + max_box_side_m
         mask_z = (z > min_z) & (z < max_z)
         remaining_z = z[mask_z]
-        if len(remaining_z) > 0: 
+        if len(remaining_z) > 0:
             out_points = points_array[mask_z]
 
     return out_points
 
-            
+
 def landmarks_2d_to_3d(landmarks, camera_matrix, depth_image, default_z_3d):
 
     f_x = camera_matrix[0,0]
@@ -59,7 +59,7 @@ def landmarks_2d_to_3d(landmarks, camera_matrix, depth_image, default_z_3d):
     for name, xy in landmarks.items():
         x, y = xy
         z = depth_image[y,x]
-        if z > 0: 
+        if z > 0:
             z_3d = z / 1000.0
         else:
             z_3d = default_z_3d
@@ -89,7 +89,7 @@ def bounding_box_2d_to_3d(points_array, box_2d, camera_matrix, head_to_camera_ma
     detection_box_height_pix = x1 - x0
 
     num_points = points_array.shape[0]
-    if num_points >= 1: 
+    if num_points >= 1:
         box_depth = np.median(points_array, axis=0)[2]
     else:
         print('WARNING: No reasonable depth image points available in the detected rectangle. No work around currently implemented for lack of depth estimate.')
@@ -103,13 +103,13 @@ def bounding_box_2d_to_3d(points_array, box_2d, camera_matrix, head_to_camera_ma
     detection_box_width_m = (detection_box_width_pix / f_x) * box_depth
     detection_box_height_m = (detection_box_height_pix / f_y) * box_depth
 
-    if head_to_camera_mat is None: 
+    if head_to_camera_mat is None:
         R = np.identity(3)
         quaternion = Rotation.from_dcm(R).as_quat()
         x_axis = R[:3,0]
         y_axis = R[:3,1]
         z_axis = R[:3,2]
-    else: 
+    else:
         quaternion = Rotation.from_dcm(head_to_camera_mat).as_quat()
         x_axis = head_to_camera_mat[:3,0]
         y_axis = head_to_camera_mat[:3,1]
@@ -159,7 +159,7 @@ def bounding_box_2d_to_3d(points_array, box_2d, camera_matrix, head_to_camera_ma
 
         y_axis = (top_left + top_right) - (bottom_left + bottom_right)
         y_length = np.linalg.norm(y_axis)
-        if y_length > 0.0: 
+        if y_length > 0.0:
             y_axis = y_axis/y_length
         else:
             y_axis = None
@@ -175,12 +175,12 @@ def bounding_box_2d_to_3d(points_array, box_2d, camera_matrix, head_to_camera_ma
 
         plane_normal = plane.get_plane_normal()
 
-        if x_axis is not None: 
+        if x_axis is not None:
             old_x_axis = np.reshape(x_axis, (3,1))
         else:
             old_x_axis = np.array([1.0, 0.0, 0.0])
 
-        if y_axis is not None: 
+        if y_axis is not None:
             old_y_axis = np.reshape(y_axis, (3,1))
         else:
             old_y_axis = np.array([0.0, 1.0, 0.0])
@@ -220,7 +220,7 @@ def bounding_box_2d_to_3d(points_array, box_2d, camera_matrix, head_to_camera_ma
                 #print('         corners[0] =', corners[0])
                 new_y_axis = old_y_axis
                 new_x_axis = old_x_axis
-            else: 
+            else:
                 # Attempt to reduce bias due to selecting one of the
                 # old axes by averaging the results from both axes.
                 new_y_axis_1 = old_y_axis - (np.matmul(new_z_axis.transpose(), old_y_axis) * new_z_axis)
@@ -250,7 +250,7 @@ def bounding_box_2d_to_3d(points_array, box_2d, camera_matrix, head_to_camera_ma
         simple_plane = {'n': plane.n, 'd': plane.d}
     else:
         simple_plane = None
-        
+
     box_3d = {'center_xyz': (center_x, center_y, center_z),
               'quaternion': quaternion,
               'x_axis': x_axis, 'y_axis': y_axis, 'z_axis': z_axis,
@@ -275,26 +275,26 @@ def detections_2d_to_3d(detections_2d, rgb_image, camera_info, depth_image, fit_
         y_out = max(0, y_out)
         y_out = min(orig_h - 1, y_out)
         return x_out, y_out
-        
+
     camera_matrix = np.reshape(camera_info.K, (3,3))
     distortion_coefficients = np.array(camera_info.D)
-    
-    def clockwise_rotate_bounding_box(box_2d): 
+
+    def clockwise_rotate_bounding_box(box_2d):
         x0, y0, x1, y1 = box_2d
         orig_x0 = (orig_w - 1) - y1
         orig_y0 = x0
         orig_x1 = (orig_w - 1) - y0
         orig_y1 = x1
         return (orig_x0, orig_y0, orig_x1, orig_y1)
-    
-    def counterclockwise_rotate_bounding_box(box_2d): 
+
+    def counterclockwise_rotate_bounding_box(box_2d):
         x0, y0, x1, y1 = box_2d
         orig_x0 = y0
         orig_y0 = (orig_h - 1) - x1
         orig_x1 = y1
         orig_y1 = (orig_h - 1) - x0
         return (orig_x0, orig_y0, orig_x1, orig_y1)
-    
+
     def clockwise_rotate_xy(x, y):
         return ((orig_w - 1) - y), x
 
@@ -305,7 +305,7 @@ def detections_2d_to_3d(detections_2d, rgb_image, camera_info, depth_image, fit_
     counterclockwise_rotate_mat = Rotation.from_rotvec(rotvec).as_dcm()
 
     detections_3d = []
-    
+
     for h in detections_2d:
         box_3d = None
         landmarks_3d = None
@@ -315,13 +315,13 @@ def detections_2d_to_3d(detections_2d, rgb_image, camera_info, depth_image, fit_
         landmarks_2d = h.get('landmarks')
         points_3d = None
         front = h.get('front')
-        
-        if box_2d is not None: 
+
+        if box_2d is not None:
             box_2d = counterclockwise_rotate_bounding_box(box_2d)
             x0, y0, x1, y1 = box_2d
             x0, y0 = clip_xy(x0, y0)
             x1, y1 = clip_xy(x1, y1)
-            
+
             if ((x0 < 0) or (y0 < 0) or (x1 < 0) or (y1 < 0) or
                 (x0 >= orig_w) or (y0 >= orig_h) or (x1 >= orig_w) or (y1 >= orig_h) or
                 (x0 >= x1) or (y0 >= y1)):
@@ -341,7 +341,7 @@ def detections_2d_to_3d(detections_2d, rgb_image, camera_info, depth_image, fit_
                 rotated_landmarks_2d[name] = (x0, y0)
             landmarks_2d = rotated_landmarks_2d
 
-        if ypr is not None: 
+        if ypr is not None:
             yaw, pitch, roll = ypr
             head_ypr = np.array([-yaw, pitch, roll])
             rotation_mat = Rotation.from_euler('yxz', head_ypr).as_dcm()
@@ -353,7 +353,7 @@ def detections_2d_to_3d(detections_2d, rgb_image, camera_info, depth_image, fit_
 
             box_depth_m = 0.0
             if box_2d is not None:
-                points_3d = numba_image_to_pointcloud(depth_image, box_2d, camera_matrix)                
+                points_3d = numba_image_to_pointcloud(depth_image, box_2d, camera_matrix)
                 if (min_box_side_m is not None) and (max_box_side_m is not None):
                     points_3d = filter_points(points_3d, camera_matrix, box_2d, min_box_side_m, max_box_side_m)
                 box_3d = bounding_box_2d_to_3d(points_3d, box_2d, camera_matrix, head_to_camera_mat=head_to_camera_mat, fit_plane=fit_plane)
@@ -361,11 +361,11 @@ def detections_2d_to_3d(detections_2d, rgb_image, camera_info, depth_image, fit_
                     box_depth_m = None
                 else:
                     box_depth_m = box_3d['center_xyz'][2]
-                
+
             if landmarks_2d is not None:
                 if box_depth_m is None:
                     landmarks_3d = None
-                else: 
+                else:
                     landmarks_3d = landmarks_2d_to_3d(landmarks_2d, camera_matrix, depth_image, box_depth_m)
 
         detections_3d.append({'box_3d':box_3d,

@@ -8,7 +8,7 @@
 
 *fit_plane.py* : Fits planes to 3D data.
 
-*hello_misc.py* : Various functions, including a helpful Python object with which to create ROS nodes. 
+*hello_misc.py* : Various functions, including a helpful Python object with which to create ROS nodes.
 
 *hello_ros_viz.py* : Various helper functions for vizualizations using RViz.
 
@@ -26,4 +26,4 @@ import hello_helpers.hello_ros_viz as hr
 
 ## License
 
-For license information, please see the LICENSE files. 
+For license information, please see the LICENSE files.
