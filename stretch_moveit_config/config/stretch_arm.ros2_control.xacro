@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:macro name="stretch_arm_ros2_control" params="name">
+
+        <ros2_control name="${name}" type="system">
+            <hardware>
+                <plugin>fake_joint_driver/FakeJointDriver</plugin>
+            </hardware>
+            <joint name="joint_arm_l0">
+                <param name="start_position">0.0</param>
+                <command_interface name="position" />
+                <state_interface name="position"/>
+            </joint>
+            <joint name="joint_arm_l1">
+                <param name="start_position">0.0</param>
+                <command_interface name="position" />
+                <state_interface name="position"/>
+            </joint>
+            <joint name="joint_arm_l2">
+                <param name="start_position">0.0</param>
+                <command_interface name="position" />
+                <state_interface name="position"/>
+            </joint>
+            <joint name="joint_arm_l3">
+                <param name="start_position">0.0</param>
+                <command_interface name="position" />
+                <state_interface name="position"/>
+            </joint>
+            <joint name="joint_lift">
+                <param name="start_position">0.1033</param>
+                <command_interface name="position" />
+                <state_interface name="position"/>
+            </joint>
+            <joint name="joint_wrist_yaw">
+                <param name="start_position">0.0</param>
+                <command_interface name="position" />
+                <state_interface name="position"/>
+            </joint>
+        </ros2_control>
+
+    </xacro:macro>
+
+</robot>
