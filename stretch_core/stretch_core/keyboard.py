@@ -34,9 +34,10 @@ def getch():
   return ch
 
 
+def main():
+  while True:
+      c = getch()
+      print('c')
+
 if __name__ == '__main__':
-
-    while True:
-        c = getch()
-        print('c')
-
+  main()

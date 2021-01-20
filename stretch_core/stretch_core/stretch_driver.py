@@ -4,7 +4,7 @@ from __future__ import print_function
 import yaml
 import numpy as np
 import threading
-from rwlock import RWLock
+from .rwlock import RWLock
 import stretch_body.robot as rb
 from stretch_body.hello_utils import ThreadServiceExit
 
@@ -91,7 +91,7 @@ class StretchBodyNode:
 
         # set new mobile base velocities, if appropriate
         # check on thread safety for this with callback that sets velocity command values
-        if self.robot_mode == 'navigation': 
+        if self.robot_mode == 'navigation':
             time_since_last_twist = rospy.get_time() - self.last_twist_time
             if time_since_last_twist < self.timeout:
                 self.robot.base.set_velocity(self.linear_velocity_mps, self.angular_velocity_radps)
@@ -109,7 +109,7 @@ class StretchBodyNode:
         # motor control boards and other boards. These would need to
         # be synchronized with the rospy clock.
         #robot_time = robot_status['timestamp_pc']
-        #rospy.loginfo('robot_time =', robot_time)        
+        #rospy.loginfo('robot_time =', robot_time)
         #current_time = rospy.Time.from_sec(robot_time)
 
         current_time = rospy.Time.now()
@@ -138,10 +138,10 @@ class StretchBodyNode:
         arm_status = robot_status['arm']
         if self.backlash_state['wrist_extension_retracted']:
             arm_backlash_correction = self.wrist_extension_calibrated_retracted_offset_m
-        else: 
+        else:
             arm_backlash_correction = 0.0
 
-        if BACKLASH_DEBUG: 
+        if BACKLASH_DEBUG:
             print('arm_backlash_correction =', arm_backlash_correction)
         pos_out = arm_status['pos'] + arm_backlash_correction
         vel_out = arm_status['vel']
@@ -152,7 +152,7 @@ class StretchBodyNode:
         vel_up = lift_status['vel']
         eff_up = lift_status['motor']['effort']
 
-        if self.use_robotis_end_of_arm:         
+        if self.use_robotis_end_of_arm:
             # assign relevant wrist status to variables
             wrist_status = robot_status['end_of_arm']['wrist_yaw']
             wrist_rad = wrist_status['pos']
@@ -161,24 +161,24 @@ class StretchBodyNode:
 
             # assign relevant gripper status to variables
             gripper_status = robot_status['end_of_arm']['stretch_gripper']
-            if GRIPPER_DEBUG: 
+            if GRIPPER_DEBUG:
                 print('-----------------------')
                 print('gripper_status[\'pos\'] =', gripper_status['pos'])
                 print('gripper_status[\'pos_pct\'] =', gripper_status['pos_pct'])
             gripper_aperture_m, gripper_finger_rad, gripper_finger_effort, gripper_finger_vel = self.gripper_conversion.status_to_all(gripper_status)
-            if GRIPPER_DEBUG: 
+            if GRIPPER_DEBUG:
                 print('gripper_aperture_m =', gripper_aperture_m)
                 print('gripper_finger_rad =', gripper_finger_rad)
                 print('-----------------------')
 
-        if self.use_robotis_head: 
+        if self.use_robotis_head:
             # assign relevant head pan status to variables
             head_pan_status = robot_status['head']['head_pan']
             if self.backlash_state['head_pan_looked_left']:
-                pan_backlash_correction = self.head_pan_calibrated_looked_left_offset_rad 
+                pan_backlash_correction = self.head_pan_calibrated_looked_left_offset_rad
             else:
                 pan_backlash_correction = 0.0
-            if BACKLASH_DEBUG: 
+            if BACKLASH_DEBUG:
                 print('pan_backlash_correction =', pan_backlash_correction)
             head_pan_rad = head_pan_status['pos'] + self.head_pan_calibrated_offset_rad + pan_backlash_correction
             head_pan_vel = head_pan_status['vel']
@@ -190,7 +190,7 @@ class StretchBodyNode:
                 tilt_backlash_correction = self.head_tilt_calibrated_looking_up_offset_rad
             else:
                 tilt_backlash_correction = 0.0
-            if BACKLASH_DEBUG: 
+            if BACKLASH_DEBUG:
                 print('tilt_backlash_correction =', tilt_backlash_correction)
             head_tilt_rad = head_tilt_status['pos'] + self.head_tilt_calibrated_offset_rad + tilt_backlash_correction
             head_tilt_vel = head_tilt_status['vel']
@@ -198,7 +198,7 @@ class StretchBodyNode:
 
         q = tf_conversions.transformations.quaternion_from_euler(0, 0, theta)
 
-        if self.broadcast_odom_tf: 
+        if self.broadcast_odom_tf:
             # publish odometry via TF
             t = TransformStamped()
             t.header.stamp = current_time
@@ -270,7 +270,7 @@ class StretchBodyNode:
             velocities.append(head_tilt_vel)
             efforts.append(head_tilt_effort)
 
-        if self.use_robotis_end_of_arm: 
+        if self.use_robotis_end_of_arm:
             end_of_arm_joint_names = ['joint_wrist_yaw', 'joint_gripper_finger_left', 'joint_gripper_finger_right']
             joint_state.name.extend(end_of_arm_joint_names)
 
@@ -389,7 +389,7 @@ class StretchBodyNode:
             x = base_status['x']
             y = base_status['y']
             theta = base_status['theta']
-            self.mobile_base_manipulation_origin = {'x':x, 'y':y, 'theta':theta} 
+            self.mobile_base_manipulation_origin = {'x':x, 'y':y, 'theta':theta}
         self.change_mode('manipulation', code_to_run)
 
     def turn_on_position_mode(self):
@@ -602,7 +602,7 @@ class StretchBodyNode:
         self.switch_to_position_mode_service = rospy.Service('/switch_to_position_mode',
                                                              Trigger,
                                                              self.position_mode_service_callback)
-        
+
         self.stop_the_robot_service = rospy.Service('/stop_the_robot',
                                                     Trigger,
                                                     self.stop_the_robot_callback)
@@ -622,6 +622,10 @@ class StretchBodyNode:
             rospy.signal_shutdown("stretch_driver shutdown")
 
 
-if __name__ == '__main__':
+def main():
     node = StretchBodyNode()
     node.main()
+
+
+if __name__ == '__main__':
+    main()

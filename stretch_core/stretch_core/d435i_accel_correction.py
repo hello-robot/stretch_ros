@@ -10,11 +10,11 @@ class D435iAccelCorrectionNode:
     def __init__(self):
         self.num_samples_to_skip = 4
         self.sample_count = 0
-        
+
     def accel_callback(self, accel):
         self.accel = accel
         self.sample_count += 1
-        if (self.sample_count % self.num_samples_to_skip) == 0: 
+        if (self.sample_count % self.num_samples_to_skip) == 0:
             # This can avoid issues with the D435i's time stamps being too
             # far ahead for TF.
             self.accel.header.stamp = rospy.Time.now()
@@ -28,7 +28,7 @@ class D435iAccelCorrectionNode:
 
             self.corrected_accel_pub.publish(self.accel)
 
-            
+
     def main(self):
         rospy.init_node('D435iAccelCorrectionNode')
         self.node_name = rospy.get_name()
@@ -36,11 +36,11 @@ class D435iAccelCorrectionNode:
 
         self.topic_name = '/camera/accel/sample'
         self.accel_subscriber = rospy.Subscriber(self.topic_name, Imu, self.accel_callback)
-        
+
         self.corrected_accel_pub = rospy.Publisher('/camera/accel/sample_corrected', Imu, queue_size=1)
 
 
-if __name__ == '__main__':
+def main():
     node = D435iAccelCorrectionNode()
     node.main()
     try:
@@ -48,3 +48,6 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print('interrupt received, so shutting down')
 
+
+if __name__ == '__main__':
+    main()
