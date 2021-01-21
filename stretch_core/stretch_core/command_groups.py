@@ -171,6 +171,21 @@ class HeadPanCommandGroup(SimpleCommandGroup):
         self.head_pan_calibrated_offset = head_pan_calibrated_offset
         self.head_pan_calibrated_looked_left_offset = head_pan_calibrated_looked_left_offset
 
+    def set_trajectory_goals(self, points, robot):
+        if self.active:
+            for waypoint in points:
+                t = waypoint.time_from_start.to_sec()
+                x = None
+                if len(waypoint.positions) > self.index:
+                    x = waypoint.positions[self.index]
+                v = None
+                if len(waypoint.velocities) > self.index:
+                    v = waypoint.velocities[self.index]
+                a = None
+                if len(waypoint.accelerations) > self.index:
+                    a = waypoint.accelerations[self.index]
+                robot.head.get_joint('head_pan').trajectory.add_waypoint(t_s=t, x_r=x, v_r=v, a_r=a)
+
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
             _, pan_error = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
@@ -205,6 +220,21 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
         self.head_tilt_calibrated_looking_up_offset = head_tilt_calibrated_looking_up_offset
         self.head_tilt_backlash_transition_angle = head_tilt_backlash_transition_angle
 
+    def set_trajectory_goals(self, points, robot):
+        if self.active:
+            for waypoint in points:
+                t = waypoint.time_from_start.to_sec()
+                x = None
+                if len(waypoint.positions) > self.index:
+                    x = waypoint.positions[self.index]
+                v = None
+                if len(waypoint.velocities) > self.index:
+                    v = waypoint.velocities[self.index]
+                a = None
+                if len(waypoint.accelerations) > self.index:
+                    a = waypoint.accelerations[self.index]
+                robot.head.get_joint('head_tilt').trajectory.add_waypoint(t_s=t, x_r=x, v_r=v, a_r=a)
+
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
             _, tilt_error = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
@@ -233,6 +263,21 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
 class WristYawCommandGroup(SimpleCommandGroup):
     def __init__(self, range_rad):
         SimpleCommandGroup.__init__(self, 'joint_wrist_yaw', range_rad)
+
+    def set_trajectory_goals(self, points, robot):
+        if self.active:
+            for waypoint in points:
+                t = waypoint.time_from_start.to_sec()
+                x = None
+                if len(waypoint.positions) > self.index:
+                    x = waypoint.positions[self.index]
+                v = None
+                if len(waypoint.velocities) > self.index:
+                    v = waypoint.velocities[self.index]
+                a = None
+                if len(waypoint.accelerations) > self.index:
+                    a = waypoint.accelerations[self.index]
+                robot.end_of_arm.motors['wrist_yaw'].trajectory.add_waypoint(t_s=t, x_r=x, v_r=v, a_r=a)
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
@@ -376,6 +421,21 @@ class TelescopingCommandGroup(SimpleCommandGroup):
 
         return True
 
+    def set_trajectory_goals(self, points, robot):
+        if self.active:
+            for waypoint in points:
+                t = waypoint.time_from_start.to_sec()
+                x = None
+                if len(waypoint.positions) > self.index:
+                    x = waypoint.positions[self.index]
+                v = None
+                if len(waypoint.velocities) > self.index:
+                    v = waypoint.velocities[self.index]
+                a = None
+                if len(waypoint.accelerations) > self.index:
+                    a = waypoint.accelerations[self.index]
+                robot.arm.trajectory.add_waypoint(t_s=t, x_m=x, v_m=v, a_m=a)
+
     def set_goal(self, point, invalid_goal_callback, fail_out_of_range_goal, **kwargs):
         self.goal = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
         if self.active:
@@ -450,6 +510,21 @@ class TelescopingCommandGroup(SimpleCommandGroup):
 class LiftCommandGroup(SimpleCommandGroup):
     def __init__(self, range_m):
         SimpleCommandGroup.__init__(self, 'joint_lift', range_m)
+
+    def set_trajectory_goals(self, points, robot):
+        if self.active:
+            for waypoint in points:
+                t = waypoint.time_from_start.to_sec()
+                x = None
+                if len(waypoint.positions) > self.index:
+                    x = waypoint.positions[self.index]
+                v = None
+                if len(waypoint.velocities) > self.index:
+                    v = waypoint.velocities[self.index]
+                a = None
+                if len(waypoint.accelerations) > self.index:
+                    a = waypoint.accelerations[self.index]
+                robot.lift.trajectory.add_waypoint(t_s=t, x_m=x, v_m=v, a_m=a)
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
@@ -530,6 +605,17 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
                 if 'rotate_mobile_base' in active_incrementing_joint_names:
                     self.active_rotate_mobile_base = True
                     self.index_rotate_mobile_base = commanded_joint_names.index('rotate_mobile_base')
+            elif robot_mode == 'experimental_manipulation':
+                self.active = True
+                if 'translate_mobile_base' in active_incrementing_joint_names:
+                    self.active_translate_mobile_base = True
+                    self.index_translate_mobile_base = commanded_joint_names.index('translate_mobile_base')
+                if 'rotate_mobile_base' in active_incrementing_joint_names:
+                    self.active_rotate_mobile_base = True
+                    self.index_rotate_mobile_base = commanded_joint_names.index('rotate_mobile_base')
+                if self.active_translate_mobile_base and self.active_rotate_mobile_base:
+                    err_str = ("Experimental manipulation mode cannot receive both mobile base translate and rotate joints")
+                    invalid_joints_callback(err_str)
             else:
                 err_str = ("Must be in position mode to receive a command for the {0} joint(s). "
                            "Current mode = {1}.").format(active_positioning_joint_names, robot_mode)
@@ -537,6 +623,34 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
                 return False
 
         return True
+
+    def set_trajectory_goals(self, points, robot):
+        if self.active_translate_mobile_base:
+            for waypoint in points:
+                t = waypoint.time_from_start.to_sec()
+                x = None
+                if len(waypoint.positions) > self.index_translate_mobile_base:
+                    x = waypoint.positions[self.index_translate_mobile_base]
+                v = None
+                if len(waypoint.velocities) > self.index_translate_mobile_base:
+                    v = waypoint.velocities[self.index_translate_mobile_base]
+                a = None
+                if len(waypoint.accelerations) > self.index_translate_mobile_base:
+                    a = waypoint.accelerations[self.index_translate_mobile_base]
+                robot.base.trajectory.add_translate_waypoint(t_s=t, x_m=x, v_m=v, a_m=a)
+        elif self.active_rotate_mobile_base:
+            for waypoint in points:
+                t = waypoint.time_from_start.to_sec()
+                x = None
+                if len(waypoint.positions) > self.index_rotate_mobile_base:
+                    x = waypoint.positions[self.index_rotate_mobile_base]
+                v = None
+                if len(waypoint.velocities) > self.index_rotate_mobile_base:
+                    v = waypoint.velocities[self.index_rotate_mobile_base]
+                a = None
+                if len(waypoint.accelerations) > self.index_rotate_mobile_base:
+                    a = waypoint.accelerations[self.index_rotate_mobile_base]
+                robot.base.trajectory.add_rotate_waypoint(t_s=t, x_r=x, v_r=v, a_r=a)
 
     def set_goal(self, point, invalid_goal_callback, fail_out_of_range_goal, **kwargs):
         self.goal = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}

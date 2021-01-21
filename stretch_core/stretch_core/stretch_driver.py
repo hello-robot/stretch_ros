@@ -398,6 +398,14 @@ class StretchBodyNode(Node):
             self.mobile_base_manipulation_origin = {'x':x, 'y':y, 'theta':theta}
         self.change_mode('manipulation', code_to_run)
 
+    def turn_on_experimental_manipulation_mode(self):
+        """Utilizes the new trajectory following interface
+        built into stretch_body.
+        """
+        def code_to_run():
+            pass
+        self.change_mode('experimental_manipulation', code_to_run)
+
     def turn_on_position_mode(self):
         # Position mode enables mobile base translation and rotation
         # using position control with sequential incremental rotations
@@ -598,6 +606,8 @@ class StretchBodyNode(Node):
             self.turn_on_navigation_mode()
         elif mode == "manipulation":
             self.turn_on_manipulation_mode()
+        elif mode == "experimental_manipulation":
+            self.turn_on_experimental_manipulation_mode()
 
         self.switch_to_manipulation_mode_service = self.create_service(Trigger,
                                                                        '/switch_to_manipulation_mode',
