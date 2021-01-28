@@ -1,4 +1,5 @@
 <launch>
+  <arg name="rviz" default="true" />
 
   <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="true"/>
   <param name="/stretch_driver/mode" type="string" value="navigation" />
@@ -12,7 +13,8 @@
     <remap from="/cmd_vel" to="/stretch/cmd_vel" />
   </node>
 
-  <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find stretch_navigation)/rviz/mapping.rviz" />
+  <node name="rviz" pkg="rviz" type="rviz" output="log"
+        args="-d $(find stretch_navigation)/rviz/mapping.rviz" if="$(arg rviz)" />
 
   <node pkg="gmapping" type="slam_gmapping" name="gmapping_record_map" output="log" />
 

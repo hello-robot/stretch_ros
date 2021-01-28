@@ -1,4 +1,5 @@
 <launch>
+  <arg name="rviz" default="true" />
 
   <arg name="map_yaml" />
 
@@ -21,6 +22,7 @@
     <remap from="/cmd_vel" to="/stretch/cmd_vel" />
   </node>
 
-  <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find stretch_navigation)/rviz/navigation.rviz" />
+  <node name="rviz" pkg="rviz" type="rviz" output="log"
+        args="-d $(find stretch_navigation)/rviz/navigation.rviz" if="$(arg rviz)"/>
 
 </launch>
