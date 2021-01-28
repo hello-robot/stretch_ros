@@ -552,8 +552,6 @@ class StretchBodyNode:
         self.magnetometer_mobile_base_pub = rospy.Publisher('magnetometer_mobile_base', MagneticField, queue_size=1)
         self.imu_wrist_pub = rospy.Publisher('imu_wrist', Imu, queue_size=1)
 
-        rospy.Subscriber("cmd_vel", Twist, self.set_mobile_base_velocity_callback)
-
         # ~ symbol gets parameter from private namespace
         self.joint_state_rate = rospy.get_param('~rate', 15.0)
         self.timeout = rospy.get_param('~timeout', 1.0)
@@ -610,6 +608,8 @@ class StretchBodyNode:
         self.runstop_service = rospy.Service('/runstop',
                                               SetBool,
                                               self.runstop_service_callback)
+
+        rospy.Subscriber("cmd_vel", Twist, self.set_mobile_base_velocity_callback)
 
         try:
             # start loop to command the mobile base velocity, publish
