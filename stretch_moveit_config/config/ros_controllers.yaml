@@ -29,7 +29,7 @@ joint_state_controller:
   type: joint_state_controller/JointStateController
   publish_rate: 50
 controller_list:
-  - name: stretch_arm_controller
+  - name: stretch_controller
     action_ns: follow_joint_trajectory
     default: True
     type: FollowJointTrajectory
