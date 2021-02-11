@@ -24,9 +24,33 @@ The exported URDF will be found within an exported_urdf directory. It is also co
 
 ## Changing the Tool
 
-If you wish to remove the default gripper and add a different tool, you will typically edit /stretch_description/urdf/stretch_desciption.xacro. Specifically, you will replace the following line in order to include the xacro for the new tool and then follow directions within stretch_ros/stretch_calibration to generate a new calibrated urdf file (stretch.urdf) that includes the new tool.
+If you wish to remove the default gripper and add a different tool, you will typically edit /stretch_description/urdf/stretch_description.xacro. Specifically, you will replace the following line in order to include the xacro for the new tool and then follow directions within stretch_ros/stretch_calibration to generate a new calibrated urdf file (stretch.urdf) that includes the new tool.
 
 `<xacro:include filename="stretch_gripper.xacro" />`
+
+As an example we provide the xacro `stretch_dry_erase_marker.xacro` and its dependent mesh files with stretch_ros. 
+
+Some of the tools found in the [Stretch Body Tool Share](https://github.com/hello-robot/stretch_tool_share/) include URDF data. To integrate these tools into the URDF for your Stretch
+
+```bash
+>>$ cd ~/repos
+>>$ git clone https://github.com/hello-robot/stretch_tool_share
+>>$ cd stretch_tool_share
+>>$ cp stretch_description/urdf/* ~/catkin_ws/src/stretch_ros/stretch_description/urdf/
+>>$ cp stretch_description/meshes/* ~/catkin_ws/src/stretch_ros/stretch_description/meshes/
+```
+
+Next add the xacro for the particular tool to /stretch_description/urdf/stretch_description.xacro. Then you can generate and preview the uncalibrated URDF:
+
+```
+>>$ rosrun stretch_calibration update_uncalibrated_urdf.sh
+>>$ cd ~/catkin_ws/src/stretch_ros/stretch_description/urdf
+>>$ cp stretch.urdf stretch.urdf.bak
+>>$ cp stretch_uncalibrated.urdf stretch.urdf
+>>$ roslaunch stretch_calibration simple_test_head_calibration.launch
+```
+
+You will then want to calibrate your URDF as described in the [URDF calibration](https://github.com/hello-robot/stretch_ros/tree/master/stretch_calibration) documentation.
 
 ## License and Patents
 
