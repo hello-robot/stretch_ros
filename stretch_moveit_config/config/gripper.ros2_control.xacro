@@ -8,13 +8,13 @@
                 <plugin>fake_components/GenericSystem</plugin>
             </hardware>
             <joint name="joint_gripper_finger_left">
-                <param name="start_position">0.0</param>
+                <param name="initial_position">0.0</param>
                 <command_interface name="position" />
                 <state_interface name="position"/>
                 <state_interface name="velocity"/>
             </joint>
             <joint name="joint_gripper_finger_right">
-                <param name="start_position">0.0</param>
+                <param name="initial_position">0.0</param>
                 <command_interface name="position" />
                 <state_interface name="position"/>
                 <state_interface name="velocity"/>

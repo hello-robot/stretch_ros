@@ -8,37 +8,37 @@
                 <plugin>fake_components/GenericSystem</plugin>
             </hardware>
             <joint name="joint_arm_l0">
-                <param name="start_position">0.0</param>
+                <param name="initial_position">0.0</param>
                 <command_interface name="position" />
                 <state_interface name="position"/>
                 <state_interface name="velocity"/>
             </joint>
             <joint name="joint_arm_l1">
-                <param name="start_position">0.0</param>
+                <param name="initial_position">0.0</param>
                 <command_interface name="position" />
                 <state_interface name="position"/>
                 <state_interface name="velocity"/>
             </joint>
             <joint name="joint_arm_l2">
-                <param name="start_position">0.0</param>
+                <param name="initial_position">0.0</param>
                 <command_interface name="position" />
                 <state_interface name="position"/>
                 <state_interface name="velocity"/>
             </joint>
             <joint name="joint_arm_l3">
-                <param name="start_position">0.0</param>
+                <param name="initial_position">0.0</param>
                 <command_interface name="position" />
                 <state_interface name="position"/>
                 <state_interface name="velocity"/>
             </joint>
             <joint name="joint_lift">
-                <param name="start_position">0.1033</param>
+                <param name="initial_position">0.1033</param>
                 <command_interface name="position" />
                 <state_interface name="position"/>
                 <state_interface name="velocity"/>
             </joint>
             <joint name="joint_wrist_yaw">
-                <param name="start_position">0.0</param>
+                <param name="initial_position">0.0</param>
                 <command_interface name="position" />
                 <state_interface name="position"/>
                 <state_interface name="velocity"/>
