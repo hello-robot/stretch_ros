@@ -50,6 +50,7 @@
   <!--   <doc_depend>doxygen</doc_depend> -->
   <build_depend>actionlib_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
+  <build_depend>hello_helpers</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>control_msgs</build_depend>
   <build_depend>trajectory_msgs</build_depend>
@@ -58,6 +59,7 @@
   <build_depend>tf2</build_depend>
   <build_export_depend>actionlib_msgs</build_export_depend>
   <build_export_depend>geometry_msgs</build_export_depend>
+  <build_export_depend>hello_helpers</build_export_depend>
   <build_export_depend>nav_msgs</build_export_depend>
   <build_export_depend>control_msgs</build_export_depend>
   <build_export_depend>trajectory_msgs</build_export_depend>
@@ -66,6 +68,7 @@
   <build_export_depend>tf2</build_export_depend>
   <exec_depend>actionlib_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>hello_helpers</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
   <exec_depend>control_msgs</exec_depend>
   <exec_depend>trajectory_msgs</exec_depend>

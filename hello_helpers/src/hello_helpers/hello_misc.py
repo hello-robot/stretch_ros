@@ -7,19 +7,17 @@ import os
 import glob
 import math
 
-import rospy
+import rclpy
 import tf2_ros
-import ros_numpy
+# import ros_numpy  TODO(dlu): Fix https://github.com/eric-wieser/ros_numpy/issues/20
 import numpy as np
 import cv2
 
-import actionlib
-from control_msgs.msg import FollowJointTrajectoryAction
-from control_msgs.msg import FollowJointTrajectoryGoal
+from control_msgs.action import FollowJointTrajectory
 from trajectory_msgs.msg import JointTrajectoryPoint
 import tf2_ros
 from sensor_msgs.msg import PointCloud2
-from std_srvs.srv import Trigger, TriggerRequest
+from std_srvs.srv import Trigger
 
 
 #######################
@@ -75,11 +73,10 @@ class HelloNode:
 
     def point_cloud_callback(self, point_cloud):
         self.point_cloud = point_cloud
-    
-    def move_to_pose(self, pose, async=False, custom_contact_thresholds=False):
+
+    def move_to_pose(self, pose, wait_for_result=False, custom_contact_thresholds=False):
         joint_names = [key for key in pose]
         point = JointTrajectoryPoint()
-        point.time_from_start = rospy.Duration(0.0)
 
         trajectory_goal = FollowJointTrajectoryGoal()
         trajectory_goal.goal_time_tolerance = rospy.Time(1.0)
@@ -100,7 +97,7 @@ class HelloNode:
             trajectory_goal.trajectory.points = [point]
         trajectory_goal.trajectory.header.stamp = rospy.Time.now()
         self.trajectory_client.send_goal(trajectory_goal)
-        if not async: 
+        if not wait_for_result:
             self.trajectory_client.wait_for_result()
             #print('Received the following result:')
             #print(self.trajectory_client.get_result())

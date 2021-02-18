@@ -1,29 +1,25 @@
 #! /usr/bin/env python
 from __future__ import print_function
 
-import rospy
-import actionlib
-from control_msgs.msg import FollowJointTrajectoryAction
-from control_msgs.msg import FollowJointTrajectoryFeedback
-from control_msgs.msg import FollowJointTrajectoryResult
+import rclpy
+from rclpy.action import ActionServer
+from control_msgs.action import FollowJointTrajectory
 from trajectory_msgs.msg import JointTrajectoryPoint
 
-from command_groups import HeadPanCommandGroup, HeadTiltCommandGroup, \
-                           WristYawCommandGroup, GripperCommandGroup, \
-                           TelescopingCommandGroup, LiftCommandGroup, \
-                           MobileBaseCommandGroup
+from .command_groups import HeadPanCommandGroup, HeadTiltCommandGroup, \
+                            WristYawCommandGroup, GripperCommandGroup, \
+                            TelescopingCommandGroup, LiftCommandGroup, \
+                            MobileBaseCommandGroup
 
 
 class JointTrajectoryAction:
 
     def __init__(self, node):
         self.node = node
-        self.server = actionlib.SimpleActionServer('/stretch_controller/follow_joint_trajectory',
-                                                   FollowJointTrajectoryAction,
-                                                   execute_cb=self.execute_cb,
-                                                   auto_start=False)
-        self.feedback = FollowJointTrajectoryFeedback()
-        self.result = FollowJointTrajectoryResult()
+        self.server = ActionServer(self.node, FollowJointTrajectory, '/stretch_controller/follow_joint_trajectory',
+                                   self.execute_cb)
+        self.feedback = FollowJointTrajectory.Feedback()
+        self.result = FollowJointTrajectory.Result()
 
         r = self.node.robot
         head_pan_range_ticks = r.head.motors['head_pan'].params['range_t']
@@ -63,8 +59,8 @@ class JointTrajectoryAction:
 
         # For now, ignore goal time and configuration tolerances.
         commanded_joint_names = goal.trajectory.joint_names
-        rospy.loginfo(("{0} joint_traj action: New trajectory received with joint_names = "
-                       "{1}").format(self.node.node_name, commanded_joint_names))
+        self.node.get_logger().info(("{0} joint_traj action: New trajectory received with joint_names = "
+                                     "{1}").format(self.node.node_name, commanded_joint_names))
 
         ###################################################
         # Decide what to do based on the commanded joints.
@@ -98,8 +94,8 @@ class JointTrajectoryAction:
         # Try to reach each of the goals in sequence until
         # an error is detected or success is achieved.
         for pointi, point in enumerate(goal.trajectory.points):
-            rospy.logdebug(("{0} joint_traj action: "
-                            "target point #{1} = <{2}>").format(self.node.node_name, pointi, point))
+            self.node.get_logger().debug(("{0} joint_traj action: "
+                                          "target point #{1} = <{2}>").format(self.node.node_name, pointi, point))
 
             valid_goals = [c.set_goal(point, self.invalid_goal_callback, self.node.fail_out_of_range_goal,
                                       manipulation_origin=self.node.mobile_base_manipulation_origin)
@@ -117,11 +113,11 @@ class JointTrajectoryAction:
             self.node.robot.push_command()
 
             goals_reached = [c.goal_reached() for c in command_groups]
-            update_rate = rospy.Rate(15.0)
-            goal_start_time = rospy.Time.now()
+            update_rate = self.node.create_rate(15.0)
+            goal_start_time = self.node.get_clock().now()
 
             while not all(goals_reached):
-                if (rospy.Time.now() - goal_start_time) > self.node.default_goal_timeout_duration:
+                if (self.node.get_clock().now() - goal_start_time) > self.node.default_goal_timeout_duration:
                     err_str = ("Time to execute the current goal point = <{0}> exceeded the "
                                "default_goal_timeout = {1}").format(point, self.node.default_goal_timeout_s)
                     self.goal_tolerance_violated_callback(err_str)
@@ -131,10 +127,10 @@ class JointTrajectoryAction:
                 # Check if a premption request has been received.
                 with self.node.robot_stop_lock:
                     if self.node.stop_the_robot or self.server.is_preempt_requested():
-                        rospy.logdebug(("{0} joint_traj action: PREEMPTION REQUESTED, but not stopping "
-                                        "current motions to allow smooth interpolation between "
-                                        "old and new commands.").format(self.node.node_name))
                         self.server.set_preempted()
+                        self.node.get_logger().debug(("{0} joint_traj action: PREEMPTION REQUESTED, but not stopping "
+                                                      "current motions to allow smooth interpolation between "
+                                                      "old and new commands.").format(self.node.node_name))
                         self.node.stop_the_robot = False
                         self.node.robot_mode_rwlock.release_read()
                         return
@@ -151,7 +147,7 @@ class JointTrajectoryAction:
                 goals_reached = [c.goal_reached() for c in command_groups]
                 update_rate.sleep()
 
-            rospy.logdebug("{0} joint_traj action: Achieved target point.".format(self.node.node_name))
+            self.node.get_logger().debug("{0} joint_traj action: Achieved target point.".format(self.node.node_name))
 
         self.success_callback("Achieved all target points.")
         self.node.robot_mode_rwlock.release_read()
@@ -159,21 +155,21 @@ class JointTrajectoryAction:
 
     def invalid_joints_callback(self, err_str):
         if self.server.is_active() or self.server.is_preempt_requested():
-            rospy.logerr("{0} joint_traj action: {1}".format(self.node.node_name, err_str))
+            self.node.get_logger().error("{0} joint_traj action: {1}".format(self.node.node_name, err_str))
             self.result.error_code = self.result.INVALID_JOINTS
             self.result.error_string = err_str
             self.server.set_aborted(self.result)
 
     def invalid_goal_callback(self, err_str):
         if self.server.is_active() or self.server.is_preempt_requested():
-            rospy.logerr("{0} joint_traj action: {1}".format(self.node.node_name, err_str))
+            self.node.get_logger().error("{0} joint_traj action: {1}".format(self.node.node_name, err_str))
             self.result.error_code = self.result.INVALID_GOAL
             self.result.error_string = err_str
             self.server.set_aborted(self.result)
 
     def goal_tolerance_violated_callback(self, err_str):
         if self.server.is_active() or self.server.is_preempt_requested():
-            rospy.logerr("{0} joint_traj action: {1}".format(self.node.node_name, err_str))
+            self.node.get_logger().error("{0} joint_traj action: {1}".format(self.node.node_name, err_str))
             self.result.error_code = self.result.GOAL_TOLERANCE_VIOLATED
             self.result.error_string = err_str
             self.server.set_aborted(self.result)
@@ -193,8 +189,8 @@ class JointTrajectoryAction:
             error_point.positions.append(clean_named_errors_dict[commanded_joint_name])
             actual_point.positions.append(desired_point.positions[i] - clean_named_errors_dict[commanded_joint_name])
 
-        rospy.logdebug("{0} joint_traj action: sending feedback".format(self.node.node_name))
-        self.feedback.header.stamp = rospy.Time.now()
+        self.node.get_logger().debug("{0} joint_traj action: sending feedback".format(self.node.node_name))
+        self.feedback.header.stamp = self.node.get_clock().now()
         self.feedback.joint_names = commanded_joint_names
         self.feedback.desired = desired_point
         self.feedback.actual = actual_point
@@ -202,7 +198,7 @@ class JointTrajectoryAction:
         self.server.publish_feedback(self.feedback)
 
     def success_callback(self, success_str):
-        rospy.loginfo("{0} joint_traj action: {1}".format(self.node.node_name, success_str))
+        self.node.get_logger().info("{0} joint_traj action: {1}".format(self.node.node_name, success_str))
         self.result.error_code = self.result.SUCCESSFUL
         self.result.error_string = success_str
         self.server.set_succeeded(self.result)

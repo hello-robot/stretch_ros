@@ -269,7 +269,7 @@ class MoveBase():
             trigger_request = TriggerRequest() 
 
             pose = {'translate_mobile_base': forward_distance_m}
-            self.node.move_to_pose(pose, async=True)
+            self.node.move_to_pose(pose, wait_for_result=True)
 
             while (not at_goal) and (not obstacle_detected) and (not unsuccessful_action):
                 if detect_obstacles: 
@@ -319,7 +319,7 @@ class MoveBase():
                 (turn_attempts < max_turn_attempts))):
 
             pose = {'rotate_mobile_base': turn_angle_error_rad}
-            self.node.move_to_pose(pose, async=True)
+            self.node.move_to_pose(pose, wait_for_result=True)
             at_goal = False
             unsuccessful_action = False
             while (not at_goal) and (not unsuccessful_action):

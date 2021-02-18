@@ -1,8 +1,20 @@
-#!/usr/bin/env python
+from setuptools import setup
 
-from distutils.core import setup
-from catkin_pkg.python_setup import generate_distutils_setup
+package_name = 'hello_helpers'
 
-setup_args = generate_distutils_setup( packages=['hello_helpers'], package_dir={'': 'src'})
-
-setup(**setup_args)
+setup(
+    name=package_name,
+    version='0.2.0',
+    package_dir={'': 'src'},
+    packages=[package_name],
+    data_files=[
+        ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
+        ('share/' + package_name, ['package.xml']),
+    ],
+    install_requires=['setuptools'],
+    url='',
+    license='Apache License 2.0',
+    author='Hello Robot Inc.',
+    author_email='support@hello-robot.com',
+    description='The hello_helpers package',
+)
