@@ -121,12 +121,4 @@ def generate_launch_description():
     for controller in ['stretch_arm_controller', 'gripper_controller']:
         load_controllers += [ExecuteProcess(cmd=['ros2 control load_configure_controller', controller], shell=True, output='screen', on_exit=[ExecuteProcess(cmd=['ros2 control switch_controllers --start-controllers', controller], shell=True, output='screen')])]
 
-    # Warehouse mongodb server default_warehouse_db.launch + warehouse.launch + warehouse_settings.launch.xml
-    mongodb_server_node = Node(package='warehouse_ros_mongo',
-                               executable='mongo_wrapper_ros.py',
-                               parameters=[{'warehouse_port': 33829},
-                                           {'warehouse_host': 'localhost'},
-                                           {'warehouse_plugin': 'warehouse_ros_mongo::MongoDatabaseConnection'}],
-                               output='screen')
-
-    return LaunchDescription([ rviz_node, static_tf, robot_state_publisher, run_move_group_node, fake_joint_driver_node, mongodb_server_node ] + load_controllers)
+    return LaunchDescription([ rviz_node, static_tf, robot_state_publisher, run_move_group_node, fake_joint_driver_node ] + load_controllers)
