@@ -166,7 +166,11 @@ class SimpleCommandGroup:
 
 
 class HeadPanCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_rad, head_pan_calibrated_offset, head_pan_calibrated_looked_left_offset):
+    def __init__(self, range_rad, head_pan_calibrated_offset, head_pan_calibrated_looked_left_offset, robot=None):
+        if range_rad is None and robot is not None:
+            range_ticks = robot.head.motors['head_pan'].params['range_t']
+            range_rad = (robot.head.motors['head_pan'].ticks_to_world_rad(range_ticks[1]),
+                         robot.head.motors['head_pan'].ticks_to_world_rad(range_ticks[0]))
         SimpleCommandGroup.__init__(self, 'joint_head_pan', range_rad, acceptable_joint_error=0.15)
         self.head_pan_calibrated_offset = head_pan_calibrated_offset
         self.head_pan_calibrated_looked_left_offset = head_pan_calibrated_looked_left_offset
@@ -199,7 +203,11 @@ class HeadPanCommandGroup(SimpleCommandGroup):
 class HeadTiltCommandGroup(SimpleCommandGroup):
     def __init__(self, range_rad, head_tilt_calibrated_offset,
                  head_tilt_calibrated_looking_up_offset,
-                 head_tilt_backlash_transition_angle):
+                 head_tilt_backlash_transition_angle, robot=None):
+        if range_rad is None and robot is not None:
+            range_ticks = robot.head.motors['head_tilt'].params['range_t']
+            range_rad = (robot.head.motors['head_tilt'].ticks_to_world_rad(range_ticks[1]),
+                         robot.head.motors['head_tilt'].ticks_to_world_rad(range_ticks[0]))
         SimpleCommandGroup.__init__(self, 'joint_head_tilt', range_rad, acceptable_joint_error=0.52)
         self.head_tilt_calibrated_offset = head_tilt_calibrated_offset
         self.head_tilt_calibrated_looking_up_offset = head_tilt_calibrated_looking_up_offset
@@ -231,7 +239,11 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
 
 
 class WristYawCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_rad):
+    def __init__(self, range_rad, robot=None):
+        if range_rad is None and robot is not None:
+            range_ticks = robot.end_of_arm.motors['wrist_yaw'].params['range_t']
+            range_rad = (robot.end_of_arm.motors['wrist_yaw'].ticks_to_world_rad(range_ticks[1]),
+                         robot.end_of_arm.motors['wrist_yaw'].ticks_to_world_rad(range_ticks[0]))
         SimpleCommandGroup.__init__(self, 'joint_wrist_yaw', range_rad)
 
     def init_execution(self, robot, robot_status, **kwargs):
@@ -251,7 +263,13 @@ class WristYawCommandGroup(SimpleCommandGroup):
 
 
 class GripperCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_robotis):
+    def __init__(self, range_robotis, robot=None):
+        if range_robotis is None and robot is not None:
+            range_ticks = robot.end_of_arm.motors['stretch_gripper'].params['range_t']
+            range_rad = (robot.end_of_arm.motors['stretch_gripper'].ticks_to_world_rad(range_ticks[0]),
+                         robot.end_of_arm.motors['stretch_gripper'].ticks_to_world_rad(range_ticks[1]))
+            range_robotis = (robot.end_of_arm.motors['stretch_gripper'].world_rad_to_pct(range_rad[0]),
+                             robot.end_of_arm.motors['stretch_gripper'].world_rad_to_pct(range_rad[1]))
         SimpleCommandGroup.__init__(self, None, None, acceptable_joint_error=1.0)
         self.gripper_joint_names = ['joint_gripper_finger_left', 'joint_gripper_finger_right', 'gripper_aperture']
         self.gripper_conversion = GripperConversion()
@@ -331,8 +349,9 @@ class GripperCommandGroup(SimpleCommandGroup):
 
 
 class TelescopingCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_m, wrist_extension_calibrated_retracted_offset):
-        #SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.005)
+    def __init__(self, range_m, wrist_extension_calibrated_retracted_offset, robot=None):
+        if range_m is None and robot is not None:
+            range_m = tuple(robot.arm.params['range_m'])
         SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.008)
         self.wrist_extension_calibrated_retracted_offset = wrist_extension_calibrated_retracted_offset
         self.telescoping_joints = ['joint_arm_l3', 'joint_arm_l2', 'joint_arm_l1', 'joint_arm_l0']
@@ -448,7 +467,9 @@ class TelescopingCommandGroup(SimpleCommandGroup):
 
 
 class LiftCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_m):
+    def __init__(self, range_m, robot=None):
+        if range_m is None and robot is not None:
+            range_m = tuple(robot.lift.params['range_m'])
         SimpleCommandGroup.__init__(self, 'joint_lift', range_m)
 
     def init_execution(self, robot, robot_status, **kwargs):
