@@ -35,22 +35,26 @@ Some of the tools found in the [Stretch Body Tool Share](https://github.com/hell
 ```bash
 >>$ cd ~/repos
 >>$ git clone https://github.com/hello-robot/stretch_tool_share
->>$ cd stretch_tool_share
+>>$ cd stretch_tool_share/<tool name>
 >>$ cp stretch_description/urdf/* ~/catkin_ws/src/stretch_ros/stretch_description/urdf/
 >>$ cp stretch_description/meshes/* ~/catkin_ws/src/stretch_ros/stretch_description/meshes/
 ```
 
-Next add the xacro for the particular tool to /stretch_description/urdf/stretch_description.xacro. Then you can generate and preview the uncalibrated URDF:
+Next add the xacro for the particular tool to `/stretch_description/urdf/stretch_description.xacro`. Then you can generate and preview the uncalibrated URDF:
 
-```
->>$ rosrun stretch_calibration update_uncalibrated_urdf.sh
+```bash
 >>$ cd ~/catkin_ws/src/stretch_ros/stretch_description/urdf
 >>$ cp stretch.urdf stretch.urdf.bak
->>$ cp stretch_uncalibrated.urdf stretch.urdf
+>>$ rosrun stretch_calibration update_urdf_after_xacro_change.sh
+```
+
+Now visualize the new tool
+
+```bash
 >>$ roslaunch stretch_calibration simple_test_head_calibration.launch
 ```
 
-You will then want to calibrate your URDF as described in the [URDF calibration](https://github.com/hello-robot/stretch_ros/tree/master/stretch_calibration) documentation.
+
 
 ## License and Patents
 
