@@ -144,12 +144,24 @@ class StretchBodyNode:
         joint_state = JointState()
         joint_state.header.stamp = current_time
         for cg in self.joint_trajectory_action.command_groups:
-            joint_state.name.append(cg.name)
-            pos, vel, effort = cg.joint_state(robot_status, robot_mode=self.robot_mode,
-                                              manipulation_origin=self.mobile_base_manipulation_origin)
-            joint_state.position.append(pos)
-            joint_state.velocity.append(vel)
-            joint_state.effort.append(effort)
+            if cg.name == 'joint_gripper':
+                joint_state.name.append('joint_gripper_finger_left')
+                joint_state.name.append('joint_gripper_finger_right')
+                pos, vel, effort = cg.joint_state(robot_status, robot_mode=self.robot_mode,
+                                                manipulation_origin=self.mobile_base_manipulation_origin)
+                joint_state.position.append(pos)
+                joint_state.position.append(pos)
+                joint_state.velocity.append(vel)
+                joint_state.velocity.append(vel)
+                joint_state.effort.append(effort)
+                joint_state.effort.append(effort)
+            else:
+                joint_state.name.append(cg.name)
+                pos, vel, effort = cg.joint_state(robot_status, robot_mode=self.robot_mode,
+                                                manipulation_origin=self.mobile_base_manipulation_origin)
+                joint_state.position.append(pos)
+                joint_state.velocity.append(vel)
+                joint_state.effort.append(effort)
         self.joint_state_pub.publish(joint_state)
 
         ##################################################
