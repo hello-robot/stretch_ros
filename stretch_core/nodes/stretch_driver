@@ -351,35 +351,7 @@ class StretchBodyNode:
             self.robot.base.enable_pos_incr_mode()
         self.change_mode('position', code_to_run)
 
-    def calibrate(self):
-        def code_to_run():
-            self.robot.lift.home()
-            self.robot.arm.home()
-        self.change_mode('calibration', code_to_run)
-
     ######## SERVICE CALLBACKS #######
-
-    def stop_the_robot_callback(self, request):
-        with self.robot_stop_lock:
-            self.stop_the_robot = True
-
-            self.robot.base.translate_by(0.0)
-            self.robot.base.rotate_by(0.0)
-            self.robot.arm.move_by(0.0)
-            self.robot.lift.move_by(0.0)
-            self.robot.push_command()
-
-            self.robot.head.move_by('head_pan', 0.0)
-            self.robot.head.move_by('head_tilt', 0.0)
-            for joint in self.robot.end_of_arm.joints:
-                self.robot.end_of_arm.move_by(joint, 0.0)
-            self.robot.push_command()
-
-        rospy.loginfo('Received stop_the_robot service call, so commanded all actuators to stop.')
-        return TriggerResponse(
-            success=True,
-            message='Stopped the robot.'
-            )
 
     def navigation_mode_service_callback(self, request):
         self.turn_on_navigation_mode()
@@ -400,6 +372,36 @@ class StretchBodyNode:
         return TriggerResponse(
             success=True,
             message='Now in position mode.'
+            )
+
+    def homing_service_callback(self, request):
+        self.robot.home()
+        rospy.loginfo('Robot is homed!')
+        return TriggerResponse(
+            success=True,
+            message='Robot is homed.'
+            )
+
+    def stop_the_robot_service_callback(self, request):
+        with self.robot_stop_lock:
+            self.stop_the_robot = True
+
+            self.robot.base.translate_by(0.0)
+            self.robot.base.rotate_by(0.0)
+            self.robot.arm.move_by(0.0)
+            self.robot.lift.move_by(0.0)
+            self.robot.push_command()
+
+            self.robot.head.move_by('head_pan', 0.0)
+            self.robot.head.move_by('head_tilt', 0.0)
+            for joint in self.robot.end_of_arm.joints:
+                self.robot.end_of_arm.move_by(joint, 0.0)
+            self.robot.push_command()
+
+        rospy.loginfo('Received stop_the_robot service call, so commanded all actuators to stop.')
+        return TriggerResponse(
+            success=True,
+            message='Stopped the robot.'
             )
 
     def runstop_service_callback(self, request):
@@ -518,9 +520,8 @@ class StretchBodyNode:
 
         self.robot = rb.Robot()
         self.robot.startup()
-
-        # TODO: check with the actuators to see if calibration is required
-        #self.calibrate()
+        if not self.robot.is_calibrated():
+            rospy.logwarn("Robot isn't homed!")
 
         self.joint_state_pub = rospy.Publisher('joint_states', JointState, queue_size=1)
 
@@ -551,9 +552,13 @@ class StretchBodyNode:
                                                              Trigger,
                                                              self.position_mode_service_callback)
         
+        self.homing_service = rospy.Service('/trigger_homing_sequence',
+                                            Trigger,
+                                            self.homing_service_callback)
+
         self.stop_the_robot_service = rospy.Service('/stop_the_robot',
                                                     Trigger,
-                                                    self.stop_the_robot_callback)
+                                                    self.stop_the_robot_service_callback)
 
         self.runstop_service = rospy.Service('/runstop',
                                               SetBool,
