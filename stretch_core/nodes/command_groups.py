@@ -151,6 +151,21 @@ class SimpleCommandGroup:
         """
         raise NotImplementedError
 
+    def joint_state(self, robot_status, **kwargs):
+        """Returns joint state of the robot
+
+        Parameters
+        ----------
+        robot_status: dict
+            robot's current status
+
+        Returns
+        -------
+        (float, float, float)
+            Current position, velocity, and effort
+        """
+        raise NotImplementedError
+
     def goal_reached(self):
         """Returns whether reached target point
 
@@ -166,38 +181,39 @@ class SimpleCommandGroup:
 
 
 class HeadPanCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_rad, head_pan_calibrated_offset, head_pan_calibrated_looked_left_offset, robot=None):
+    def __init__(self, range_rad, head_pan_calibrated_offset_rad, head_pan_calibrated_looked_left_offset_rad, robot=None):
         if range_rad is None and robot is not None:
             range_ticks = robot.head.motors['head_pan'].params['range_t']
             range_rad = (robot.head.motors['head_pan'].ticks_to_world_rad(range_ticks[1]),
                          robot.head.motors['head_pan'].ticks_to_world_rad(range_ticks[0]))
         SimpleCommandGroup.__init__(self, 'joint_head_pan', range_rad, acceptable_joint_error=0.15)
-        self.head_pan_calibrated_offset = head_pan_calibrated_offset
-        self.head_pan_calibrated_looked_left_offset = head_pan_calibrated_looked_left_offset
+        self.calibrated_offset_rad = head_pan_calibrated_offset_rad
+        self.calibrated_looked_left_offset_rad = head_pan_calibrated_looked_left_offset_rad
+        self.looked_left = False
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            _, pan_error = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
+            _, pan_error = self.update_execution(robot_status)
             robot.head.move_by('head_pan', pan_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
-            if pan_error > 0.0:
-                kwargs['backlash_state']['head_pan_looked_left'] = True
-            else:
-                kwargs['backlash_state']['head_pan_looked_left'] = False
+            self.looked_left = True if pan_error > 0.0 else False
 
     def update_execution(self, robot_status, **kwargs):
         self.error = None
-        backlash_state = kwargs['backlash_state']
         if self.active:
-            if backlash_state['head_pan_looked_left']:
-                pan_backlash_correction = self.head_pan_calibrated_looked_left_offset
-            else:
-                pan_backlash_correction = 0.0
-            pan_current = robot_status['head']['head_pan']['pos'] + \
-                          self.head_pan_calibrated_offset + pan_backlash_correction
+            pan_backlash_correction = self.calibrated_looked_left_offset_rad if self.looked_left else 0.0
+            pan_current = robot_status['head']['head_pan']['pos'] + self.calibrated_offset_rad + pan_backlash_correction
             self.error = self.goal['position'] - pan_current
             return self.name, self.error
 
         return None
+
+    def joint_state(self, robot_status, **kwargs):
+        pan_status = robot_status['head']['head_pan']
+        pan_backlash_correction = self.calibrated_looked_left_offset_rad if self.looked_left else 0.0
+        pos = pan_status['pos'] + self.calibrated_offset_rad + pan_backlash_correction
+        vel = pan_status['vel']
+        effort = pan_status['effort']
+        return (pos, vel, effort)
 
 
 class HeadTiltCommandGroup(SimpleCommandGroup):

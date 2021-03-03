@@ -171,18 +171,8 @@ class StretchBodyNode:
                 print('gripper_finger_rad =', gripper_finger_rad)
                 print('-----------------------')
 
-        if self.use_robotis_head: 
-            # assign relevant head pan status to variables
-            head_pan_status = robot_status['head']['head_pan']
-            if self.backlash_state['head_pan_looked_left']:
-                pan_backlash_correction = self.head_pan_calibrated_looked_left_offset_rad 
-            else:
-                pan_backlash_correction = 0.0
-            if BACKLASH_DEBUG: 
-                print('pan_backlash_correction =', pan_backlash_correction)
-            head_pan_rad = head_pan_status['pos'] + self.head_pan_calibrated_offset_rad + pan_backlash_correction
-            head_pan_vel = head_pan_status['vel']
-            head_pan_effort = head_pan_status['effort']
+        if self.use_robotis_head:
+            head_pan_rad, head_pan_vel, head_pan_effort = self.joint_trajectory_action.command_groups[0].joint_state(robot_status)
 
             # assign relevant head tilt status to variables
             head_tilt_status = robot_status['head']['head_tilt']
