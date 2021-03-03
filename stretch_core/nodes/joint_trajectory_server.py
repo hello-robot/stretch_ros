@@ -66,7 +66,6 @@ class JointTrajectoryAction:
             else:
                 module_name = self.node.robot.end_of_arm.params['devices'][joint].get('ros_py_module_name')
                 class_name = self.node.robot.end_of_arm.params['devices'][joint].get('ros_py_class_name')
-                print(class_name)
                 if module_name and class_name:
                     endofarm_device = getattr(importlib.import_module(module_name), class_name)(None, self.node.robot)
                     self.command_groups.append(endofarm_device)
