@@ -12,7 +12,7 @@ from trajectory_msgs.msg import JointTrajectoryPoint
 
 from command_groups import HeadPanCommandGroup, HeadTiltCommandGroup, \
                            WristYawCommandGroup, GripperCommandGroup, \
-                           TelescopingCommandGroup, LiftCommandGroup, \
+                           ArmCommandGroup, LiftCommandGroup, \
                            MobileBaseCommandGroup
 
 
@@ -27,7 +27,8 @@ class JointTrajectoryAction:
         self.feedback = FollowJointTrajectoryFeedback()
         self.result = FollowJointTrajectoryResult()
 
-        # Setup main command groups
+        # Default command groups
+        self.command_groups = []
         self.head_pan_cg = HeadPanCommandGroup(None, self.node.head_pan_calibrated_offset_rad,
                                                self.node.head_pan_calibrated_looked_left_offset_rad,
                                                self.node.robot)
@@ -36,25 +37,35 @@ class JointTrajectoryAction:
                                                  self.node.head_tilt_calibrated_looking_up_offset_rad,
                                                  self.node.head_tilt_backlash_transition_angle_rad,
                                                  self.node.robot)
-        self.telescoping_cg = TelescopingCommandGroup(None,
-                                                      self.node.wrist_extension_calibrated_retracted_offset_m,
-                                                      self.node.robot)
+        self.arm_cg = ArmCommandGroup(None, self.node.wrist_extension_calibrated_retracted_offset_m,
+                                      self.node.robot)
         self.lift_cg = LiftCommandGroup(None, self.node.robot)
         self.mobile_base_cg = MobileBaseCommandGroup(virtual_range_m=(-0.5, 0.5))
-        self.command_groups = [self.head_pan_cg, self.head_tilt_cg, self.telescoping_cg,
-                               self.lift_cg, self.mobile_base_cg]
+        self.wrist_yaw_cg = WristYawCommandGroup(None, self.node.robot)
+        self.gripper_cg = GripperCommandGroup(None, self.node.robot)
+        device_cmdgroup_map = {"head_pan": self.head_pan_cg,
+                               "head_tilt": self.head_tilt_cg,
+                               "arm": self.arm_cg,
+                               "lift": self.lift_cg,
+                               "base": self.mobile_base_cg,
+                               "wrist_yaw": self.wrist_yaw_cg,
+                               "stretch_gripper": self.gripper_cg}
+
+        # Setup main command groups
+        active_devices = [k for k in self.node.robot.devices.keys() if self.node.robot.devices.get(k) is not None]
+        if self.node.robot.head is not None:
+            active_devices.extend(self.node.robot.head.joints)
+        for device in active_devices:
+            if device_cmdgroup_map.get(device) is not None:
+                self.command_groups.append(device_cmdgroup_map.get(device))
 
         # Setup end of arm
-        for j in self.node.robot.end_of_arm.joints:
-            if j == "stretch_gripper":
-                self.gripper_cg = GripperCommandGroup(None, self.node.robot)
-                self.command_groups.append(self.gripper_cg)
-            elif j == "wrist_yaw":
-                self.wrist_yaw_cg = WristYawCommandGroup(None, self.node.robot)
-                self.command_groups.append(self.wrist_yaw_cg)
+        for joint in self.node.robot.end_of_arm.joints:
+            if joint in device_cmdgroup_map.keys():
+                self.command_groups.append(device_cmdgroup_map.get(joint))
             else:
-                module_name = self.node.robot.end_of_arm.params['devices'][j].get('ros_py_module_name')
-                class_name = self.node.robot.end_of_arm.params['devices'][j].get('ros_py_class_name')
+                module_name = self.node.robot.end_of_arm.params['devices'][joint].get('ros_py_module_name')
+                class_name = self.node.robot.end_of_arm.params['devices'][joint].get('ros_py_class_name')
                 if module_name and class_name:
                     endofarm_device = getattr(importlib.import_module(module_name), class_name)(None, self.node.robot)
                     self.command_groups.append(endofarm_device)

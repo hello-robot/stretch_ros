@@ -182,7 +182,7 @@ class SimpleCommandGroup:
 
 class HeadPanCommandGroup(SimpleCommandGroup):
     def __init__(self, range_rad, head_pan_calibrated_offset_rad, head_pan_calibrated_looked_left_offset_rad, robot=None):
-        if range_rad is None and robot is not None:
+        if range_rad is None and robot is not None and robot.head is not None:
             range_ticks = robot.head.motors['head_pan'].params['range_t']
             range_rad = (robot.head.motors['head_pan'].ticks_to_world_rad(range_ticks[1]),
                          robot.head.motors['head_pan'].ticks_to_world_rad(range_ticks[0]))
@@ -220,7 +220,7 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
     def __init__(self, range_rad, head_tilt_calibrated_offset_rad,
                  head_tilt_calibrated_looking_up_offset_rad,
                  head_tilt_backlash_transition_angle_rad, robot=None):
-        if range_rad is None and robot is not None:
+        if range_rad is None and robot is not None and robot.head is not None:
             range_ticks = robot.head.motors['head_tilt'].params['range_t']
             range_rad = (robot.head.motors['head_tilt'].ticks_to_world_rad(range_ticks[1]),
                          robot.head.motors['head_tilt'].ticks_to_world_rad(range_ticks[0]))
@@ -257,7 +257,8 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
 
 class WristYawCommandGroup(SimpleCommandGroup):
     def __init__(self, range_rad, robot=None):
-        if range_rad is None and robot is not None:
+        if (range_rad is None and robot is not None and robot.end_of_arm is not None
+            and robot.end_of_arm.is_tool_present('WristYaw')):
             range_ticks = robot.end_of_arm.motors['wrist_yaw'].params['range_t']
             range_rad = (robot.end_of_arm.motors['wrist_yaw'].ticks_to_world_rad(range_ticks[1]),
                          robot.end_of_arm.motors['wrist_yaw'].ticks_to_world_rad(range_ticks[0]))
@@ -285,19 +286,20 @@ class WristYawCommandGroup(SimpleCommandGroup):
 
 class GripperCommandGroup(SimpleCommandGroup):
     def __init__(self, range_robotis, robot=None):
-        if range_robotis is None and robot is not None:
+        if (range_robotis is None and robot is not None and robot.end_of_arm is not None
+            and robot.end_of_arm.is_tool_present('StretchGripper')):
             range_ticks = robot.end_of_arm.motors['stretch_gripper'].params['range_t']
             range_rad = (robot.end_of_arm.motors['stretch_gripper'].ticks_to_world_rad(range_ticks[0]),
                          robot.end_of_arm.motors['stretch_gripper'].ticks_to_world_rad(range_ticks[1]))
             range_robotis = (robot.end_of_arm.motors['stretch_gripper'].world_rad_to_pct(range_rad[0]),
                              robot.end_of_arm.motors['stretch_gripper'].world_rad_to_pct(range_rad[1]))
+            self.range_aperture_m = (self.gripper_conversion.robotis_to_aperture(range_robotis[0]),
+                                    self.gripper_conversion.robotis_to_aperture(range_robotis[1]))
+            self.range_finger_rad = (self.gripper_conversion.robotis_to_finger(range_robotis[0]),
+                                    self.gripper_conversion.robotis_to_finger(range_robotis[1]))
         SimpleCommandGroup.__init__(self, None, None, acceptable_joint_error=1.0)
         self.gripper_joint_names = ['joint_gripper_finger_left', 'joint_gripper_finger_right', 'gripper_aperture']
         self.gripper_conversion = GripperConversion()
-        self.range_aperture_m = (self.gripper_conversion.robotis_to_aperture(range_robotis[0]),
-                                 self.gripper_conversion.robotis_to_aperture(range_robotis[1]))
-        self.range_finger_rad = (self.gripper_conversion.robotis_to_finger(range_robotis[0]),
-                                 self.gripper_conversion.robotis_to_finger(range_robotis[1]))
 
     def update(self, commanded_joint_names, invalid_joints_callback, **kwargs):
         self.active = False
@@ -375,7 +377,7 @@ class GripperCommandGroup(SimpleCommandGroup):
 
 class ArmCommandGroup(SimpleCommandGroup):
     def __init__(self, range_m, wrist_extension_calibrated_retracted_offset_m, robot=None):
-        if range_m is None and robot is not None:
+        if range_m is None and robot is not None and robot.arm is not None:
             range_m = tuple(robot.arm.params['range_m'])
         SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.008)
         self.calibrated_retracted_offset_m = wrist_extension_calibrated_retracted_offset_m
@@ -493,7 +495,7 @@ class ArmCommandGroup(SimpleCommandGroup):
 
 class LiftCommandGroup(SimpleCommandGroup):
     def __init__(self, range_m, robot=None):
-        if range_m is None and robot is not None:
+        if range_m is None and robot is not None and robot.lift is not None:
             range_m = tuple(robot.lift.params['range_m'])
         SimpleCommandGroup.__init__(self, 'joint_lift', range_m)
 
