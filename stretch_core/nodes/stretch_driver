@@ -129,18 +129,7 @@ class StretchBodyNode:
             x_vel = 0.0
             x_effort = 0.0
 
-        # assign relevant arm status to variables
-        arm_status = robot_status['arm']
-        if self.backlash_state['wrist_extension_retracted']:
-            arm_backlash_correction = self.wrist_extension_calibrated_retracted_offset_m
-        else: 
-            arm_backlash_correction = 0.0
-
-        if BACKLASH_DEBUG: 
-            print('arm_backlash_correction =', arm_backlash_correction)
-        pos_out = arm_status['pos'] + arm_backlash_correction
-        vel_out = arm_status['vel']
-        eff_out = arm_status['motor']['effort']
+        pos_out, vel_out, eff_out = self.joint_trajectory_action.command_groups[2].joint_state(robot_status)
 
         lift_status = robot_status['lift']
         pos_up = lift_status['pos']

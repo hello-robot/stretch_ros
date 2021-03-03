@@ -373,14 +373,15 @@ class GripperCommandGroup(SimpleCommandGroup):
         return self.gripper_conversion.status_to_all(gripper_status)[1:]
 
 
-class TelescopingCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_m, wrist_extension_calibrated_retracted_offset, robot=None):
+class ArmCommandGroup(SimpleCommandGroup):
+    def __init__(self, range_m, wrist_extension_calibrated_retracted_offset_m, robot=None):
         if range_m is None and robot is not None:
             range_m = tuple(robot.arm.params['range_m'])
         SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.008)
-        self.wrist_extension_calibrated_retracted_offset = wrist_extension_calibrated_retracted_offset
+        self.calibrated_retracted_offset_m = wrist_extension_calibrated_retracted_offset_m
         self.telescoping_joints = ['joint_arm_l3', 'joint_arm_l2', 'joint_arm_l1', 'joint_arm_l0']
         self.is_telescoping = False
+        self.retracted = False
 
     def get_num_valid_commands(self):
         if self.active and self.is_telescoping:
@@ -460,35 +461,34 @@ class TelescopingCommandGroup(SimpleCommandGroup):
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            _, extension_error_m = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
+            _, extension_error_m = self.update_execution(robot_status)
             robot.arm.move_by(extension_error_m,
                               v_m=self.goal['velocity'],
                               a_m=self.goal['acceleration'],
                               contact_thresh_pos_N=self.goal['contact_threshold'],
                               contact_thresh_neg_N=-self.goal['contact_threshold'] \
                                                    if self.goal['contact_threshold'] is not None else None)
-            if extension_error_m < 0.0:
-                kwargs['backlash_state']['wrist_extension_retracted'] = True
-            else:
-                kwargs['backlash_state']['wrist_extension_retracted'] = False
+            self.retracted = True if extension_error_m < 0.0 else False
 
     def update_execution(self, robot_status, **kwargs):
-        backlash_state = kwargs['backlash_state']
         success_callback = kwargs['success_callback'] if 'success_callback' in kwargs.keys() else None
         self.error = None
         if self.active:
             if success_callback and robot_status['arm']['motor']['in_guarded_event']:
                 success_callback("{0} contact detected.".format(self.name))
                 return True
-            if backlash_state['wrist_extension_retracted']:
-                arm_backlash_correction = self.wrist_extension_calibrated_retracted_offset
-            else:
-                arm_backlash_correction = 0.0
+            arm_backlash_correction = self.calibrated_retracted_offset_m if self.retracted else 0.0
             extension_current = robot_status['arm']['pos'] + arm_backlash_correction
             self.error = self.goal['position'] - extension_current
             return (self.telescoping_joints, self.error) if self.is_telescoping else (self.name, self.error)
 
         return None
+
+    def joint_state(self, robot_status, **kwargs):
+        arm_status = robot_status['arm']
+        arm_backlash_correction = self.calibrated_retracted_offset_m if self.retracted else 0.0
+        pos = arm_status['pos'] + arm_backlash_correction
+        return (pos, arm_status['vel'], arm_status['motor']['effort'])
 
 
 class LiftCommandGroup(SimpleCommandGroup):
