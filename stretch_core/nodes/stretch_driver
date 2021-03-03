@@ -111,18 +111,19 @@ class StretchBodyNode:
 
         # obtain odometry
         # assign relevant base status to variables
-        base_status = robot_status['base']
-        x = base_status['x']
-        x_raw = x
-        y = base_status['y']
-        theta = base_status['theta']
-        x_vel = base_status['x_vel']
-        x_vel_raw = x_vel
-        y_vel = base_status['y_vel']
-        x_effort = base_status['effort'][0]
-        x_effort_raw = x_effort
-        theta_vel = base_status['theta_vel']
-        pose_time_s = base_status['pose_time_s']
+        if self.robot.base is not None:
+            base_status = robot_status['base']
+            x = base_status['x']
+            x_raw = x
+            y = base_status['y']
+            theta = base_status['theta']
+            x_vel = base_status['x_vel']
+            x_vel_raw = x_vel
+            y_vel = base_status['y_vel']
+            x_effort = base_status['effort'][0]
+            x_effort_raw = x_effort
+            theta_vel = base_status['theta_vel']
+            pose_time_s = base_status['pose_time_s']
 
         if self.robot_mode == 'manipulation':
             x = self.mobile_base_manipulation_origin['x']
@@ -313,10 +314,13 @@ class StretchBodyNode:
         # Navigation mode enables mobile base velocity control via
         # cmd_vel, and disables position-based control of the mobile
         # base.
+        if self.robot.base is None:
+            return False
         def code_to_run():
             self.linear_velocity_mps = 0.0
             self.angular_velocity_radps = 0.0
         self.change_mode('navigation', code_to_run)
+        return True
 
     def turn_on_manipulation_mode(self):
         # Manipulation mode enables mobile base translation using
@@ -327,6 +331,8 @@ class StretchBodyNode:
         # 'base_link'. This mode was originally created so that
         # MoveIt! could treat the robot like an arm. This mode does
         # not allow base rotation.
+        if self.robot.base is None:
+            return False
         def code_to_run():
             self.robot.base.enable_pos_incr_mode()
             # get copy of the current robot status (uses lock held by the robot)
@@ -339,6 +345,7 @@ class StretchBodyNode:
             theta = base_status['theta']
             self.mobile_base_manipulation_origin = {'x':x, 'y':y, 'theta':theta} 
         self.change_mode('manipulation', code_to_run)
+        return True
 
     def turn_on_position_mode(self):
         # Position mode enables mobile base translation and rotation
@@ -347,31 +354,60 @@ class StretchBodyNode:
         # mobile base. It does not update the virtual prismatic
         # joint. The frames associated with 'floor_link' and
         # 'base_link' become identical in this mode.
+        if self.robot.base is None:
+            return False
         def code_to_run():
             self.robot.base.enable_pos_incr_mode()
         self.change_mode('position', code_to_run)
+        return True
+
+    def stop_robot(self):
+        if self.robot.base is not None:
+            self.robot.base.translate_by(0.0)
+            self.robot.base.rotate_by(0.0)
+        if self.robot.arm is not None:
+            self.robot.arm.move_by(0.0)
+        if self.robot.lift is not None:
+            self.robot.lift.move_by(0.0)
+        self.robot.push_command()
+
+        if self.robot.head is not None:
+            self.robot.head.move_by('head_pan', 0.0)
+            self.robot.head.move_by('head_tilt', 0.0)
+        for joint in self.robot.end_of_arm.joints:
+            self.robot.end_of_arm.move_by(joint, 0.0)
+        self.robot.push_command()
 
     ######## SERVICE CALLBACKS #######
 
     def navigation_mode_service_callback(self, request):
-        self.turn_on_navigation_mode()
+        msg = 'Now in navigation mode.'
+        result = self.turn_on_navigation_mode()
+        if not result:
+            msg = 'Robot base is not active'
         return TriggerResponse(
-            success=True,
-            message='Now in navigation mode.'
+            success=result,
+            message=msg
             )
 
     def manipulation_mode_service_callback(self, request):
-        self.turn_on_manipulation_mode()
+        msg = 'Now in manipulation mode.'
+        result = self.turn_on_manipulation_mode()
+        if not result:
+            msg = 'Robot base is not active'
         return TriggerResponse(
-            success=True,
-            message='Now in manipulation mode.'
+            success=result,
+            message=msg
             )
 
     def position_mode_service_callback(self, request):
-        self.turn_on_position_mode()
+        msg = 'Now in position mode.'
+        result = self.turn_on_position_mode()
+        if not result:
+            msg = 'Robot base is not active'
         return TriggerResponse(
-            success=True,
-            message='Now in position mode.'
+            success=result,
+            message=msg
             )
 
     def homing_service_callback(self, request):
@@ -385,18 +421,7 @@ class StretchBodyNode:
     def stop_the_robot_service_callback(self, request):
         with self.robot_stop_lock:
             self.stop_the_robot = True
-
-            self.robot.base.translate_by(0.0)
-            self.robot.base.rotate_by(0.0)
-            self.robot.arm.move_by(0.0)
-            self.robot.lift.move_by(0.0)
-            self.robot.push_command()
-
-            self.robot.head.move_by('head_pan', 0.0)
-            self.robot.head.move_by('head_tilt', 0.0)
-            for joint in self.robot.end_of_arm.joints:
-                self.robot.end_of_arm.move_by(joint, 0.0)
-            self.robot.push_command()
+            self.stop_robot()
 
         rospy.loginfo('Received stop_the_robot service call, so commanded all actuators to stop.')
         return TriggerResponse(
@@ -408,18 +433,7 @@ class StretchBodyNode:
         if request.data:
             with self.robot_stop_lock:
                 self.stop_the_robot = True
-
-                self.robot.base.translate_by(0.0)
-                self.robot.base.rotate_by(0.0)
-                self.robot.arm.move_by(0.0)
-                self.robot.lift.move_by(0.0)
-                self.robot.push_command()
-
-                self.robot.head.move_by('head_pan', 0.0)
-                self.robot.head.move_by('head_tilt', 0.0)
-                for joint in self.robot.end_of_arm.joints:
-                    self.robot.end_of_arm.move_by(joint, 0.0)
-                self.robot.push_command()
+                self.stop_robot()
 
             self.robot.pimu.runstop_event_trigger()
         else:
