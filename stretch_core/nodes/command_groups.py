@@ -520,6 +520,10 @@ class LiftCommandGroup(SimpleCommandGroup):
 
         return None
 
+    def joint_state(self, robot_status, **kwargs):
+        lift_status = robot_status['lift']
+        return (lift_status['pos'], lift_status['vel'], lift_status['motor']['effort'])
+
 
 class MobileBaseCommandGroup(SimpleCommandGroup):
     def __init__(self, virtual_range_m=(-0.5, 0.5)):

@@ -29,8 +29,6 @@ from std_msgs.msg import Header
 
 from joint_trajectory_server import JointTrajectoryAction
 
-BACKLASH_DEBUG = False
-
 
 class StretchBodyNode:
 
@@ -44,11 +42,6 @@ class StretchBodyNode:
         # Initialize calibration offsets
         self.head_tilt_calibrated_offset_rad = 0.0
         self.head_pan_calibrated_offset_rad = 0.0
-
-        # Initialize backlash state
-        self.backlash_state = {'head_tilt_looking_up' : False,
-                               'head_pan_looked_left' : False,
-                               'wrist_extension_retracted' : False}
 
         # Initialize backlash offsets
         self.head_pan_calibrated_looked_left_offset_rad = 0.0
@@ -80,43 +73,31 @@ class StretchBodyNode:
     def command_mobile_base_velocity_and_publish_state(self):
         self.robot_mode_rwlock.acquire_read()
 
-        if BACKLASH_DEBUG:
-            print('***')
-            print('self.backlash_state =', self.backlash_state)
-
-        # set new mobile base velocities, if appropriate
-        # check on thread safety for this with callback that sets velocity command values
+        # set new mobile base velocities
         if self.robot_mode == 'navigation': 
             time_since_last_twist = rospy.get_time() - self.last_twist_time
             if time_since_last_twist < self.timeout:
                 self.robot.base.set_velocity(self.linear_velocity_mps, self.angular_velocity_radps)
                 self.robot.push_command()
             else:
-                # Too much information in general, although it could be blocked, since it's just INFO.
+                # Watchdog timer ends motion if no communication within timeout
                 self.robot.base.set_velocity(0.0, 0.0)
                 self.robot.push_command()
 
-        # get copy of the current robot status (uses lock held by the robot)
-        robot_status = self.robot.get_status()
-
-
-        # In the future, consider using time stamps from the robot's
+        # TODO: In the future, consider using time stamps from the robot's
         # motor control boards and other boards. These would need to
         # be synchronized with the rospy clock.
-        #robot_time = robot_status['timestamp_pc']
-        #rospy.loginfo('robot_time =', robot_time)        
-        #current_time = rospy.Time.from_sec(robot_time)
-
         current_time = rospy.Time.now()
+        robot_status = self.robot.get_status()
 
         # obtain odometry
-        # assign relevant base status to variables
         if self.robot.base is not None:
             base_status = robot_status['base']
             x = base_status['x']
             x_raw = x
             y = base_status['y']
             theta = base_status['theta']
+            q = tf_conversions.transformations.quaternion_from_euler(0, 0, theta)
             x_vel = base_status['x_vel']
             x_vel_raw = x_vel
             y_vel = base_status['y_vel']
@@ -124,18 +105,13 @@ class StretchBodyNode:
             x_effort_raw = x_effort
             theta_vel = base_status['theta_vel']
             pose_time_s = base_status['pose_time_s']
-
         if self.robot_mode == 'manipulation':
             x = self.mobile_base_manipulation_origin['x']
             x_vel = 0.0
             x_effort = 0.0
 
         pos_out, vel_out, eff_out = self.joint_trajectory_action.command_groups[2].joint_state(robot_status)
-
-        lift_status = robot_status['lift']
-        pos_up = lift_status['pos']
-        vel_up = lift_status['vel']
-        eff_up = lift_status['motor']['effort']
+        pos_up, vel_up, eff_up = self.joint_trajectory_action.command_groups[3].joint_state(robot_status)
 
         if self.use_robotis_end_of_arm:         
             wrist_rad, wrist_vel, wrist_effort = self.joint_trajectory_action.command_groups[5].joint_state(robot_status)
@@ -145,9 +121,7 @@ class StretchBodyNode:
             head_pan_rad, head_pan_vel, head_pan_effort = self.joint_trajectory_action.command_groups[0].joint_state(robot_status)
             head_tilt_rad, head_tilt_vel, head_tilt_effort = self.joint_trajectory_action.command_groups[1].joint_state(robot_status)
 
-        q = tf_conversions.transformations.quaternion_from_euler(0, 0, theta)
-
-        if self.broadcast_odom_tf: 
+        if self.broadcast_odom_tf:
             # publish odometry via TF
             t = TransformStamped()
             t.header.stamp = current_time
