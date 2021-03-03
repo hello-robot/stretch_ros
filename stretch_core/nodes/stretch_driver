@@ -27,11 +27,8 @@ from nav_msgs.msg import Odometry
 from sensor_msgs.msg import JointState, Imu, MagneticField
 from std_msgs.msg import Header
 
-import hello_helpers.hello_misc as hm
-from hello_helpers.gripper_conversion import GripperConversion
 from joint_trajectory_server import JointTrajectoryAction
 
-GRIPPER_DEBUG = False
 BACKLASH_DEBUG = False
 
 
@@ -58,8 +55,6 @@ class StretchBodyNode:
         self.head_tilt_calibrated_looking_up_offset_rad = 0.0
         self.wrist_extension_calibrated_retracted_offset_m = 0.0
         self.head_tilt_backlash_transition_angle_rad = -0.4
-
-        self.gripper_conversion = GripperConversion()
 
         self.mobile_base_manipulation_origin = None #{'x':None, 'y':None, 'theta':None}
 
@@ -154,18 +149,7 @@ class StretchBodyNode:
 
         if self.use_robotis_end_of_arm:         
             wrist_rad, wrist_vel, wrist_effort = self.joint_trajectory_action.command_groups[5].joint_state(robot_status)
-
-            # assign relevant gripper status to variables
-            gripper_status = robot_status['end_of_arm']['stretch_gripper']
-            if GRIPPER_DEBUG: 
-                print('-----------------------')
-                print('gripper_status[\'pos\'] =', gripper_status['pos'])
-                print('gripper_status[\'pos_pct\'] =', gripper_status['pos_pct'])
-            gripper_aperture_m, gripper_finger_rad, gripper_finger_effort, gripper_finger_vel = self.gripper_conversion.status_to_all(gripper_status)
-            if GRIPPER_DEBUG: 
-                print('gripper_aperture_m =', gripper_aperture_m)
-                print('gripper_finger_rad =', gripper_finger_rad)
-                print('-----------------------')
+            gripper_finger_rad, gripper_finger_effort, gripper_finger_vel = self.joint_trajectory_action.command_groups[6].joint_state(robot_status)
 
         if self.use_robotis_head:
             head_pan_rad, head_pan_vel, head_pan_effort = self.joint_trajectory_action.command_groups[0].joint_state(robot_status)

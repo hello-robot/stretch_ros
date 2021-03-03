@@ -368,6 +368,10 @@ class GripperCommandGroup(SimpleCommandGroup):
 
         return None
 
+    def joint_state(self, robot_status, **kwargs):
+        gripper_status = robot_status['end_of_arm']['stretch_gripper']
+        return self.gripper_conversion.status_to_all(gripper_status)[1:]
+
 
 class TelescopingCommandGroup(SimpleCommandGroup):
     def __init__(self, range_m, wrist_extension_calibrated_retracted_offset, robot=None):
