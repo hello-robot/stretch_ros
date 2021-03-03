@@ -278,6 +278,10 @@ class WristYawCommandGroup(SimpleCommandGroup):
 
         return None
 
+    def joint_state(self, robot_status, **kwargs):
+        yaw_status = robot_status['end_of_arm']['wrist_yaw']
+        return (yaw_status['pos'], yaw_status['vel'], yaw_status['effort'])
+
 
 class GripperCommandGroup(SimpleCommandGroup):
     def __init__(self, range_robotis, robot=None):

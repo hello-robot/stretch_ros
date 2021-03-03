@@ -153,11 +153,7 @@ class StretchBodyNode:
         eff_up = lift_status['motor']['effort']
 
         if self.use_robotis_end_of_arm:         
-            # assign relevant wrist status to variables
-            wrist_status = robot_status['end_of_arm']['wrist_yaw']
-            wrist_rad = wrist_status['pos']
-            wrist_vel = wrist_status['vel']
-            wrist_effort = wrist_status['effort']
+            wrist_rad, wrist_vel, wrist_effort = self.joint_trajectory_action.command_groups[5].joint_state(robot_status)
 
             # assign relevant gripper status to variables
             gripper_status = robot_status['end_of_arm']['stretch_gripper']
