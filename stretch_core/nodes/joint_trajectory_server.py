@@ -66,6 +66,7 @@ class JointTrajectoryAction:
             else:
                 module_name = self.node.robot.end_of_arm.params['devices'][joint].get('ros_py_module_name')
                 class_name = self.node.robot.end_of_arm.params['devices'][joint].get('ros_py_class_name')
+                print(class_name)
                 if module_name and class_name:
                     endofarm_device = getattr(importlib.import_module(module_name), class_name)(None, self.node.robot)
                     self.command_groups.append(endofarm_device)
@@ -125,7 +126,7 @@ class JointTrajectoryAction:
                 return
 
             robot_status = self.node.robot.get_status() # uses lock held by robot
-            [c.init_execution(self.node.robot, robot_status, backlash_state=self.node.backlash_state)
+            [c.init_execution(self.node.robot, robot_status)
              for c in self.command_groups]
             self.node.robot.push_command()
 
@@ -153,8 +154,7 @@ class JointTrajectoryAction:
                         return
 
                 robot_status = self.node.robot.get_status()
-                named_errors = [c.update_execution(robot_status, success_callback=self.success_callback,
-                                                   backlash_state=self.node.backlash_state)
+                named_errors = [c.update_execution(robot_status, success_callback=self.success_callback)
                                 for c in self.command_groups]
                 if any(ret == True for ret in named_errors):
                     self.node.robot_mode_rwlock.release_read()

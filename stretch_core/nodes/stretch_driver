@@ -110,121 +110,46 @@ class StretchBodyNode:
             x_vel = 0.0
             x_effort = 0.0
 
-        pos_out, vel_out, eff_out = self.joint_trajectory_action.command_groups[2].joint_state(robot_status)
-        pos_up, vel_up, eff_up = self.joint_trajectory_action.command_groups[3].joint_state(robot_status)
+            if self.broadcast_odom_tf:
+                # publish odometry via TF
+                t = TransformStamped()
+                t.header.stamp = current_time
+                t.header.frame_id = self.odom_frame_id
+                t.child_frame_id = self.base_frame_id
+                t.transform.translation.x = x
+                t.transform.translation.y = y
+                t.transform.translation.z = 0.0
+                t.transform.rotation.x = q[0]
+                t.transform.rotation.y = q[1]
+                t.transform.rotation.z = q[2]
+                t.transform.rotation.w = q[3]
+                self.tf_broadcaster.sendTransform(t)
 
-        if self.use_robotis_end_of_arm:         
-            wrist_rad, wrist_vel, wrist_effort = self.joint_trajectory_action.command_groups[5].joint_state(robot_status)
-            gripper_finger_rad, gripper_finger_effort, gripper_finger_vel = self.joint_trajectory_action.command_groups[6].joint_state(robot_status)
+            # publish odometry via the odom topic
+            odom = Odometry()
+            odom.header.stamp = current_time
+            odom.header.frame_id = self.odom_frame_id
+            odom.child_frame_id = self.base_frame_id
+            odom.pose.pose.position.x = x
+            odom.pose.pose.position.y = y
+            odom.pose.pose.orientation.x = q[0]
+            odom.pose.pose.orientation.y = q[1]
+            odom.pose.pose.orientation.z = q[2]
+            odom.pose.pose.orientation.w = q[3]
+            odom.twist.twist.linear.x = x_vel
+            odom.twist.twist.angular.z = theta_vel
+            self.odom_pub.publish(odom)
 
-        if self.use_robotis_head:
-            head_pan_rad, head_pan_vel, head_pan_effort = self.joint_trajectory_action.command_groups[0].joint_state(robot_status)
-            head_tilt_rad, head_tilt_vel, head_tilt_effort = self.joint_trajectory_action.command_groups[1].joint_state(robot_status)
-
-        if self.broadcast_odom_tf:
-            # publish odometry via TF
-            t = TransformStamped()
-            t.header.stamp = current_time
-            t.header.frame_id = self.odom_frame_id
-            t.child_frame_id = self.base_frame_id
-            t.transform.translation.x = x
-            t.transform.translation.y = y
-            t.transform.translation.z = 0.0
-            t.transform.rotation.x = q[0]
-            t.transform.rotation.y = q[1]
-            t.transform.rotation.z = q[2]
-            t.transform.rotation.w = q[3]
-            self.tf_broadcaster.sendTransform(t)
-
-        # publish odometry via the odom topic
-        odom = Odometry()
-        odom.header.stamp = current_time
-        odom.header.frame_id = self.odom_frame_id
-        odom.child_frame_id = self.base_frame_id
-        odom.pose.pose.position.x = x
-        odom.pose.pose.position.y = y
-        odom.pose.pose.orientation.x = q[0]
-        odom.pose.pose.orientation.y = q[1]
-        odom.pose.pose.orientation.z = q[2]
-        odom.pose.pose.orientation.w = q[3]
-        odom.twist.twist.linear.x = x_vel
-        odom.twist.twist.angular.z = theta_vel
-        self.odom_pub.publish(odom)
-
-        # publish joint state for the arm
+        # publish joint state
         joint_state = JointState()
         joint_state.header.stamp = current_time
-        # joint_arm_l3 is the most proximal and joint_arm_l0 is the
-        # most distal joint of the telescoping arm model. The joints
-        # are connected in series such that moving the most proximal
-        # joint moves all the other joints in the global frame.
-        joint_state.name = ['wrist_extension', 'joint_lift', 'joint_arm_l3', 'joint_arm_l2', 'joint_arm_l1', 'joint_arm_l0']
-
-        # set positions of the telescoping joints
-        positions = [pos_out/4.0 for i in xrange(4)]
-        # set lift position
-        positions.insert(0, pos_up)
-        # set wrist_extension position
-        positions.insert(0, pos_out)
-
-        # set velocities of the telescoping joints
-        velocities = [vel_out/4.0 for i in xrange(4)]
-        # set lift velocity
-        velocities.insert(0, vel_up)
-        # set wrist_extension velocity
-        velocities.insert(0, vel_out)
-
-        # set efforts of the telescoping joints
-        efforts = [eff_out for i in xrange(4)]
-        # set lift effort
-        efforts.insert(0, eff_up)
-        # set wrist_extension effort
-        efforts.insert(0, eff_out)
-
-        if self.use_robotis_head:
-            head_joint_names = ['joint_head_pan', 'joint_head_tilt']
-            joint_state.name.extend(head_joint_names)
-
-            positions.append(head_pan_rad)
-            velocities.append(head_pan_vel)
-            efforts.append(head_pan_effort)
-
-            positions.append(head_tilt_rad)
-            velocities.append(head_tilt_vel)
-            efforts.append(head_tilt_effort)
-
-        if self.use_robotis_end_of_arm: 
-            end_of_arm_joint_names = ['joint_wrist_yaw', 'joint_gripper_finger_left', 'joint_gripper_finger_right']
-            joint_state.name.extend(end_of_arm_joint_names)
-
-            positions.append(wrist_rad)
-            velocities.append(wrist_vel)
-            efforts.append(wrist_effort)
-
-            positions.append(gripper_finger_rad)
-            velocities.append(gripper_finger_vel)
-            efforts.append(gripper_finger_effort)
-
-            positions.append(gripper_finger_rad)
-            velocities.append(gripper_finger_vel)
-            efforts.append(gripper_finger_effort)
-
-        # set virtual joint for mobile base translation
-        joint_state.name.append('joint_mobile_base_translation')
-        if self.robot_mode == 'manipulation':
-            manipulation_translation = x_raw - self.mobile_base_manipulation_origin['x']
-            positions.append(manipulation_translation)
-            velocities.append(x_vel_raw)
-            efforts.append(x_effort_raw)
-        else:
-            positions.append(0.0)
-            velocities.append(0.0)
-            efforts.append(0.0)
-
-        # set joint_state
-        joint_state.position = positions
-        joint_state.velocity = velocities
-        joint_state.effort = efforts
+        for cg in self.joint_trajectory_action.command_groups:
+            joint_state.name.append(cg.name)
+            pos, vel, effort = cg.joint_state(robot_status, robot_mode=self.robot_mode,
+                                              manipulation_origin=self.mobile_base_manipulation_origin)
+            joint_state.position.append(pos)
+            joint_state.velocity.append(vel)
+            joint_state.effort.append(effort)
         self.joint_state_pub.publish(joint_state)
 
         ##################################################
