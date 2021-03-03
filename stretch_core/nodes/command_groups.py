@@ -217,41 +217,42 @@ class HeadPanCommandGroup(SimpleCommandGroup):
 
 
 class HeadTiltCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_rad, head_tilt_calibrated_offset,
-                 head_tilt_calibrated_looking_up_offset,
-                 head_tilt_backlash_transition_angle, robot=None):
+    def __init__(self, range_rad, head_tilt_calibrated_offset_rad,
+                 head_tilt_calibrated_looking_up_offset_rad,
+                 head_tilt_backlash_transition_angle_rad, robot=None):
         if range_rad is None and robot is not None:
             range_ticks = robot.head.motors['head_tilt'].params['range_t']
             range_rad = (robot.head.motors['head_tilt'].ticks_to_world_rad(range_ticks[1]),
                          robot.head.motors['head_tilt'].ticks_to_world_rad(range_ticks[0]))
         SimpleCommandGroup.__init__(self, 'joint_head_tilt', range_rad, acceptable_joint_error=0.52)
-        self.head_tilt_calibrated_offset = head_tilt_calibrated_offset
-        self.head_tilt_calibrated_looking_up_offset = head_tilt_calibrated_looking_up_offset
-        self.head_tilt_backlash_transition_angle = head_tilt_backlash_transition_angle
+        self.calibrated_offset_rad = head_tilt_calibrated_offset_rad
+        self.calibrated_looking_up_offset_rad = head_tilt_calibrated_looking_up_offset_rad
+        self.backlash_transition_angle_rad = head_tilt_backlash_transition_angle_rad
+        self.looking_up = False
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            _, tilt_error = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
+            _, tilt_error = self.update_execution(robot_status)
             robot.head.move_by('head_tilt', tilt_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
-            if tilt_error > (self.head_tilt_backlash_transition_angle + self.head_tilt_calibrated_offset):
-                kwargs['backlash_state']['head_tilt_looking_up'] = True
-            else:
-                kwargs['backlash_state']['head_tilt_looking_up'] = False
+            self.looking_up = True if tilt_error > (self.backlash_transition_angle_rad + self.calibrated_offset_rad) else False
 
     def update_execution(self, robot_status, **kwargs):
         self.error = None
-        backlash_state = kwargs['backlash_state']
         if self.active:
-            if backlash_state['head_tilt_looking_up']:
-                tilt_backlash_correction = self.head_tilt_calibrated_looking_up_offset
-            else:
-                tilt_backlash_correction = 0.0
-            tilt_current = robot_status['head']['head_tilt']['pos'] + \
-                           self.head_tilt_calibrated_offset + tilt_backlash_correction
+            tilt_backlash_correction = self.calibrated_looking_up_offset_rad if self.looking_up else 0.0
+            tilt_current = robot_status['head']['head_tilt']['pos'] + self.calibrated_offset_rad + tilt_backlash_correction
             self.error = self.goal['position'] - tilt_current
             return self.name, self.error
 
         return None
+
+    def joint_state(self, robot_status, **kwargs):
+        tilt_status = robot_status['head']['head_tilt']
+        tilt_backlash_correction = self.calibrated_looking_up_offset_rad if self.looking_up else 0.0
+        pos = tilt_status['pos'] + self.calibrated_offset_rad + tilt_backlash_correction
+        vel = tilt_status['vel']
+        effort = tilt_status['effort']
+        return (pos, vel, effort)
 
 
 class WristYawCommandGroup(SimpleCommandGroup):
