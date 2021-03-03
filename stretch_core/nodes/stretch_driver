@@ -423,8 +423,8 @@ class StretchBodyNode:
 
             self.robot.head.move_by('head_pan', 0.0)
             self.robot.head.move_by('head_tilt', 0.0)
-            self.robot.end_of_arm.move_by('wrist_yaw', 0.0)
-            self.robot.end_of_arm.move_by('stretch_gripper', 0.0)
+            for joint in self.robot.end_of_arm.joints:
+                self.robot.end_of_arm.move_by(joint, 0.0)
             self.robot.push_command()
 
         rospy.loginfo('Received stop_the_robot service call, so commanded all actuators to stop.')
@@ -467,8 +467,8 @@ class StretchBodyNode:
 
                 self.robot.head.move_by('head_pan', 0.0)
                 self.robot.head.move_by('head_tilt', 0.0)
-                self.robot.end_of_arm.move_by('wrist_yaw', 0.0)
-                self.robot.end_of_arm.move_by('stretch_gripper', 0.0)
+                for joint in self.robot.end_of_arm.joints:
+                    self.robot.end_of_arm.move_by(joint, 0.0)
                 self.robot.push_command()
 
             self.robot.pimu.runstop_event_trigger()
