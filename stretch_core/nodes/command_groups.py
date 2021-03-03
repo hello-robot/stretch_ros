@@ -719,6 +719,18 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
 
         return None
 
+    def joint_state(self, robot_status, **kwargs):
+        robot_mode = kwargs['robot_mode']
+        manipulation_origin = kwargs['manipulation_origin']
+        base_status = robot_status['base']
+        if robot_mode == "manipulation":
+            pos = base_status['x'] - manipulation_origin['x']
+            vel = base_status['x_vel']
+            effort = base_status['effort'][0]
+            return (pos, vel, effort)
+
+        return (0, 0, 0)
+
     def goal_reached(self):
         if self.active:
             if self.active_translate_mobile_base or self.active_rotate_mobile_base:
