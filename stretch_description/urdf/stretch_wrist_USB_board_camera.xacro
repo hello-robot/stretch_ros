@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="stretch_wrist_USB_board_camera">
+
+  <xacro:property name="scale_finger_length" value="0.9" />
+
+<link
+    name="link_wrist_USB_board_camera">
+    <inertial>
+      <origin
+        xyz="1.28641098051663E-08 0.00459852852026477 -0.0123272098755484"
+        rpy="0 0 0" />
+      <mass
+        value="0.0301073591682589" />
+      <inertia
+        ixx="2.69187384806562E-06"
+        ixy="2.29933560827364E-12"
+        ixz="8.83055990248015E-12"
+        iyy="2.10702196845637E-06"
+        iyz="-7.34986313770783E-07"
+        izz="5.84851879864893E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description/meshes/link_wrist_USB_board_camera.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description/meshes/link_wrist_USB_board_camera.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_wrist_USB_board_camera"
+    type="fixed">
+    <origin
+      xyz="0 0.0123999999999988 -0.0800000000000089"
+      rpy="1.5707963267949 3.39210189245035E-29 -3.141592653589793" />
+    <parent
+      link="link_wrist_yaw" />
+    <child
+      link="link_wrist_USB_board_camera" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+
+</robot>
+
