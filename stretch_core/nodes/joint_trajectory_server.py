@@ -70,6 +70,9 @@ class JointTrajectoryAction:
                     endofarm_device = getattr(importlib.import_module(module_name), class_name)(None, self.node.robot)
                     self.command_groups.append(endofarm_device)
 
+        # Publish list of active joint to param sever
+        rospy.set_param('/stretch_controller/follow_joint_trajectory/joints', [cg.name for cg in self.command_groups])
+
     def execute_cb(self, goal):
         with self.node.robot_stop_lock:
             # Escape stopped mode to execute trajectory

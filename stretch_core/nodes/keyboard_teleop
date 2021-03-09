@@ -24,6 +24,8 @@ class GetKeyboardCommands:
         self.grasp_object_on = grasp_object_on
         self.deliver_object_on = deliver_object_on
 
+        self.joints = ['joint_lift', 'joint_mobile_base_translation', 'wrist_extension', 'joint_head_pan', 'joint_head_tilt', 'joint_wrist_yaw', 'gripper_aperture']
+
         self.step_size = 'medium'
         # self.persistent_command_count = 0
         # self.prev_persistent_c = None
@@ -50,39 +52,64 @@ class GetKeyboardCommands:
             deltas = {'rad': self.big_rad, 'translate': self.big_translate} 
         return deltas
 
+    def set_active_joints(self, joints):
+        self.joints = joints
+
     def print_commands(self):
-        print('---------- KEYBOARD TELEOP MENU -----------')
-        print('                                           ')
-        print('              i HEAD UP                    ')
-        print(' j HEAD LEFT            l HEAD RIGHT       ')
-        print('              , HEAD DOWN                  ')
-        print('                                           ')
-        print('                                           ')
-        print(' 7 BASE ROTATE LEFT     9 BASE ROTATE RIGHT')
-        print(' home                   page-up            ')
-        print('                                           ')
-        print('                                           ')
-        print('              8 LIFT UP                    ')
-        print('              up-arrow                     ')
-        print(' 4 BASE FORWARD         6 BASE BACK        ')
-        print(' left-arrow             right-arrow        ')
-        print('              2 LIFT DOWN                  ')
-        print('              down-arrow                   ')
-        print('                                           ')
-        print('                                           ')
-        print('              w ARM OUT                    ')
-        print(' a WRIST FORWARD        d WRIST BACK       ')
-        print('              x ARM IN                     ')
-        print('                                           ')
-        print('                                           ')
-        print('              5 GRIPPER CLOSE              ')
-        print('              0 GRIPPER OPEN               ')
-        print('                                           ')
-        print('  step size:  b BIG, m MEDIUM, s SMALL     ')
-        print('                                           ')
-        print('              q QUIT                       ')
-        print('                                           ')
-        print('-------------------------------------------')
+        print('|{:-^43}|'.format(' KEYBOARD TELEOP MENU '))
+        print('|{:^43}|'.format(''))
+
+        # head joints
+        if 'joint_head_tilt' in self.joints:
+            print('|{:^43}|'.format('i HEAD UP'))
+        if 'joint_head_pan' in self.joints:
+            print('|{:^22}{:^21}|'.format('j HEAD LEFT', 'l HEAD RIGHT'))
+        if 'joint_head_tilt' in self.joints:
+            print('|{:^43}|'.format(', HEAD DOWN'))
+
+        print('|{:^43}|'.format(''))
+        print('|{:^43}|'.format(''))
+
+        print('| 7 BASE ROTATE LEFT     9 BASE ROTATE RIGHT|')
+        print('| home                   page-up            |')
+
+        print('|{:^43}|'.format(''))
+        print('|{:^43}|'.format(''))
+
+        # base and lift joints
+        if 'joint_lift' in self.joints:
+            print('|{:^43}|'.format('8 LIFT UP'))
+            print('|{:^43}|'.format('up-arrow'))
+        print('| 4 BASE FORWARD         6 BASE BACK        |')
+        print('| left-arrow             right-arrow        |')
+        if 'joint_lift' in self.joints:
+            print('|{:^43}|'.format('2 LIFT DOWN'))
+            print('|{:^43}|'.format('down-arrow'))
+
+        print('|{:^43}|'.format(''))
+        print('|{:^43}|'.format(''))
+
+        # arm and wrist yaw joints
+        if 'joint_lift' in self.joints:
+            print('|{:^43}|'.format('w ARM OUT'))
+        if 'joint_wrist_yaw' in self.joints:
+            print('|{:^22}{:^21}|'.format('a WRIST FORWARD', 'd WRIST BACK'))
+        if 'joint_lift' in self.joints:
+            print('|{:^43}|'.format('x ARM IN'))
+
+        print('|{:^43}|'.format(''))
+        print('|{:^43}|'.format(''))
+
+        # gripper joint
+        if 'gripper_aperture' in self.joints:
+            print('|{:^43}|'.format('5 GRIPPER CLOSE'))
+            print('|{:^43}|'.format('0 GRIPPER OPEN'))
+
+        print('|{:^43}|'.format(''))
+        print('|{:^43}|'.format('step size:  b BIG, m MEDIUM, s SMALL'))
+        print('|{:^43}|'.format('q QUIT'))
+        print('|{:^43}|'.format(''))
+        print('|{:-^43}|'.format(''))
 
     def get_command(self, node):
         command = None
@@ -312,8 +339,10 @@ class KeyboardTeleopNode(hm.HelloNode):
 
     def main(self):
         hm.HelloNode.main(self, 'keyboard_teleop', 'keyboard_teleop', wait_for_first_pointcloud=False)
+        if rospy.has_param("/stretch_controller/follow_joint_trajectory/joints"):
+            self.keys.set_active_joints(rospy.get_param("/stretch_controller/follow_joint_trajectory/joints"))
 
-        if self.mapping_on: 
+        if self.mapping_on:
             rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /funmap/trigger_head_scan.')
 
             rospy.wait_for_service('/funmap/trigger_head_scan')
@@ -358,7 +387,6 @@ class KeyboardTeleopNode(hm.HelloNode):
             rospy.loginfo('Node ' + self.node_name + ' connected to /open_drawer/trigger_open_drawer_up.')
             self.trigger_open_drawer_up_service = rospy.ServiceProxy('/open_drawer/trigger_open_drawer_up', Trigger)
 
-            
         if self.clean_surface_on:
             rospy.wait_for_service('/clean_surface/trigger_clean_surface')
             rospy.loginfo('Node ' + self.node_name + ' connected to /clean_surface/trigger_clean_surface.')
@@ -377,7 +405,6 @@ class KeyboardTeleopNode(hm.HelloNode):
         rospy.Subscriber('/stretch/joint_states', JointState, self.joint_states_callback)
 
         rate = rospy.Rate(self.rate)
-
         while not rospy.is_shutdown():
             self.keys.print_commands()
             command = self.keys.get_command(self)

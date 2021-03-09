@@ -125,7 +125,7 @@ class GripperCommandGroup(SimpleCommandGroup):
                                     self.gripper_conversion.robotis_to_aperture(range_robotis[1]))
             self.range_finger_rad = (self.gripper_conversion.robotis_to_finger(range_robotis[0]),
                                     self.gripper_conversion.robotis_to_finger(range_robotis[1]))
-        SimpleCommandGroup.__init__(self, 'joint_gripper', None, acceptable_joint_error=1.0)
+        SimpleCommandGroup.__init__(self, 'gripper_aperture', None, acceptable_joint_error=1.0)
         self.gripper_joint_names = ['joint_gripper_finger_left', 'joint_gripper_finger_right', 'gripper_aperture']
 
     def update(self, commanded_joint_names, invalid_joints_callback, **kwargs):

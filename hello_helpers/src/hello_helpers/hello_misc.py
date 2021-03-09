@@ -67,9 +67,10 @@ def get_left_finger_state(joint_states):
     return [left_finger_position, left_finger_velocity, left_finger_effort]
 
 class HelloNode:
-    def __init__(self):
+    def __init__(self, verbose=True):
         self.joint_state = None
         self.point_cloud = None
+        self.verbose = verbose
 
     def joint_states_callback(self, joint_state):
         self.joint_state = joint_state
@@ -139,7 +140,8 @@ class HelloNode:
     def main(self, node_name, node_topic_namespace, wait_for_first_pointcloud=True):
         rospy.init_node(node_name)
         self.node_name = rospy.get_name()
-        rospy.loginfo("{0} started".format(self.node_name))
+        if self.verbose:
+            rospy.loginfo("{0} started".format(self.node_name))
 
         self.trajectory_client = actionlib.SimpleActionClient('/stretch_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
         server_reached = self.trajectory_client.wait_for_server(timeout=rospy.Duration(60.0))
@@ -154,7 +156,8 @@ class HelloNode:
         self.point_cloud_pub = rospy.Publisher('/' + node_topic_namespace + '/point_cloud2', PointCloud2, queue_size=1)
 
         rospy.wait_for_service('/stop_the_robot')
-        rospy.loginfo('Node ' + self.node_name + ' connected to /stop_the_robot service.')
+        if self.verbose:
+            rospy.loginfo('Node ' + self.node_name + ' connected to /stop_the_robot service.')
         self.stop_the_robot_service = rospy.ServiceProxy('/stop_the_robot', Trigger)
         
         if wait_for_first_pointcloud:

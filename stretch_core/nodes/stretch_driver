@@ -146,7 +146,7 @@ class StretchBodyNode:
         for cg in self.joint_trajectory_action.command_groups:
             pos, vel, effort = cg.joint_state(robot_status, robot_mode=self.robot_mode,
                                manipulation_origin=self.mobile_base_manipulation_origin)
-            if cg.name == 'joint_gripper':
+            if cg.name == 'gripper_aperture':
                 joint_state.name.append('joint_gripper_finger_left')
                 joint_state.name.append('joint_gripper_finger_right')
                 joint_state.position.append(pos)

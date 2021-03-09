@@ -1,5 +1,5 @@
 <launch>
-  
+
   <param name="robot_description" textfile="$(find stretch_description)/urdf/stretch.urdf" />
   <arg name="calibrated_controller_yaml_file" value="$(find stretch_core)/config/controller_calibration_head.yaml"/>
 
@@ -25,7 +25,7 @@
     </rosparam>
   </node>
   -->
-  
+
   <node
       name="robot_state_publisher"
       pkg="robot_state_publisher"
@@ -40,5 +40,5 @@
     <remap from="joint_states" to="/stretch/joint_states" />
     <param name="controller_calibration_file" type="string" value="$(arg calibrated_controller_yaml_file)"/>
   </node>
-  
+
 </launch>
