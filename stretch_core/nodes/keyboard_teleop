@@ -70,8 +70,10 @@ class GetKeyboardCommands:
         print('|{:^43}|'.format(''))
         print('|{:^43}|'.format(''))
 
-        print('| 7 BASE ROTATE LEFT     9 BASE ROTATE RIGHT|')
-        print('| home                   page-up            |')
+        # base joint
+        if 'joint_mobile_base_translation' in self.joints:
+            print('|{:^22}{:^21}|'.format('7 BASE ROTATE LEFT', '9 BASE ROTATE RIGHT'))
+            print('|{:^22}{:^21}|'.format('home', 'page-up'))
 
         print('|{:^43}|'.format(''))
         print('|{:^43}|'.format(''))
@@ -80,8 +82,9 @@ class GetKeyboardCommands:
         if 'joint_lift' in self.joints:
             print('|{:^43}|'.format('8 LIFT UP'))
             print('|{:^43}|'.format('up-arrow'))
-        print('| 4 BASE FORWARD         6 BASE BACK        |')
-        print('| left-arrow             right-arrow        |')
+        if 'joint_mobile_base_translation' in self.joints:
+            print('|{:^22}{:^21}|'.format('4 BASE FORWARD', '6 BASE BACK'))
+            print('|{:^22}{:^21}|'.format('left-arrow', 'right-arrow'))
         if 'joint_lift' in self.joints:
             print('|{:^43}|'.format('2 LIFT DOWN'))
             print('|{:^43}|'.format('down-arrow'))
@@ -99,6 +102,12 @@ class GetKeyboardCommands:
 
         print('|{:^43}|'.format(''))
         print('|{:^43}|'.format(''))
+
+        # dex joints
+        if 'joint_wrist_pitch' in self.joints:
+            print('|{:^22}{:^21}|'.format('c PITCH FORWARD', 'v PITCH BACK'))
+        if 'joint_wrist_roll' in self.joints:
+            print('|{:^22}{:^21}|'.format('o ROLL FORWARD', 'p ROLL BACK'))
 
         # gripper joint
         if 'gripper_aperture' in self.joints:
@@ -261,6 +270,14 @@ class GetKeyboardCommands:
             command = {'joint': 'joint_wrist_yaw', 'delta': -self.get_deltas()['rad']}
         if c == 'a' or c == 'A':
             command = {'joint': 'joint_wrist_yaw', 'delta': self.get_deltas()['rad']}
+        if c == 'c' or c == 'C':
+            command = {'joint': 'joint_wrist_pitch', 'delta': self.get_deltas()['rad']}
+        if c == 'v' or c == 'V':
+            command = {'joint': 'joint_wrist_pitch', 'delta': -self.get_deltas()['rad']}
+        if c == 'o' or c == 'O':
+            command = {'joint': 'joint_wrist_roll', 'delta': self.get_deltas()['rad']}
+        if c == 'p' or c == 'P':
+            command = {'joint': 'joint_wrist_roll', 'delta': -self.get_deltas()['rad']}
         if c == '5' or c == '\x1b[E' or c == 'g' or c == 'G':
             # grasp
             command = {'joint': 'joint_gripper_finger_left', 'delta': -self.get_deltas()['rad']}
@@ -276,13 +293,13 @@ class GetKeyboardCommands:
         if c == 'l' or c == 'L':
             command = {'joint': 'joint_head_pan', 'delta': -(2.0 * self.get_deltas()['rad'])}
         if c == 'b' or c == 'B':
-            rospy.loginfo('process_keyboard.py: changing to BIG step size')
+            rospy.loginfo('changing to BIG step size')
             self.step_size = 'big'
         if c == 'm' or c == 'M':
-            rospy.loginfo('process_keyboard.py: changing to MEDIUM step size')
+            rospy.loginfo('changing to MEDIUM step size')
             self.step_size = 'medium'
         if c == 's' or c == 'S':
-            rospy.loginfo('process_keyboard.py: changing to SMALL step size')
+            rospy.loginfo('changing to SMALL step size')
             self.step_size = 'small'
         if c == 'q' or c == 'Q':
             rospy.loginfo('keyboard_teleop exiting...')
