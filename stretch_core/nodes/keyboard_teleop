@@ -105,7 +105,7 @@ class GetKeyboardCommands:
 
         # dex joints
         if 'joint_wrist_pitch' in self.joints:
-            print('|{:^22}{:^21}|'.format('c PITCH FORWARD', 'v PITCH BACK'))
+            print('|{:^22}{:^21}|'.format('v PITCH FORWARD', 'c PITCH BACK'))
         if 'joint_wrist_roll' in self.joints:
             print('|{:^22}{:^21}|'.format('o ROLL FORWARD', 'p ROLL BACK'))
 

@@ -8,7 +8,9 @@ Panels:
         - /Status1
         - /RobotModel1
         - /RobotModel1/Links1
+        - /RobotModel1/Links1/link_arm_l01
         - /RobotModel1/Links1/link_gripper_finger_left1
+        - /RobotModel1/Links1/link_gripper_fingertip_right1
       Splitter Ratio: 0.5
     Tree Height: 1484
   - Class: rviz/Selection
@@ -60,7 +62,7 @@ Visualization Manager:
       Collision Enabled: false
       Enabled: true
       Links:
-        All Links Enabled: false
+        All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
@@ -118,7 +120,7 @@ Visualization Manager:
           Value: true
         link_arm_l0:
           Alpha: 1
-          Show Axes: false
+          Show Axes: true
           Show Trail: false
           Value: true
         link_arm_l1:
@@ -166,15 +168,6 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        link_grasp_center:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        link_gripper:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         link_gripper_finger_left:
           Alpha: 1
           Show Axes: false
@@ -192,7 +185,7 @@ Visualization Manager:
           Value: true
         link_gripper_fingertip_right:
           Alpha: 1
-          Show Axes: false
+          Show Axes: true
           Show Trail: false
           Value: true
         link_head:
@@ -225,17 +218,32 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        link_puller:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: false
         link_right_wheel:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
+        link_straight_gripper:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        link_wrist_pitch:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        link_wrist_roll:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         link_wrist_yaw:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        link_wrist_yaw_bottom:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -385,10 +393,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8447968363761902
+      Pitch: 0.5397967100143433
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.8704514503479
+      Yaw: 5.230452060699463
     Saved: ~
 Window Geometry:
   Displays:

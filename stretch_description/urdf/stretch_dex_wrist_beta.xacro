@@ -108,7 +108,7 @@
       link="link_wrist_pitch" />
     <axis
       xyz="0 0 1" />
-    <limit effort="100" lower="-1.14" upper="3.14" velocity="1.0"/>
+    <limit effort="100" lower="-0.56" upper="1.56" velocity="1.0"/>
   </joint>
   <link
     name="link_wrist_roll">
