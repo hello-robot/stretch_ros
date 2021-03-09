@@ -41,9 +41,10 @@ class CollectHeadCalibrationDataNode:
     def __init__(self):
 
         self.rate = 10.0
-        
+
+        self.joints = ['joint_lift', 'joint_mobile_base_translation', 'wrist_extension', 'joint_head_pan', 'joint_head_tilt', 'joint_wrist_yaw', 'gripper_aperture']
         self.joint_state = None
-        self.acceleration = None        
+        self.acceleration = None
 
         self.data_time = None
         self.marker_time = None
@@ -577,12 +578,18 @@ class CollectHeadCalibrationDataNode:
     def move_to_initial_configuration(self):
         # The robot is commanded to move to this pose prior to
         # beginning to collect calibration data.
-        initial_pose = {'joint_wrist_yaw': 0.0,
-                        'wrist_extension': 0.0,
-                        'joint_lift': 0.3,
-                        'gripper_aperture': 0.0,
-                        'joint_head_pan': -1.6947147036864942,
-                        'joint_head_tilt': -0.4}
+        initial_pose_map = {
+            'joint_wrist_yaw': 0.0,
+            'joint_wrist_pitch': 0.0,
+            'joint_wrist_roll': 0.0,
+            'wrist_extension': 0.0,
+            'joint_lift': 0.3,
+            'gripper_aperture': 0.0,
+            'joint_head_pan': -1.6947147036864942,
+            'joint_head_tilt': -0.4}
+        initial_pose = {}
+        for j in self.joints:
+            initial_pose[j] = initial_pose_map[j]
 
         rospy.loginfo('Move to the calibration start pose.')
         self.move_to_pose(initial_pose)
@@ -592,6 +599,8 @@ class CollectHeadCalibrationDataNode:
         rospy.init_node('collect_head_calibration_data')
         self.node_name = rospy.get_name()        
         rospy.loginfo("{0} started".format(self.node_name))
+        if rospy.has_param("/stretch_controller/follow_joint_trajectory/joints"):
+            self.joints = rospy.get_param("/stretch_controller/follow_joint_trajectory/joints")
 
         # Obtain the ArUco marker ID numbers.
         self.marker_info = rospy.get_param('/aruco_marker_info')
