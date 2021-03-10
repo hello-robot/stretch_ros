@@ -23,4 +23,4 @@ repositories:
     version: ros2
 
 # Also had to run
-# sudo apt install ros-foxy-moveit-msgs ros-foxy-warehouse-ros ros-foxy-geometric-shapes ros-foxy-realsense2-description ros-foxy-hardware-interface ros-foxy-controller-manager ros-foxy-ros2-controllers
+# sudo apt install ros-foxy-moveit-msgs ros-foxy-warehouse-ros ros-foxy-geometric-shapes ros-foxy-realsense2-description ros-foxy-hardware-interface ros-foxy-controller-manager ros-foxy-ros2-controllers ros-foxy-image-transport
