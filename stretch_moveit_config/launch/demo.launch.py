@@ -113,7 +113,9 @@ def generate_launch_description():
         package='stretch_plan_client',
         executable='stretch_plan_client',
         parameters=[robot_description,
-                    robot_description_semantic],
+                    robot_description_semantic,
+                    ompl_planning_pipeline_config,
+                    kinematics_yaml],
         output={
             'stdout': 'screen',
             'stderr': 'screen',
