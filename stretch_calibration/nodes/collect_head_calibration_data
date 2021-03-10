@@ -589,7 +589,8 @@ class CollectHeadCalibrationDataNode:
             'joint_head_tilt': -0.4}
         initial_pose = {}
         for j in self.joints:
-            initial_pose[j] = initial_pose_map[j]
+            if initial_pose_map.has_key(j):
+                initial_pose[j] = initial_pose_map[j]
 
         rospy.loginfo('Move to the calibration start pose.')
         self.move_to_pose(initial_pose)

@@ -9,8 +9,8 @@ Panels:
         - /RobotModel1
         - /RobotModel1/Links1
         - /RobotModel1/Links1/link_arm_l01
-        - /RobotModel1/Links1/link_gripper_finger_left1
-        - /RobotModel1/Links1/link_gripper_fingertip_right1
+        - /RobotModel1/Links1/link_wrist_pitch1
+        - /RobotModel1/Links1/link_wrist_yaw_bottom1
       Splitter Ratio: 0.5
     Tree Height: 1484
   - Class: rviz/Selection
@@ -120,7 +120,7 @@ Visualization Manager:
           Value: true
         link_arm_l0:
           Alpha: 1
-          Show Axes: true
+          Show Axes: false
           Show Trail: false
           Value: true
         link_arm_l1:
@@ -185,7 +185,7 @@ Visualization Manager:
           Value: true
         link_gripper_fingertip_right:
           Alpha: 1
-          Show Axes: true
+          Show Axes: false
           Show Trail: false
           Value: true
         link_head:
@@ -230,7 +230,7 @@ Visualization Manager:
           Value: true
         link_wrist_pitch:
           Alpha: 1
-          Show Axes: false
+          Show Axes: true
           Show Trail: false
           Value: true
         link_wrist_roll:
@@ -378,25 +378,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 0.9523301124572754
+      Distance: 1.160446047782898
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.060830965638160706
-        Y: -0.08009408414363861
-        Z: 0.6235455274581909
+        X: -0.09076250344514847
+        Y: -0.09887726604938507
+        Z: 0.6882548928260803
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5397967100143433
+      Pitch: 0.4297966957092285
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.230452060699463
+      Yaw: 5.720452308654785
     Saved: ~
 Window Geometry:
   Displays:
