@@ -376,6 +376,12 @@ class StretchBodyNode:
 
         mode = rospy.get_param('~mode', "position")
         rospy.loginfo('mode = ' + str(mode))
+        if mode == "position":
+            self.turn_on_position_mode()
+        elif mode == "navigation":
+            self.turn_on_navigation_mode()
+        elif mode == "manipulation":
+            self.turn_on_manipulation_mode()
 
         self.broadcast_odom_tf = rospy.get_param('~broadcast_odom_tf', False)
         rospy.loginfo('broadcast_odom_tf = ' + str(self.broadcast_odom_tf))
@@ -465,13 +471,6 @@ class StretchBodyNode:
         self.fail_out_of_range_goal = rospy.get_param('~fail_out_of_range_goal', True)
         self.joint_trajectory_action = JointTrajectoryAction(self)
         self.joint_trajectory_action.server.start()
-
-        if mode == "position":
-            self.turn_on_position_mode()
-        elif mode == "navigation":
-            self.turn_on_navigation_mode()
-        elif mode == "manipulation":
-            self.turn_on_manipulation_mode()
 
         self.switch_to_manipulation_mode_service = rospy.Service('/switch_to_manipulation_mode',
                                                                  Trigger,
