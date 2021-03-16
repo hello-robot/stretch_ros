@@ -374,6 +374,11 @@ class StretchBodyNode:
 
         rospy.loginfo("{0} started".format(self.node_name))
 
+        self.robot = rb.Robot()
+        self.robot.startup()
+        if not self.robot.is_calibrated():
+            rospy.logwarn("Robot isn't homed!")
+
         mode = rospy.get_param('~mode', "position")
         rospy.loginfo('mode = ' + str(mode))
         if mode == "position":
@@ -456,11 +461,6 @@ class StretchBodyNode:
         rospy.loginfo("{0} base_frame_id = {1}".format(self.node_name, self.base_frame_id))
         self.odom_frame_id = 'odom'
         rospy.loginfo("{0} odom_frame_id = {1}".format(self.node_name, self.odom_frame_id))
-
-        self.robot = rb.Robot()
-        self.robot.startup()
-        if not self.robot.is_calibrated():
-            rospy.logwarn("Robot isn't homed!")
 
         self.joint_state_pub = rospy.Publisher('joint_states', JointState, queue_size=1)
 
