@@ -29,7 +29,7 @@ You can use the keyboard_teleop commands within the terminal that you ran roslau
 ```
              i (tilt up)
 	     
-j (pan left)               k (pan right)
+j (pan left)               l (pan right)
 
              , (tilt down)
 ```
