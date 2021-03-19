@@ -5,8 +5,8 @@ repositories:
     version: diff_drive_plus_fake
   srdfdom:
     type: git
-    url: https://github.com/DLu/srdfdom
-    version: diff_drive_joint2
+    url: https://github.com/ros-planning/srdfdom
+    version: ros2
   stretch_kinematics_plugin:
     type: git
     url: https://github.com/PickNikRobotics/stretch_kinematics_plugin
@@ -17,6 +17,14 @@ repositories:
     version: ros2_diffdrive
 
   # Unrelated to this demo, but needed for building
+  ros2_control:
+    type: git
+    url: https://github.com/ros-controls/ros2_control
+    version: master
+  ros2_controllers:
+    type: git
+    url: https://github.com/ros-controls/ros2_controllers
+    version: master
   warehouse_ros_mongo:
     type: git
     url: https://github.com/ros-planning/warehouse_ros_mongo

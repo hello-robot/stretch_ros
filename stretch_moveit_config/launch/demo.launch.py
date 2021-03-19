@@ -109,20 +109,6 @@ def generate_launch_description():
         parameters=[robot_description,  os.path.join(get_package_share_directory("stretch_moveit_config"), "config", "ros_controllers.yaml")],
     )
 
-    client_node = Node(
-        package='stretch_plan_client',
-        executable='stretch_plan_client',
-        parameters=[robot_description,
-                    robot_description_semantic,
-                    ompl_planning_pipeline_config,
-                    kinematics_yaml],
-        output={
-            'stdout': 'screen',
-            'stderr': 'screen',
-        },
-    )
-
-
     # load joint_state_controller
     load_joint_state_controller = ExecuteProcess(cmd=['ros2 control load_start_controller joint_state_controller'], shell=True, output='screen')
 
@@ -130,4 +116,4 @@ def generate_launch_description():
     for controller in ['stretch_arm_controller', 'gripper_controller']:
         load_controllers += [ExecuteProcess(cmd=['ros2 control load_configure_controller', controller], shell=True, output='screen', on_exit=[ExecuteProcess(cmd=['ros2 control switch_controllers --start-controllers', controller], shell=True, output='screen')])]
 
-    return LaunchDescription([client_node, rviz_node, static_tf, robot_state_publisher, run_move_group_node, fake_joint_driver_node ] + load_controllers)
+    return LaunchDescription([rviz_node, static_tf, robot_state_publisher, run_move_group_node, fake_joint_driver_node ] + load_controllers)
