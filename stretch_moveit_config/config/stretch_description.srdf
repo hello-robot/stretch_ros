@@ -56,6 +56,7 @@
 
     <virtual_joint name="position" type="planar" parent_frame="odom" child_link="base_link" />
     <joint_property joint_name="position" property_name="motion_model" value="diff_drive" />
+    <joint_property joint_name="position" property_name="min_translational_distance" value="0.01" />
 
 
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
