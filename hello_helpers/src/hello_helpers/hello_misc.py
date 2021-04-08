@@ -8,7 +8,8 @@ import glob
 import math
 
 import rclpy
-import tf2_ros
+from rclpy.node import Node
+from rclpy.action import ActionClient
 # import ros_numpy  TODO(dlu): Fix https://github.com/eric-wieser/ros_numpy/issues/20
 import numpy as np
 import cv2
@@ -63,7 +64,7 @@ def get_left_finger_state(joint_states):
     left_finger_effort = joint_states.effort[i]
     return [left_finger_position, left_finger_velocity, left_finger_effort]
 
-class HelloNode:
+class HelloNode(Node):
     def __init__(self):
         self.joint_state = None
         self.point_cloud = None
@@ -133,34 +134,34 @@ class HelloNode:
 
 
     def main(self, node_name, node_topic_namespace, wait_for_first_pointcloud=True):
-        rospy.init_node(node_name)
-        self.node_name = rospy.get_name()
-        rospy.loginfo("{0} started".format(self.node_name))
+        super().__init__(node_name)
+        self.node_name = node_name
+        self.get_logger().info("{0} started".format(self.node_name))
 
-        self.trajectory_client = actionlib.SimpleActionClient('/stretch_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
-        server_reached = self.trajectory_client.wait_for_server(timeout=rospy.Duration(60.0))
-        if not server_reached:
-            rospy.signal_shutdown('Unable to connect to arm action server. Timeout exceeded.')
-            sys.exit()
+        self.trajectory_client = ActionClient(self, FollowJointTrajectory, '/stretch_controller/follow_joint_trajectory')
+        while not self.trajectory_client.wait_for_server(timeout_sec=2.0):
+            self.get_logger().info("Waiting on '/stretch_controller/follow_joint_trajectory' action server...")
         
         self.tf2_buffer = tf2_ros.Buffer()
-        self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
+        self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer, self)
         
-        self.point_cloud_subscriber = rospy.Subscriber('/camera/depth/color/points', PointCloud2, self.point_cloud_callback)
-        self.point_cloud_pub = rospy.Publisher('/' + node_topic_namespace + '/point_cloud2', PointCloud2, queue_size=1)
+        self.point_cloud_subscriber = self.create_subscription(PointCloud2, '/camera/depth/color/points', self.point_cloud_callback, 10)
+        self.point_cloud_pub = self.create_publisher(PointCloud2, '/' + node_topic_namespace + '/point_cloud2', 10)
 
-        rospy.wait_for_service('/stop_the_robot')
-        rospy.loginfo('Node ' + self.node_name + ' connected to /stop_the_robot service.')
-        self.stop_the_robot_service = rospy.ServiceProxy('/stop_the_robot', Trigger)
-        
+        self.stop_the_robot_client = self.create_client(Trigger, '/stop_the_robot')
+        while not self.stop_the_robot_client.wait_for_service(timeout_sec=2.0):
+            self.get_logger().info("Waiting on '/stop_the_robot' service...")
+        self.get_logger().info('Node ' + self.node_name + ' connected to /stop_the_robot service.')
+
         if wait_for_first_pointcloud:
             # Do not start until a point cloud has been received
             point_cloud_msg = self.point_cloud
-            print('Node ' + node_name + ' waiting to receive first point cloud.')
+            self.get_logger().info('Node ' + node_name + ' waiting to receive first point cloud.')
             while point_cloud_msg is None:
-                rospy.sleep(0.1)
+                time.sleep(0.1)
+                rclpy.spin_once(self)
                 point_cloud_msg = self.point_cloud
-            print('Node ' + node_name + ' received first point cloud, so continuing.')
+            self.get_logger().info('Node ' + node_name + ' received first point cloud, so continuing.')
 
 
 def create_time_string():

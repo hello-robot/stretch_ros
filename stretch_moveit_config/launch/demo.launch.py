@@ -58,10 +58,10 @@ def generate_launch_description():
                             'trajectory_execution.allowed_goal_duration_margin': 0.5,
                             'trajectory_execution.allowed_start_tolerance': 0.01}
 
-    planning_scene_monitor_parameters = {"publish_planning_scene": True,
-                                         "publish_geometry_updates": True,
-                                         "publish_state_updates": True,
-                                         "publish_transforms_updates": True}
+    planning_scene_monitor_parameters = {"publish_planning_scene": False,
+                                         "publish_geometry_updates": False,
+                                         "publish_state_updates": False,
+                                         "publish_transforms_updates": False}
 
     # Start the actual move_group node/action server
     run_move_group_node = Node(package='moveit_ros_move_group',
@@ -88,26 +88,26 @@ def generate_launch_description():
                                  kinematics_yaml])
 
 
-    # Publish TF
-    robot_state_publisher = Node(package='robot_state_publisher',
-                                 executable='robot_state_publisher',
-                                 name='robot_state_publisher',
-                                 output='both',
-                                 parameters=[robot_description])
+    # # Publish TF
+    # robot_state_publisher = Node(package='robot_state_publisher',
+    #                              executable='robot_state_publisher',
+    #                              name='robot_state_publisher',
+    #                              output='both',
+    #                              parameters=[robot_description])
 
-    # Fake joint driver
-    fake_joint_driver_node = Node(
-        package='controller_manager',
-        executable='ros2_control_node',
-        parameters=[robot_description,  os.path.join(get_package_share_directory("stretch_moveit_config"), "config", "ros_controllers.yaml")],
-    )
+    # # Fake joint driver
+    # fake_joint_driver_node = Node(
+    #     package='controller_manager',
+    #     executable='ros2_control_node',
+    #     parameters=[robot_description,  os.path.join(get_package_share_directory("stretch_moveit_config"), "config", "ros_controllers.yaml")],
+    # )
 
-    # load joint_state_controller
-    load_joint_state_controller = ExecuteProcess(cmd=['ros2 control load_start_controller joint_state_controller'], shell=True, output='screen')
+    # # load joint_state_controller
+    # load_joint_state_controller = ExecuteProcess(cmd=['ros2 control load_start_controller joint_state_controller'], shell=True, output='screen')
 
-    load_controllers = [load_joint_state_controller]
-    for controller in ['stretch_arm_controller', 'gripper_controller']:
-        load_controllers += [ExecuteProcess(cmd=['ros2 control load_configure_controller', controller], shell=True, output='screen', on_exit=[ExecuteProcess(cmd=['ros2 control switch_controllers --start-controllers', controller], shell=True, output='screen')])]
+    # load_controllers = [load_joint_state_controller]
+    # for controller in ['stretch_arm_controller', 'gripper_controller']:
+    #     load_controllers += [ExecuteProcess(cmd=['ros2 control load_configure_controller', controller], shell=True, output='screen', on_exit=[ExecuteProcess(cmd=['ros2 control switch_controllers --start-controllers', controller], shell=True, output='screen')])]
 
 
-    return LaunchDescription([rviz_node, robot_state_publisher, run_move_group_node, fake_joint_driver_node ] + load_controllers)
+    return LaunchDescription([rviz_node, run_move_group_node])

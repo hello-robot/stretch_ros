@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 from __future__ import print_function
 
+import time
 import yaml
 import numpy as np
 import threading
@@ -70,6 +71,7 @@ class StretchBodyNode(Node):
     ###### MOBILE BASE VELOCITY METHODS #######
 
     def set_mobile_base_velocity_callback(self, twist):
+        self.get_logger().info(str(twist))
         self.robot_mode_rwlock.acquire_read()
         if self.robot_mode != 'navigation':
             error_string = '{0} action server must be in navigation mode to receive a twist on cmd_vel. Current mode = {1}.'.format(self.node_name, self.robot_mode)
@@ -77,7 +79,7 @@ class StretchBodyNode(Node):
             return
         self.linear_velocity_mps = twist.linear.x
         self.angular_velocity_radps = twist.angular.z
-        self.last_twist_time = self.node.get_clock().now()
+        self.last_twist_time = self.get_clock().now()
         self.robot_mode_rwlock.release_read()
 
     def command_mobile_base_velocity_and_publish_state(self):
@@ -90,7 +92,7 @@ class StretchBodyNode(Node):
         # set new mobile base velocities, if appropriate
         # check on thread safety for this with callback that sets velocity command values
         if self.robot_mode == 'navigation':
-            time_since_last_twist = self.node.get_clock().now() - self.last_twist_time
+            time_since_last_twist = self.get_clock().now() - self.last_twist_time
             if time_since_last_twist < self.timeout:
                 self.robot.base.set_velocity(self.linear_velocity_mps, self.angular_velocity_radps)
                 self.robot.push_command()
@@ -110,15 +112,21 @@ class StretchBodyNode(Node):
         #self.get_logger().info('robot_time =', robot_time)
         #current_time = rospy.Time.from_sec(robot_time)
 
-        current_time = self.get_clock().now()
+        current_time = self.get_clock().now().to_msg()
 
         # obtain odometry
         # assign relevant base status to variables
         base_status = robot_status['base']
         x = base_status['x']
+        # if type(x) != float:
+        #     x = 0.0
         x_raw = x
         y = base_status['y']
+        # if type(y) != float:
+        #     y = 0.0
         theta = base_status['theta']
+        # if type(theta) != float:
+        #     theta = 0.0
         x_vel = base_status['x_vel']
         x_vel_raw = x_vel
         y_vel = base_status['y_vel']
@@ -409,7 +417,7 @@ class StretchBodyNode(Node):
 
     ######## SERVICE CALLBACKS #######
 
-    def stop_the_robot_callback(self, request):
+    def stop_the_robot_callback(self, request, response):
         with self.robot_stop_lock:
             self.stop_the_robot = True
 
@@ -426,33 +434,29 @@ class StretchBodyNode(Node):
             self.robot.push_command()
 
         self.get_logger().info('Received stop_the_robot service call, so commanded all actuators to stop.')
-        return Trigger.Result(
-            success=True,
-            message='Stopped the robot.'
-            )
+        response.success = True
+        response.message = 'Stopped the robot.'
+        return response
 
-    def navigation_mode_service_callback(self, request):
+    def navigation_mode_service_callback(self, request, response):
         self.turn_on_navigation_mode()
-        return Trigger.Result(
-            success=True,
-            message='Now in navigation mode.'
-            )
+        response.success = True
+        response.message = 'Now in navigation mode.'
+        return response
 
-    def manipulation_mode_service_callback(self, request):
+    def manipulation_mode_service_callback(self, request, response):
         self.turn_on_manipulation_mode()
-        return Trigger.Result(
-            success=True,
-            message='Now in manipulation mode.'
-            )
+        response.success = True
+        response.message = 'Now in manipulation mode.'
+        return response
 
-    def position_mode_service_callback(self, request):
+    def position_mode_service_callback(self, request, response):
         self.turn_on_position_mode()
-        return Trigger.Result(
-            success=True,
-            message='Now in position mode.'
-            )
+        response.success = True
+        response.message = 'Now in position mode.'
+        return response
 
-    def runstop_service_callback(self, request):
+    def runstop_service_callback(self, request, response):
         if request.data:
             with self.robot_stop_lock:
                 self.stop_the_robot = True
@@ -492,6 +496,7 @@ class StretchBodyNode(Node):
         self.declare_parameter('rate', 15.0)
         self.declare_parameter('use_fake_mechaduinos', False)
         self.declare_parameter('fail_out_of_range_goal', True)
+        self.declare_parameter('timeout', 0.5)
         # self.set_parameters_callback(self.parameter_callback)
 
         mode = self.get_parameter('mode').value
@@ -500,7 +505,7 @@ class StretchBodyNode(Node):
         self.broadcast_odom_tf = self.get_parameter('broadcast_odom_tf').value
         self.get_logger().info('broadcast_odom_tf = ' + str(self.broadcast_odom_tf))
         if self.broadcast_odom_tf:
-            self.tf_broadcaster = tf2_ros.TransformBroadcaster()
+            self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
 
         large_ang = 45.0 * np.pi/180.0
 
@@ -549,13 +554,13 @@ class StretchBodyNode(Node):
 
         self.max_arm_height = 1.1
 
-        self.odom_pub = self.node.create_publisher(Odometry, 'odom')
+        self.odom_pub = self.create_publisher(Odometry, 'odom', 10)
 
-        self.imu_mobile_base_pub = self.node.create_publisher(Imu, 'imu_mobile_base')
-        self.magnetometer_mobile_base_pub = self.node.create_publisher(MagneticField, 'magnetometer_mobile_base')
-        self.imu_wrist_pub = self.node.create_publisher(Imu, 'imu_wrist')
+        self.imu_mobile_base_pub = self.create_publisher(Imu, 'imu_mobile_base', 10)
+        self.magnetometer_mobile_base_pub = self.create_publisher(MagneticField, 'magnetometer_mobile_base', 10)
+        self.imu_wrist_pub = self.create_publisher(Imu, 'imu_wrist', 10)
 
-        self.node.create_subscription(Twist, "cmd_vel", self.set_mobile_base_velocity_callback)
+        self.create_subscription(Twist, "cmd_vel", self.set_mobile_base_velocity_callback, 10)
 
         # ~ symbol gets parameter from private namespace
         self.joint_state_rate = self.get_parameter('rate').value
@@ -573,19 +578,19 @@ class StretchBodyNode(Node):
 
         self.robot = rb.Robot()
         self.robot.startup()
+        time.sleep(2)
 
         # TODO: check with the actuators to see if calibration is required
         #self.calibrate()
 
-        self.joint_state_pub = self.node.create_publisher(JointState, 'joint_states')
+        self.joint_state_pub = self.create_publisher(JointState, 'joint_states', 10)
 
         self.command_base_velocity_and_publish_joint_state_rate = self.create_rate(self.joint_state_rate)
-        self.last_twist_time = self.node.get_clock().now()
+        self.last_twist_time = self.get_clock().now()
 
         # start action server for joint trajectories
         self.fail_out_of_range_goal = self.get_parameter('fail_out_of_range_goal').value
         self.joint_trajectory_action = JointTrajectoryAction(self)
-        self.joint_trajectory_action.server.start()
 
         if mode == "position":
             self.turn_on_position_mode()
@@ -626,7 +631,8 @@ class StretchBodyNode(Node):
             # odometry, and publish joint states
             while rclpy.ok():
                 self.command_mobile_base_velocity_and_publish_state()
-                self.command_base_velocity_and_publish_joint_state_rate.sleep()
+                # self.command_base_velocity_and_publish_joint_state_rate.sleep()
+                rclpy.spin_once(self)
         except (KeyboardInterrupt, ThreadServiceExit):
             self.robot.stop()
 

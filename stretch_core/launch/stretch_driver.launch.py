@@ -29,7 +29,7 @@ def generate_launch_description():
                                  name='robot_state_publisher',
                                  output='both',
                                  parameters=[{'robot_description': xacro.process_file(robot_description_path).toxml()},
-                                             {'publish_frequency': 15}])
+                                             {'publish_frequency': 15.0}])
 
     stretch_driver = Node(package='stretch_core',
                           executable='stretch_driver',
@@ -42,8 +42,20 @@ def generate_launch_description():
                                       {'broadcast_odom_tf': LaunchConfiguration('broadcast_odom_tf')},
                                       {'fail_out_of_range_goal': LaunchConfiguration('fail_out_of_range_goal')}])
 
-    return LaunchDescription([DeclareLaunchArgument('broadcast_odom_tf'),
-                              DeclareLaunchArgument('fail_out_of_range_goal'),
+    declare_broadcast_odom_tf_arg = DeclareLaunchArgument(
+        'broadcast_odom_tf',
+        default_value=str(False),
+        description="Whether to broadcast the odom TF"
+    )
+
+    declare_fail_out_of_range_goal_arg = DeclareLaunchArgument(
+        'fail_out_of_range_goal',
+        default_value=str(True),
+        description="Whether the motion action servers fail on out-of-range commands"
+    )
+
+    return LaunchDescription([declare_broadcast_odom_tf_arg,
+                              declare_fail_out_of_range_goal_arg,
                               joint_state_publisher,
                               robot_state_publisher,
                               stretch_driver])
