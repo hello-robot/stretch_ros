@@ -1,14 +1,16 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="stretch_description">
+    <xacro:arg name="use_fake_controller" default="false"/>
 
     <!-- Import stretch urdf file -->
     <xacro:include filename="$(find stretch_description)/urdf/stretch_description.xacro" />
 
-    <!-- Import stretch ros2_control description -->
-    <xacro:include filename="stretch_arm.ros2_control.xacro" />
-    <xacro:include filename="gripper.ros2_control.xacro" />
+    <xacro:if value="$(arg use_fake_controller)">
+        <!-- Import stretch ros2_control description -->
+        <xacro:include filename="stretch_arm.ros2_control.xacro" />
+        <xacro:include filename="gripper.ros2_control.xacro" />
 
-    <xacro:stretch_arm_ros2_control name="StretchFakeJointDriver" />
-    <xacro:gripper_ros2_control name="StretchGripperFakeJointDriver" />
-
+        <xacro:stretch_arm_ros2_control name="StretchFakeJointDriver" />
+        <xacro:gripper_ros2_control name="StretchGripperFakeJointDriver" />
+    </xacro:if>
 </robot>

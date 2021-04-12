@@ -5,6 +5,8 @@ from launch_ros.actions import Node
 from launch.actions import ExecuteProcess
 from ament_index_python.packages import get_package_share_directory
 import xacro
+import argparse
+import sys
 
 def load_file(package_name, file_path):
     package_path = get_package_share_directory(package_name)
@@ -28,11 +30,16 @@ def load_yaml(package_name, file_path):
 
 
 def generate_launch_description():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--use_fake_controller", default=False, type=eval, choices=[True, False])
+    args, _ = parser.parse_known_args([arg for sys_arg in sys.argv[4:] for arg in ('--' + sys_arg).split(':=')])
 
+    ld = LaunchDescription()
     # planning_context
     robot_description_config = xacro.process_file(os.path.join(get_package_share_directory('stretch_moveit_config'),
                                                                'config',
-                                                               'stretch.xacro'))
+                                                               'stretch.xacro'),
+                                                  mappings={"use_fake_controller": str(args.use_fake_controller)})
     robot_description = {'robot_description' : robot_description_config.toxml()}
 
     robot_description_semantic_config = load_file('stretch_moveit_config', 'config/stretch_description.srdf')
@@ -74,6 +81,7 @@ def generate_launch_description():
                                            trajectory_execution,
                                            moveit_controllers,
                                            planning_scene_monitor_parameters])
+    ld.add_action(run_move_group_node)
 
     # RViz
     rviz_config_file = get_package_share_directory('stretch_moveit_config') + "/launch/moveit.rviz"
@@ -86,28 +94,32 @@ def generate_launch_description():
                                  robot_description_semantic,
                                  ompl_planning_pipeline_config,
                                  kinematics_yaml])
+    ld.add_action(rviz_node)
 
+    if args.use_fake_controller:
+        # Publish TF
+        robot_state_publisher = Node(package='robot_state_publisher',
+                                     executable='robot_state_publisher',
+                                     name='robot_state_publisher',
+                                     output='both',
+                                     parameters=[robot_description])
+        ld.add_action(robot_state_publisher)
 
-    # # Publish TF
-    # robot_state_publisher = Node(package='robot_state_publisher',
-    #                              executable='robot_state_publisher',
-    #                              name='robot_state_publisher',
-    #                              output='both',
-    #                              parameters=[robot_description])
+        # Fake joint driver
+        fake_joint_driver_node = Node(
+            package='controller_manager',
+            executable='ros2_control_node',
+            parameters=[robot_description,  os.path.join(get_package_share_directory("stretch_moveit_config"), "config", "ros_controllers.yaml")],
+        )
+        ld.add_action(fake_joint_driver_node)
 
-    # # Fake joint driver
-    # fake_joint_driver_node = Node(
-    #     package='controller_manager',
-    #     executable='ros2_control_node',
-    #     parameters=[robot_description,  os.path.join(get_package_share_directory("stretch_moveit_config"), "config", "ros_controllers.yaml")],
-    # )
+        for controller in ["stretch_arm_controller", "gripper_controller", "joint_state_controller"]:
+            ld.add_action(
+                ExecuteProcess(
+                    cmd=["ros2 run controller_manager spawner.py {}".format(controller)],
+                    shell=True,
+                    output="screen",
+                )
+            )
 
-    # # load joint_state_controller
-    # load_joint_state_controller = ExecuteProcess(cmd=['ros2 control load_start_controller joint_state_controller'], shell=True, output='screen')
-
-    # load_controllers = [load_joint_state_controller]
-    # for controller in ['stretch_arm_controller', 'gripper_controller']:
-    #     load_controllers += [ExecuteProcess(cmd=['ros2 control load_configure_controller', controller], shell=True, output='screen', on_exit=[ExecuteProcess(cmd=['ros2 control switch_controllers --start-controllers', controller], shell=True, output='screen')])]
-
-
-    return LaunchDescription([rviz_node, run_move_group_node])
+    return ld
