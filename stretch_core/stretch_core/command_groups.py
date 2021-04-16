@@ -174,7 +174,7 @@ class HeadPanCommandGroup(SimpleCommandGroup):
     def set_trajectory_goals(self, points, robot):
         if self.active:
             for waypoint in points:
-                t = waypoint.time_from_start.to_sec()
+                t = waypoint.time_from_start.sec
                 x = None
                 if len(waypoint.positions) > self.index:
                     x = waypoint.positions[self.index]
@@ -223,7 +223,7 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
     def set_trajectory_goals(self, points, robot):
         if self.active:
             for waypoint in points:
-                t = waypoint.time_from_start.to_sec()
+                t = waypoint.time_from_start.sec
                 x = None
                 if len(waypoint.positions) > self.index:
                     x = waypoint.positions[self.index]
@@ -267,7 +267,7 @@ class WristYawCommandGroup(SimpleCommandGroup):
     def set_trajectory_goals(self, points, robot):
         if self.active:
             for waypoint in points:
-                t = waypoint.time_from_start.to_sec()
+                t = waypoint.time_from_start.sec
                 x = None
                 if len(waypoint.positions) > self.index:
                     x = waypoint.positions[self.index]
@@ -422,19 +422,20 @@ class TelescopingCommandGroup(SimpleCommandGroup):
         return True
 
     def set_trajectory_goals(self, points, robot):
-        if self.active:
-            for waypoint in points:
-                t = waypoint.time_from_start.to_sec()
-                x = None
-                if len(waypoint.positions) > self.index:
-                    x = waypoint.positions[self.index]
-                v = None
-                if len(waypoint.velocities) > self.index:
-                    v = waypoint.velocities[self.index]
-                a = None
-                if len(waypoint.accelerations) > self.index:
-                    a = waypoint.accelerations[self.index]
-                robot.arm.trajectory.add_waypoint(t_s=t, x_m=x, v_m=v, a_m=a)
+        pass
+        # if self.active:
+        #     for waypoint in points:
+        #         t = waypoint.time_from_start.sec
+        #         x = None
+        #         if len(waypoint.positions) > self.index:
+        #             x = waypoint.positions[self.index]
+        #         v = None
+        #         if len(waypoint.velocities) > self.index:
+        #             v = waypoint.velocities[self.index]
+        #         a = None
+        #         if len(waypoint.accelerations) > self.index:
+        #             a = waypoint.accelerations[self.index]
+        #         robot.arm.trajectory.add_waypoint(t_s=t, x_m=x, v_m=v, a_m=a)
 
     def set_goal(self, point, invalid_goal_callback, fail_out_of_range_goal, **kwargs):
         self.goal = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
@@ -514,7 +515,7 @@ class LiftCommandGroup(SimpleCommandGroup):
     def set_trajectory_goals(self, points, robot):
         if self.active:
             for waypoint in points:
-                t = waypoint.time_from_start.to_sec()
+                t = waypoint.time_from_start.sec
                 x = None
                 if len(waypoint.positions) > self.index:
                     x = waypoint.positions[self.index]
@@ -627,7 +628,7 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
     def set_trajectory_goals(self, points, robot):
         if self.active_translate_mobile_base:
             for waypoint in points:
-                t = waypoint.time_from_start.to_sec()
+                t = waypoint.time_from_start.sec
                 x = None
                 if len(waypoint.positions) > self.index_translate_mobile_base:
                     x = waypoint.positions[self.index_translate_mobile_base]
@@ -640,7 +641,7 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
                 robot.base.trajectory.add_translate_waypoint(t_s=t, x_m=x, v_m=v, a_m=a)
         elif self.active_rotate_mobile_base:
             for waypoint in points:
-                t = waypoint.time_from_start.to_sec()
+                t = waypoint.time_from_start.sec
                 x = None
                 if len(waypoint.positions) > self.index_rotate_mobile_base:
                     x = waypoint.positions[self.index_rotate_mobile_base]

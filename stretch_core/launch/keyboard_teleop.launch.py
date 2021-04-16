@@ -15,4 +15,5 @@ def generate_launch_description():
         # KEYBOARD TELEOP
         Node(package='stretch_core',
              executable='keyboard_teleop',
+             prefix='xterm -e',
              output='screen')])

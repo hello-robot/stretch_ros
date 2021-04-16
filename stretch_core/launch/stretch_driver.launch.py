@@ -40,7 +40,8 @@ def generate_launch_description():
                                       {'timeout': 0.5},
                                       {'controller_calibration_file': calibrated_controller_yaml_file},
                                       {'broadcast_odom_tf': LaunchConfiguration('broadcast_odom_tf')},
-                                      {'fail_out_of_range_goal': LaunchConfiguration('fail_out_of_range_goal')}])
+                                      {'fail_out_of_range_goal': LaunchConfiguration('fail_out_of_range_goal')},
+                                      {'mode': LaunchConfiguration('mode')}])
 
     declare_broadcast_odom_tf_arg = DeclareLaunchArgument(
         'broadcast_odom_tf',
@@ -54,8 +55,15 @@ def generate_launch_description():
         description="Whether the motion action servers fail on out-of-range commands"
     )
 
+    declare_mode_arg = DeclareLaunchArgument(
+        'mode',
+        default_value=str('position'),
+        description="The mode in which the ROS driver commands the robot"
+    )
+
     return LaunchDescription([declare_broadcast_odom_tf_arg,
                               declare_fail_out_of_range_goal_arg,
+                              declare_mode_arg,
                               joint_state_publisher,
                               robot_state_publisher,
                               stretch_driver])

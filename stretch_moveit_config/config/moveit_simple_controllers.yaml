@@ -1,9 +1,10 @@
 controller_names:
-  - stretch_arm_controller
-  - gripper_controller
+  - stretch_controller
+  # - stretch_base_controller
+  # - gripper_controller
 
-stretch_arm_controller:
-    action_ns: /stretch_controller/follow_joint_trajectory
+stretch_controller:
+    action_ns: "follow_joint_trajectory"
     default: True
     type: FollowJointTrajectory
     joints:
@@ -13,18 +14,19 @@ stretch_arm_controller:
       - joint_arm_l1
       - joint_arm_l0
       - joint_wrist_yaw
-
-gripper_controller:
-    action_ns: /stretch_controller/follow_joint_trajectory
-    default: True
-    type: FollowJointTrajectory
-    joints:
-      - joint_gripper_finger_left
-      - joint_gripper_finger_right
-
-stretch_base_controller:
-    action_ns: /stretch_controller/follow_joint_trajectory
-    default: True
-    type: FollowMultiDOFJointTrajectory
-    joints:
       - position
+
+# gripper_controller:
+#     action_ns: "stretch_controller/follow_joint_trajectory"
+#     default: True
+#     type: FollowJointTrajectory
+#     joints:
+#       - joint_gripper_finger_left
+#       - joint_gripper_finger_right
+
+# stretch_base_controller:
+#     action_ns: "follow_joint_trajectory"
+#     default: True
+#     type: FollowMultiDOFJointTrajectory
+#     joints:
+#       - position
