@@ -30,9 +30,9 @@ hello_helpers | GOOD |
 stretch_calibration | GOOD |
 stretch_core | GOOD | 
 stretch_deep_perception | GOOD |
-stretch_demos | FAIR | current development focus
+stretch_demos | FAIR | 
 stretch_description | GOOD |
-stretch_funmap | FAIR | current development focus
+stretch_funmap | FAIR | 
 stretch_navigation | GOOD |
 
 ## Licenses
