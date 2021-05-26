@@ -184,7 +184,7 @@ class ContactDetector():
                 if position is not None: 
                     new_target = self.get_position() + move_increment
                     pose = {joint_name : new_target}
-                    move_to_pose(pose, async=True)
+                    move_to_pose(pose, return_before_done=True)
                 move_rate.sleep()
 
             if self.is_in_contact():
@@ -196,7 +196,7 @@ class ContactDetector():
                 else:
                     new_target = self.position() - 0.001 #- 0.002
                 pose = {joint_name : new_target}
-                move_to_pose(pose, async=False)
+                move_to_pose(pose, return_before_done=False)
                 rospy.loginfo('backing off after contact: moving away from surface to decrease force')
                 success = True
                 message = 'Successfully reached until contact.'
@@ -423,7 +423,7 @@ class FunmapNode(hm.HelloNode):
                     safe_target_m = safe_target_m + 0.03
                 if safe_target_m > self.wrist_position: 
                     pose = {'wrist_extension' : safe_target_m}
-                    self.move_to_pose(pose, async=False)
+                    self.move_to_pose(pose, return_before_done=False)
 
                 # target depth within the surface
                 target_depth_m = 0.08 
