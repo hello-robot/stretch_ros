@@ -1,5 +1,5 @@
-#! /usr/bin/env python
-from __future__ import print_function
+#! /usr/bin/env python3
+#from __future__ import print_function
 
 import yaml
 import numpy as np
@@ -238,21 +238,21 @@ class StretchBodyNode:
         joint_state.name = ['wrist_extension', 'joint_lift', 'joint_arm_l3', 'joint_arm_l2', 'joint_arm_l1', 'joint_arm_l0']
 
         # set positions of the telescoping joints
-        positions = [pos_out/4.0 for i in xrange(4)]
+        positions = [pos_out/4.0 for i in range(4)]
         # set lift position
         positions.insert(0, pos_up)
         # set wrist_extension position
         positions.insert(0, pos_out)
 
         # set velocities of the telescoping joints
-        velocities = [vel_out/4.0 for i in xrange(4)]
+        velocities = [vel_out/4.0 for i in range(4)]
         # set lift velocity
         velocities.insert(0, vel_up)
         # set wrist_extension velocity
         velocities.insert(0, vel_out)
 
         # set efforts of the telescoping joints
-        efforts = [eff_out for i in xrange(4)]
+        efforts = [eff_out for i in range(4)]
         # set lift effort
         efforts.insert(0, eff_up)
         # set wrist_extension effort
