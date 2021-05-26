@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
+#from __future__ import print_function
 
 import sys
 import rospy
@@ -41,7 +41,8 @@ class ArucoMarker:
         bgr = id_color_image[0,0]
         self.id_color = [bgr[2], bgr[1], bgr[0]]
         
-        self.frame_id = '/camera_color_optical_frame'
+        #self.frame_id = '/camera_color_optical_frame'
+        self.frame_id = 'camera_color_optical_frame'
         self.info = marker_info.get(str(self.aruco_id), None)
 
         if self.info is None:
@@ -663,7 +664,8 @@ class DetectArucoNode:
         
     def publish_point_cloud(self):
         header = Header()
-        header.frame_id = '/camera_color_optical_frame'
+        #header.frame_id = '/camera_color_optical_frame'
+        header.frame_id = 'camera_color_optical_frame'
         header.stamp = rospy.Time.now()
         fields = [PointField('x', 0, PointField.FLOAT32, 1),
                   PointField('y', 4, PointField.FLOAT32, 1),
