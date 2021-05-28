@@ -209,7 +209,8 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
         if self.active:
             _, tilt_error = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
             robot.head.move_by('head_tilt', tilt_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
-            if tilt_error > (self.head_tilt_backlash_transition_angle + self.head_tilt_calibrated_offset):
+            #if tilt_error > (self.head_tilt_backlash_transition_angle + self.head_tilt_calibrated_offset):
+            if self.goal['position'] > (self.head_tilt_backlash_transition_angle + self.head_tilt_calibrated_offset):
                 kwargs['backlash_state']['head_tilt_looking_up'] = True
             else:
                 kwargs['backlash_state']['head_tilt_looking_up'] = False
