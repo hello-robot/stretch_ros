@@ -147,6 +147,9 @@ class JointTrajectoryAction:
                 named_errors = [c.update_execution(robot_status, success_callback=self.success_callback,
                                                    backlash_state=self.node.backlash_state)
                                 for c in command_groups]
+                # It's not clear how this could ever happen. The
+                # groups in command_groups.py seem to return
+                # (self.name, self.error) or None, rather than True.
                 if any(ret == True for ret in named_errors):
                     self.node.robot_mode_rwlock.release_read()
                     return
