@@ -105,12 +105,12 @@ def bounding_box_2d_to_3d(points_array, box_2d, camera_matrix, head_to_camera_ma
 
     if head_to_camera_mat is None: 
         R = np.identity(3)
-        quaternion = Rotation.from_dcm(R).as_quat()
+        quaternion = Rotation.from_matrix(R).as_quat()
         x_axis = R[:3,0]
         y_axis = R[:3,1]
         z_axis = R[:3,2]
     else: 
-        quaternion = Rotation.from_dcm(head_to_camera_mat).as_quat()
+        quaternion = Rotation.from_matrix(head_to_camera_mat).as_quat()
         x_axis = head_to_camera_mat[:3,0]
         y_axis = head_to_camera_mat[:3,1]
         z_axis = head_to_camera_mat[:3,2]
@@ -244,7 +244,7 @@ def bounding_box_2d_to_3d(points_array, box_2d, camera_matrix, head_to_camera_ma
         R[:3,1] = y_axis
         R[:3,2] = z_axis
 
-        quaternion = Rotation.from_dcm(R).as_quat()
+        quaternion = Rotation.from_matrix(R).as_quat()
 
     if plane is not None:
         simple_plane = {'n': plane.n, 'd': plane.d}
@@ -302,7 +302,7 @@ def detections_2d_to_3d(detections_2d, rgb_image, camera_info, depth_image, fit_
         return y, (orig_h - 1) - x
 
     rotvec = np.array([0.0, 0.0, 1.0]) * (-np.pi/2.0)
-    counterclockwise_rotate_mat = Rotation.from_rotvec(rotvec).as_dcm()
+    counterclockwise_rotate_mat = Rotation.from_rotvec(rotvec).as_matrix()
 
     detections_3d = []
     
@@ -344,7 +344,7 @@ def detections_2d_to_3d(detections_2d, rgb_image, camera_info, depth_image, fit_
         if ypr is not None: 
             yaw, pitch, roll = ypr
             head_ypr = np.array([-yaw, pitch, roll])
-            rotation_mat = Rotation.from_euler('yxz', head_ypr).as_dcm()
+            rotation_mat = Rotation.from_euler('yxz', head_ypr).as_matrix()
             head_to_camera_mat = np.matmul(counterclockwise_rotate_mat, rotation_mat)
         else:
             head_to_camera_mat = counterclockwise_rotate_mat

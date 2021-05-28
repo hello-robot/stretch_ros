@@ -237,7 +237,7 @@ class HeadPoseEstimator:
                          [0.0,     0.0,      -2000.0],
                          [0.0,     0.0,      0.0   ]])
         head_ypr = np.array([-yaw, pitch, roll])
-        rotation_mat = Rotation.from_euler('yxz', head_ypr).as_dcm()
+        rotation_mat = Rotation.from_euler('yxz', head_ypr).as_matrix()
         rotation_vec, jacobian = cv2.Rodrigues(rotation_mat)
         image_points, jacobian = cv2.projectPoints(axes, rotation_vec, face_translation, camera_matrix, distortion_coefficients)
         face_pix = np.array([face_x, face_y])

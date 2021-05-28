@@ -100,7 +100,7 @@ class ROSVolumeOfInterest(VolumeOfInterest):
         marker.pose.position.y = center[1]
         marker.pose.position.z = center[2]
 
-        q = Rotation.from_dcm(self.axes).as_quat()
+        q = Rotation.from_matrix(self.axes).as_quat()
         marker.pose.orientation.x = q[0]
         marker.pose.orientation.y = q[1]
         marker.pose.orientation.z = q[2]
