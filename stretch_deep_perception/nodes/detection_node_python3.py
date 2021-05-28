@@ -130,7 +130,7 @@ class DetectionNode:
             
     def publish_point_cloud(self):
         header = Header()
-        header.frame_id = '/camera_color_optical_frame'
+        header.frame_id = 'camera_color_optical_frame'
         header.stamp = rospy.Time.now()
         fields = [PointField('x', 0, PointField.FLOAT32, 1),
                   PointField('y', 4, PointField.FLOAT32, 1),

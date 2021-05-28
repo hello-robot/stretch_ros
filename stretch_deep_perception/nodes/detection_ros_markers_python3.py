@@ -26,7 +26,7 @@ class DetectionBoxMarker:
         bgr = id_color_image[0,0]
         self.id_color = [bgr[2], bgr[1], bgr[0]]
         
-        self.frame_id = '/camera_color_optical_frame'
+        self.frame_id = 'camera_color_optical_frame'
 
         self.name = marker_base_name
         
