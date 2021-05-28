@@ -1,0 +1,31 @@
+<launch>
+
+  <arg name="debug_directory" value="$(env HELLO_FLEET_PATH)/debug/"/>
+  
+  <!-- REALSENSE D435i -->
+  <include file="$(find stretch_core)/launch/d435i_high_resolution.launch"></include>
+  <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen">
+    <!--<param name="initial_mode" type="string" value="Default"/>-->
+    <param name="initial_mode" type="string" value="High Accuracy"/>
+  </node>
+  <!-- -->
+  
+  <!-- STRETCH DRIVER -->
+  <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="true"/>
+  <param name="/stretch_driver/fail_out_of_range_goal" type="bool" value="false"/>
+  <include file="$(find stretch_core)/launch/stretch_driver.launch" />
+  <!-- -->
+
+  <!-- FRUSTUM FIELD OF VIEW VISUALIZATION -->	
+  <node name="d435i_frustum_visualizer" pkg="stretch_core" type="d435i_frustum_visualizer" output="screen" />
+  <!-- -->
+
+  <!-- VISUALIZE FRUSTUM IN RVIZ -->
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_core)/rviz/stretch_frustum_test.rviz" />
+  <!-- -->
+  
+  <!-- KEYBOARD TELEOP -->
+  <node name="keyboard_teleop" pkg="stretch_core" type="keyboard_teleop" output="screen"/>
+  <!-- -->
+  
+</launch>
