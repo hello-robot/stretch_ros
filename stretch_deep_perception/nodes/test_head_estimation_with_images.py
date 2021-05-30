@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 
 import sys
-import cv2
-import numpy as np
-import math
 import glob
-import body_landmark_detector_python3 as bl
+import head_estimator as he
+import cv2
 import deep_learning_model_options as do
 
+def pix_xy(x_float, y_float):
+    return (int(round(x_float)), int(round(y_float)))
 
 if __name__ == '__main__':
 
     print('cv2.__version__ =', cv2.__version__)
     print('Python version =', sys.version)
     assert(int(sys.version[0]) >= 3)
-
+    
     models_directory = do.get_directory()
     print('Using the following directory for deep learning models:', models_directory)        
     use_neural_compute_stick = do.use_neural_compute_stick()
@@ -33,21 +33,12 @@ if __name__ == '__main__':
     print('Will attempt to load the following files:')
     for f in filenames:
         print(f)
-
-    detector = bl.BodyLandmarkDetector(models_directory,
-                                       use_neural_compute_stick=use_neural_compute_stick)
-        
-    for i, f in enumerate(filenames):
-        print('loading image =', f)
+    
+    estimator = he.HeadPoseEstimator(models_directory,
+                                     use_neural_compute_stick=use_neural_compute_stick)
+    
+    for i, f in enumerate(filenames): 
         rgb_image = cv2.imread(f)
         if rgb_image is not None:
-            bodies, ignore = detector.apply_to_image(rgb_image)
-
-            out_rgb = rgb_image.copy()
-            print('bodies =', bodies)
-            for body in bodies:
-                print('body =', body)
-                detector.draw_skeleton(out_rgb, body)
-
-            cv2.imwrite(output_dir + 'skeleton_' + str(i) + '.png', out_rgb)
-                
+            heads, output_image = estimator.apply_to_image(rgb_image, draw_output=True)
+            cv2.imwrite(output_dir + 'face_detection_and_pose_estimation_' + str(i) + '.png', output_image)

@@ -3,8 +3,8 @@
 import cv2
 import sys
 import rospy
-import head_estimator_python3 as he
-import detection_node_python3 as dn
+import head_estimator as he
+import detection_node as dn
 import deep_learning_model_options as do
 
 

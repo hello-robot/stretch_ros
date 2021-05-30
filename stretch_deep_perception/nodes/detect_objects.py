@@ -3,8 +3,8 @@
 import cv2
 import sys
 import rospy
-import object_detector_python3 as od
-import detection_node_python3 as dn
+import object_detector as od
+import detection_node as dn
 import deep_learning_model_options as do
         
 if __name__ == '__main__':    

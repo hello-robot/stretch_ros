@@ -22,10 +22,10 @@ import message_filters
 
 import struct
 
-import body_landmark_detector_python3 as bl
+import body_landmark_detector as bl
 
-import detection_ros_markers_python3 as dr
-import detection_2d_to_3d_python3 as d2
+import detection_ros_markers as dr
+import detection_2d_to_3d as d2
 
 
 class DetectionNode:

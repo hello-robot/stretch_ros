@@ -21,7 +21,7 @@
   <!-- -->
 
   <!-- BODY LANDMARK DETECTOR -->
-  <node name="body_landmark_detector" pkg="stretch_deep_perception" type="detect_body_landmarks_python3.py" output="screen">
+  <node name="body_landmark_detector" pkg="stretch_deep_perception" type="detect_body_landmarks.py" output="screen">
     <param name="debug_directory" type="string" value="$(arg debug_directory)"/>
   </node>
   <!-- -->

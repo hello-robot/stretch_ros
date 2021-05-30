@@ -21,7 +21,7 @@
   <!-- -->
 
   <!-- FACIAL LANDMARK DETECTOR -->
-  <node name="face_detector" pkg="stretch_deep_perception" type="detect_faces_python3.py" output="screen">
+  <node name="face_detector" pkg="stretch_deep_perception" type="detect_faces.py" output="screen">
     <param name="debug_directory" type="string" value="$(arg debug_directory)"/>
   </node>
   <!-- -->

@@ -3,7 +3,7 @@
 import cv2
 import numpy as np
 from scipy.spatial.transform import Rotation
-import deep_models_shared_python3 as dm
+import deep_models_shared as dm
 
 class HeadPoseEstimator:
     def __init__(self, models_directory, use_neural_compute_stick=False):

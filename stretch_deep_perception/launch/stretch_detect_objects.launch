@@ -21,7 +21,7 @@
   <!-- -->
   
   <!-- OBJECT DETECTOR -->
-  <node name="object_detector" pkg="stretch_deep_perception" type="detect_objects_python3.py" output="screen">
+  <node name="object_detector" pkg="stretch_deep_perception" type="detect_objects.py" output="screen">
     <param name="debug_directory" type="string" value="$(arg debug_directory)"/>
   </node>
   <!-- -->

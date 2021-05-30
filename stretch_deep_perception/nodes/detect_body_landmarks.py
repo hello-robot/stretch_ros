@@ -3,8 +3,8 @@
 import cv2
 import sys
 import rospy
-import body_landmark_detector_python3 as bl
-import detection_node_python3 as dn
+import body_landmark_detector as bl
+import detection_node as dn
 import deep_learning_model_options as do
         
 if __name__ == '__main__':    

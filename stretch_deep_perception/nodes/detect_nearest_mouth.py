@@ -4,8 +4,8 @@ import cv2
 import sys
 import rospy
 import numpy as np
-import head_estimator_python3 as he
-import detection_node_python3 as dn
+import head_estimator as he
+import detection_node as dn
 import deep_learning_model_options as do
 
 def faces_3d_to_nearest_mouth_position(detections_3d):

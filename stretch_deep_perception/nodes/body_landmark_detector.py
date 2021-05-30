@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-import deep_models_shared_python3 as dm
+import deep_models_shared as dm
 
 class BodyLandmarkDetector:
     def __init__(self, models_directory, confidence_threshold=0.2, landmarks_to_detect=None, use_neural_compute_stick=False):

@@ -2,7 +2,7 @@
 
 import sys
 import glob
-import object_detector_python3 as jd
+import object_detector as jd
 import cv2
 import deep_learning_model_options as do
 

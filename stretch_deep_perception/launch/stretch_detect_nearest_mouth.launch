@@ -21,7 +21,7 @@
   <!-- -->
   
   <!-- NEAREST MOUTH DETECTOR -->
-  <node name="nearest_mouth_detector" pkg="stretch_deep_perception" type="detect_nearest_mouth_python3.py" output="screen">
+  <node name="nearest_mouth_detector" pkg="stretch_deep_perception" type="detect_nearest_mouth.py" output="screen">
     <param name="debug_directory" type="string" value="$(arg debug_directory)"/>
   </node>
   <!-- -->
