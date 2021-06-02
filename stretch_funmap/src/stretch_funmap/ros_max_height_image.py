@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
+#from __future__ import print_function
 
 import sys
 import rospy
@@ -30,9 +30,9 @@ from scipy.spatial.transform import Rotation
 
 from copy import deepcopy
 
-from max_height_image import *
+from stretch_funmap.max_height_image import *
 
-import navigation_planning as na
+import stretch_funmap.navigation_planning as na
     
 class ROSVolumeOfInterest(VolumeOfInterest):
 

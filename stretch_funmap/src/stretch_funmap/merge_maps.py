@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
+#from __future__ import print_function
 
-import max_height_image as mh
+import stretch_funmap.max_height_image as mh
 import numpy as np
 import scipy.ndimage as nd
 import scipy.signal as si
@@ -10,7 +10,7 @@ import cv2
 import skimage as sk
 import math
 import hello_helpers.hello_misc as hm
-import navigation_planning as na
+import stretch_funmap.navigation_planning as na
 import copy
 import time
 
@@ -18,8 +18,8 @@ import time
 from scipy.optimize import minimize, minimize_scalar
 
 
-from numba_compare_images import numba_compare_images_2
-import mapping as ma
+from stretch_funmap.numba_compare_images import numba_compare_images_2
+import stretch_funmap.mapping as ma
 
 import tf_conversions
 

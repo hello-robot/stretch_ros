@@ -2,10 +2,10 @@ import copy
 import numpy as np
 import scipy.ndimage as nd
 import cv2
-import cython_min_cost_path as cm
-from numba_check_line_path import numba_check_line_path
-from numba_sample_ridge import numba_sample_ridge, numba_sample_ridge_list
-import segment_max_height_image as sm
+import stretch_funmap.cython_min_cost_path as cm
+from stretch_funmap.numba_check_line_path import numba_check_line_path
+from stretch_funmap.numba_sample_ridge import numba_sample_ridge, numba_sample_ridge_list
+import stretch_funmap.segment_max_height_image as sm
 import hello_helpers.hello_misc as hm
 
 ####################################################
@@ -424,7 +424,7 @@ def estimate_navigation_channels( floor_mask, idealized_height_image, m_per_pix,
 
     # find exit regions
     number_of_exits, exit_label_image = simple_connected_components(map_exits)
-    print 'number_of_exits =', number_of_exits
+    print('number_of_exits =', number_of_exits)
 
     distance_map = original_dist_transform.copy()
     distance_map[closed_floor_mask < 1] = 0
@@ -924,9 +924,9 @@ def split_paths(pix_path, max_segment_length_pix):
                 new_path.append(list(p_mid))
             new_path.append(p1)
     else:
-        print 'WARNING: split_paths given pix_path input with length <= 1.'
-        print '         returning pix_path without modification'
-        print '         pix_path =', pix_path
+        print('WARNING: split_paths given pix_path input with length <= 1.')
+        print('         returning pix_path without modification')
+        print('         pix_path =', pix_path)
         return pix_path
     return new_path, split_made
 
@@ -955,9 +955,9 @@ def chop_path_at_location(pix_path, best_stopping_location):
         new_path = pix_path[:min_index+1]
         new_path.append(best_stopping_location)
     else:
-        print 'WARNING: chop_path_at_location given pix_path input with length <= 1.'
-        print '         returning pix_path without modification'
-        print '         pix_path =', pix_path
+        print('WARNING: chop_path_at_location given pix_path input with length <= 1.')
+        print('         returning pix_path without modification')
+        print('         pix_path =', pix_path)
         return pix_path
     return new_path
     

@@ -1,11 +1,17 @@
 #!/bin/bash
 
 echo "Building cython_min_cost_path.pyx..."
-cython ./cython_min_cost_path.pyx 
-gcc -shared -pthread -fPIC -fwrapv -ffast-math -O3 -Wall -fno-strict-aliasing -I/usr/include/python2.7 -o cython_min_cost_path.so cython_min_cost_path.c
+cython3 ./cython_min_cost_path.pyx 
+gcc -shared -pthread -fPIC -fwrapv -ffast-math -O3 -Wall -fno-strict-aliasing -I/usr/include/python3.8 -o cython_min_cost_path.so cython_min_cost_path.c
 echo "Done."
 echo ""
 
+# In the future, consider the following recommendation from the Cython
+# documentation found at
+# https://cython.readthedocs.io/en/latest/src/quickstart/build.html
+#
+# "Write a setuptools setup.py. This is the normal and recommended way."
+#
 
 # In the future try adding -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION to address the following error (adding this argument currently results in compilation failure). 
 #

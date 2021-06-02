@@ -1,23 +1,24 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
+#from __future__ import print_function
+
 import numpy as np
 import ros_numpy as rn
-import ros_max_height_image as rm
+import stretch_funmap.ros_max_height_image as rm
 from actionlib_msgs.msg import GoalStatus
 import rospy
 import hello_helpers.hello_misc as hm
-import ros_max_height_image as rm
+import stretch_funmap.ros_max_height_image as rm
 import ros_numpy
 import yaml
-import navigation_planning as na
+import stretch_funmap.navigation_planning as na
 import time
 import cv2
 import copy
 import scipy.ndimage as nd
-import merge_maps as mm
+import stretch_funmap.merge_maps as mm
 import tf_conversions
-import segment_max_height_image as sm
+import stretch_funmap.segment_max_height_image as sm
 
 
 def stow_and_lower_arm(node):

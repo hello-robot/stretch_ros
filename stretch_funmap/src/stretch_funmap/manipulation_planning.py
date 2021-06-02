@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
+#from __future__ import print_function
 
 import numpy as np
 import scipy.ndimage as nd
@@ -8,16 +8,16 @@ import scipy.signal as si
 import cv2
 import skimage as sk
 import math
-import max_height_image as mh
-import segment_max_height_image as sm
-import ros_max_height_image as rm
+import stretch_funmap.max_height_image as mh
+import stretch_funmap.segment_max_height_image as sm
+import stretch_funmap.ros_max_height_image as rm
 import hello_helpers.hello_misc as hm
 import ros_numpy as rn
 import rospy
 import os
 
-from numba_manipulation_planning import numba_find_base_poses_that_reach_target, numba_check_that_tool_can_deploy
-from numba_check_line_path import numba_find_contact_along_line_path, numba_find_line_path_on_surface
+from stretch_funmap.numba_manipulation_planning import numba_find_base_poses_that_reach_target, numba_check_that_tool_can_deploy
+from stretch_funmap.numba_check_line_path import numba_find_contact_along_line_path, numba_find_line_path_on_surface
 
 def plan_surface_coverage(tool_start_xy_pix, tool_end_xy_pix, tool_extension_direction_xy_pix, step_size_pix, max_extension_pix, surface_mask_image, obstacle_mask_image):
     # This was designed to be used when planning to clean a flat

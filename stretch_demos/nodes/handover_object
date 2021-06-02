@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
+#from __future__ import print_function
 
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import Twist
@@ -107,7 +107,8 @@ class HandoverObjectNode(hm.HelloNode):
                     lookup_time = rospy.Time(0) # return most recent transform
                     timeout_ros = rospy.Duration(0.1)
 
-                    old_frame_id = self.mouth_point.header.frame_id[1:]
+                    #old_frame_id = self.mouth_point.header.frame_id[1:]
+                    old_frame_id = self.mouth_point.header.frame_id[:]
                     new_frame_id = 'base_link'
                     stamped_transform = self.tf2_buffer.lookup_transform(new_frame_id, old_frame_id, lookup_time, timeout_ros)
                     points_in_old_frame_to_new_frame_mat = rn.numpify(stamped_transform.transform)

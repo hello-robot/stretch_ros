@@ -1,15 +1,16 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
+#from __future__ import print_function
+
 import numpy as np
 import ros_numpy as rn
-import ros_max_height_image as rm
+import stretch_funmap.ros_max_height_image as rm
 from control_msgs.msg import FollowJointTrajectoryResult
 from actionlib_msgs.msg import GoalStatus
 import rospy
 from std_srvs.srv import Trigger, TriggerRequest
 import hello_helpers.hello_misc as hm
-import navigation_planning as na
+import stretch_funmap.navigation_planning as na
 import cv2
 
 class ForwardMotionObstacleDetector():

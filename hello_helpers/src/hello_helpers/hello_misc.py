@@ -121,9 +121,12 @@ class HelloNode:
         # Query TF2 to obtain the current estimated transformation
         # from the robot's base_link frame to the frame.
         robot_to_odom_mat, timestamp = get_p1_to_p2_matrix('base_link', floor_frame, self.tf2_buffer)
+        print('robot_to_odom_mat =', robot_to_odom_mat)
+        print('timestamp =', timestamp)
 
         # Find the robot's current location in the frame.
         r0 = np.array([0.0, 0.0, 0.0, 1.0])
+        print('r0 =', r0)
         r0 = np.matmul(robot_to_odom_mat, r0)[:2]
 
         # Find the current angle of the robot in the frame.
