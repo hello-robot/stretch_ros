@@ -1039,12 +1039,18 @@ def find_floor(segment_info, segments_image, verbose=False):
         return None, None
     max_bin_value = 0.0
     floor_id = None
+    print('segment_max_height_image.py : find_floor')
     for i in segment_info:
         height_m = segment_info[i]['height_m']
         bin_value = segment_info[i]['bin_value']
-        min_floor_m = -0.02
-        max_floor_m = 0.1
+        #min_floor_m = -0.02
+        #max_floor_m = 0.1
+        min_floor_m = -0.05
+        max_floor_m = 0.05
+
+        print('segment = {0}, histogram bin_value = {1}, height_m = {2}, min_floor_m = {3}, max_floor_m = {4}'.format(i, bin_value, height_m, min_floor_m, max_floor_m))
         if (height_m >= min_floor_m) and (height_m <= max_floor_m):
+            print('found candidate floor segment!')
             if (floor_id is None) and (bin_value > 0.0):
                 floor_id = i
                 max_bin_value = bin_value
@@ -1060,6 +1066,8 @@ def find_floor(segment_info, segments_image, verbose=False):
             print('Found a good floor candidate.')
             print('floor_id =', floor_id)
             print('max_bin_value =', max_bin_value)
+    else:
+        print('segment_max_height_image.py : no floor segment found...')
     return floor_id, floor_mask
 
 

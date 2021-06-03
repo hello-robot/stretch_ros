@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-#from __future__ import print_function
-
 import numpy as np
 import ros_numpy as rn
 import stretch_funmap.ros_max_height_image as rm
@@ -87,8 +85,8 @@ def display_head_scan(title, head_scan, scale_divisor=None, robot_xya_pix_list=N
         cv2.imshow(title, color_im)
     else:
         # scale the map so that it can be viewed on a small monitor
-        nh = h/scale_divisor
-        nw = w/scale_divisor
+        nh = h//scale_divisor
+        nw = w//scale_divisor
         color_im = cv2.resize(color_im, (nw, nh))
         cv2.imshow(title, color_im)
 
@@ -121,8 +119,8 @@ def localize_with_reduced_images(head_scan, merged_map, global_localization=True
 
     h, w = mhi_0.image.shape
     
-    nh = h/divisor
-    nw = w/divisor
+    nh = h//divisor
+    nw = w//divisor
 
     mhi_0.image = cv2.resize(mhi_0.image, (nw, nh))
     mhi_0.camera_depth_image = cv2.resize(mhi_0.camera_depth_image, (nw, nh))
