@@ -7,7 +7,6 @@ import numpy as np
 import scipy.ndimage as nd
 import scipy.signal as si
 import cv2
-import skimage as sk
 import math
 import hello_helpers.hello_misc as hm
 import stretch_funmap.navigation_planning as na

@@ -397,7 +397,8 @@ def estimate_navigation_channels( floor_mask, idealized_height_image, m_per_pix,
 
     # create kernel for morphological operations
     kernel_width_pix = 11
-    kernel_radius_pix = (kernel_width_pix - 1) / 2
+    #kernel_radius_pix = (kernel_width_pix - 1) / 2
+    kernel_radius_pix = (kernel_width_pix - 1) // 2
     kernel = np.zeros((kernel_width_pix, kernel_width_pix), np.uint8)
     cv2.circle(kernel, (kernel_radius_pix, kernel_radius_pix), kernel_radius_pix, 255, -1)
     
@@ -625,7 +626,8 @@ def find_exits( floor_mask, max_height_image, m_per_pix,
     # fill in floor mask holes
     #kernel = np.ones((11,11), np.uint8)
     kernel_width_pix = 11
-    kernel_radius_pix = (kernel_width_pix - 1) / 2
+    #kernel_radius_pix = (kernel_width_pix - 1) / 2
+    kernel_radius_pix = (kernel_width_pix - 1) // 2
     kernel = np.zeros((kernel_width_pix, kernel_width_pix), np.uint8)
     cv2.circle(kernel, (kernel_radius_pix, kernel_radius_pix), kernel_radius_pix, 255, -1)
     closed_floor_mask = cv2.morphologyEx(floor_mask, cv2.MORPH_CLOSE, kernel)
@@ -653,7 +655,8 @@ def find_exits( floor_mask, max_height_image, m_per_pix,
         # attempt to increase the chance of a vertex being labeled as an exit
         # create kernel for morphological operations
         kernel_width_pix = 11
-        kernel_radius_pix = (kernel_width_pix - 1) / 2
+        #kernel_radius_pix = (kernel_width_pix - 1) / 2
+        kernel_radius_pix = (kernel_width_pix - 1) // 2
         kernel = np.zeros((kernel_width_pix, kernel_width_pix), np.uint8)
         cv2.circle(kernel, (kernel_radius_pix, kernel_radius_pix), kernel_radius_pix, 255, -1)
         map_exits = cv2.dilate(map_exits, kernel, iterations = 1)
@@ -680,7 +683,8 @@ def find_exits( floor_mask, max_height_image, m_per_pix,
     # Dilate exits in order to merge exits that are very close to one
     # another.
     kernel_width_pix = 21 #11 #15
-    kernel_radius_pix = (kernel_width_pix - 1) / 2
+    #kernel_radius_pix = (kernel_width_pix - 1) / 2
+    kernel_radius_pix = (kernel_width_pix - 1) // 2
     kernel = np.zeros((kernel_width_pix, kernel_width_pix), np.uint8)
     cv2.circle(kernel, (kernel_radius_pix, kernel_radius_pix), kernel_radius_pix, 255, -1)
     map_exits = cv2.dilate(map_exits, kernel, iterations = 1)

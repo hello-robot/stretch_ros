@@ -6,7 +6,6 @@ import numpy as np
 import scipy.ndimage as nd
 import scipy.signal as si
 import cv2
-import skimage as sk
 import math
 import stretch_funmap.max_height_image as mh
 import stretch_funmap.segment_max_height_image as sm
@@ -100,7 +99,8 @@ def detect_cliff(image, m_per_pix, m_per_height_unit, robot_xy_pix, display_text
     if use_dilation:
         kernel_width_pix = 3
         iterations = 1
-        kernel_radius_pix = (kernel_width_pix - 1) / 2
+        #kernel_radius_pix = (kernel_width_pix - 1) / 2
+        kernel_radius_pix = (kernel_width_pix - 1) // 2
         kernel = np.zeros((kernel_width_pix, kernel_width_pix), np.uint8)
         cv2.circle(kernel, (kernel_radius_pix, kernel_radius_pix), kernel_radius_pix, 255, -1)
         canny_edges = cv2.dilate(canny_edges, kernel, iterations=iterations)
@@ -303,7 +303,8 @@ class ManipulationView():
         if use_dilation:
             kernel_width_pix = 3
             iterations = 1
-            kernel_radius_pix = (kernel_width_pix - 1) / 2
+            #kernel_radius_pix = (kernel_width_pix - 1) / 2
+            kernel_radius_pix = (kernel_width_pix - 1) // 2
             kernel = np.zeros((kernel_width_pix, kernel_width_pix), np.uint8)
             cv2.circle(kernel, (kernel_radius_pix, kernel_radius_pix), kernel_radius_pix, 255, -1)
             mask_image = cv2.dilate(mask_image, kernel, iterations=iterations)
