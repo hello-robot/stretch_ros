@@ -1,5 +1,4 @@
-#! /usr/bin/env python
-from __future__ import print_function
+#! /usr/bin/env python3
 
 import numpy as np
 import hello_helpers.hello_misc as hm
@@ -209,7 +208,6 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
         if self.active:
             _, tilt_error = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
             robot.head.move_by('head_tilt', tilt_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
-            #if tilt_error > (self.head_tilt_backlash_transition_angle + self.head_tilt_calibrated_offset):
             if self.goal['position'] > (self.head_tilt_backlash_transition_angle + self.head_tilt_calibrated_offset):
                 kwargs['backlash_state']['head_tilt_looking_up'] = True
             else:
@@ -333,7 +331,6 @@ class GripperCommandGroup(SimpleCommandGroup):
 
 class TelescopingCommandGroup(SimpleCommandGroup):
     def __init__(self, range_m, wrist_extension_calibrated_retracted_offset):
-        #SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.005)
         SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.008)
         self.wrist_extension_calibrated_retracted_offset = wrist_extension_calibrated_retracted_offset
         self.telescoping_joints = ['joint_arm_l3', 'joint_arm_l2', 'joint_arm_l1', 'joint_arm_l0']
@@ -501,9 +498,7 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
         #    + If both rotation and translation commands received, then return goal failure.
         #    + If only one received, check that the array length works with the index.
         #    + Can both commands be provided and one have a null goal of some sort? If so, should consider handling this case.
-        #
-        # TO DO: remove legacy manipulation mode
-        #
+
         robot_mode = kwargs['robot_mode']
         self.active = False
         self.active_translate_mobile_base = False
@@ -552,9 +547,7 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
         #    + If both rotation and translation commands received, then return goal failure.
         #    + If only one received, check that the array length works with the index.
         #    + Can both commands be provided and one have a null goal of some sort? If so, should consider handling this case.
-        #
-        # TO DO: remove legacy manipulation mode
-        #
+
         self.goal = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
         self.goal_translate_mobile_base = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
         self.goal_rotate_mobile_base = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}

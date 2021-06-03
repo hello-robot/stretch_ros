@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-#from __future__ import print_function
-
 import numpy as np
 import ros_numpy as rn
 import stretch_funmap.ros_max_height_image as rm

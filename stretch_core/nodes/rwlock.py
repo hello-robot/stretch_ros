@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 """rwlock.py
 This write-preferring implementation of the readwrite lock
 was made available via the Creative Commons license at:

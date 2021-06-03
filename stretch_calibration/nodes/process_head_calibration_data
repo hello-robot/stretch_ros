@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-#from __future__ import print_function
-
 import calibration as ca
 
 from sensor_msgs.msg import JointState
@@ -620,7 +618,6 @@ class HeadCalibrator:
             pan_backlash_correction = 0.0
             
         if backlash_state['joint_head_tilt_looking_up']:
-            #tilt_backlash_correction = -math.pi/18.0 # 10 deg test
             tilt_backlash_correction = self.tilt_looking_up_offset
         else:
             tilt_backlash_correction = 0.0

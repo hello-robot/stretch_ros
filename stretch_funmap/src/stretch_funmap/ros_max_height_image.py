@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-#from __future__ import print_function
-
 import sys
 import rospy
 import cv2
@@ -91,7 +89,7 @@ class ROSVolumeOfInterest(VolumeOfInterest):
         marker.color.r = r
         marker.color.g = g
         marker.color.b = b
-        marker.color.a = 0.25 #0.33 #0.25 #0.5
+        marker.color.a = 0.25 
 
         # find the middle of the volume of interest
         center_vec = np.array([self.x_in_m/2.0, self.y_in_m/2.0, self.z_in_m/2.0])

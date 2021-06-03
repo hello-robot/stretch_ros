@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-#from __future__ import print_function
-
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
@@ -37,7 +35,7 @@ class HelloWorldNode(hm.HelloNode):
         self.joint_states_lock = threading.Lock()
         self.move_base = nv.MoveBase(self)
         self.letter_height_m = 0.2
-        self.letter_top_lift_m = 1.08 #1.05
+        self.letter_top_lift_m = 1.08 
         
     def joint_states_callback(self, joint_states):
         with self.joint_states_lock: 
@@ -71,7 +69,7 @@ class HelloWorldNode(hm.HelloNode):
             wrist_position, wrist_velocity, wrist_effort = hm.get_wrist_state(self.joint_states)
         extension_m = wrist_position + max_reach_m
         extension_m = min(extension_m, max_extension_m)
-        extension_contact_effort = 45.0 #42.0 #40.0 from funmap
+        extension_contact_effort = 45.0
         pose = {'wrist_extension': (extension_m, extension_contact_effort)}
         self.move_to_pose(pose, custom_contact_thresholds=True)
         
@@ -81,11 +79,11 @@ class HelloWorldNode(hm.HelloNode):
             wrist_position, wrist_velocity, wrist_effort = hm.get_wrist_state(self.joint_states)
         max_extension_m = 0.5
         min_extension_m = 0.01
-        backoff_m = 0.1 #0.07 # back away 7cm from the surface
+        backoff_m = 0.1
         extension_m = wrist_position - backoff_m
         extension_m = min(extension_m, max_extension_m)
         extension_m = max(min_extension_m, extension_m)
-        extension_contact_effort = 80.0 #40.0 from funmap # to avoid stopping due to contact
+        extension_contact_effort = 80.0 # to avoid stopping due to contact
         pose = {'wrist_extension': (extension_m, extension_contact_effort)}
         self.move_to_pose(pose, custom_contact_thresholds=True)
         rospy.sleep(1.0) # Give it time to backoff before the next move. Otherwise it may not backoff.
@@ -264,10 +262,6 @@ class HelloWorldNode(hm.HelloNode):
         rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_reach_until_contact.')
         self.trigger_reach_until_contact_service = rospy.ServiceProxy('/funmap/trigger_reach_until_contact', Trigger)
 
-        # rospy.wait_for_service('/funmap/trigger_turn_off_contact_regulation')
-        # rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_turn_off_contact_regulation.')
-        # self.trigger_turn_off_contact_regulation_service = rospy.ServiceProxy('/funmap/trigger_turn_off_contact_regulation', Trigger)
-
         rate = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
             rate.sleep()
@@ -276,7 +270,6 @@ class HelloWorldNode(hm.HelloNode):
 if __name__ == '__main__':
     try:
         parser = ap.ArgumentParser(description='Hello World demo for stretch.')
-        #parser.add_argument('--mapping_on', action='store_true', help='Turn on mapping control. For example, the space bar will trigger a head scan. This requires that the mapping node be run (funmap).')
         args, unknown = parser.parse_known_args()
         node = HelloWorldNode()
         node.main()

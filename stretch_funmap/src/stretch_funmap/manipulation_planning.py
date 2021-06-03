@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-#from __future__ import print_function
-
 import numpy as np
 import scipy.ndimage as nd
 import scipy.signal as si
@@ -99,7 +97,6 @@ def detect_cliff(image, m_per_pix, m_per_height_unit, robot_xy_pix, display_text
     if use_dilation:
         kernel_width_pix = 3
         iterations = 1
-        #kernel_radius_pix = (kernel_width_pix - 1) / 2
         kernel_radius_pix = (kernel_width_pix - 1) // 2
         kernel = np.zeros((kernel_width_pix, kernel_width_pix), np.uint8)
         cv2.circle(kernel, (kernel_radius_pix, kernel_radius_pix), kernel_radius_pix, 255, -1)
@@ -303,7 +300,6 @@ class ManipulationView():
         if use_dilation:
             kernel_width_pix = 3
             iterations = 1
-            #kernel_radius_pix = (kernel_width_pix - 1) / 2
             kernel_radius_pix = (kernel_width_pix - 1) // 2
             kernel = np.zeros((kernel_width_pix, kernel_width_pix), np.uint8)
             cv2.circle(kernel, (kernel_radius_pix, kernel_radius_pix), kernel_radius_pix, 255, -1)

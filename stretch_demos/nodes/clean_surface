@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-#from __future__ import print_function
-
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
@@ -96,9 +94,9 @@ class CleanSurfaceNode(hm.HelloNode):
         
     def trigger_clean_surface_callback(self, request):
 
-        tool_width_m = 0.08 #0.06
-        tool_length_m = 0.08 #0.06
-        step_size_m = 0.04 #0.06 #0.1 #0.02
+        tool_width_m = 0.08
+        tool_length_m = 0.08
+        step_size_m = 0.04 
         min_extension_m = 0.01
         max_extension_m = 0.5
         
@@ -127,7 +125,6 @@ class CleanSurfaceNode(hm.HelloNode):
                 initial_wrist_position = self.wrist_position 
                 extension_m = start['start_wrist_extension_m']
 
-                #start_extension_m = initial_wrist_position + extension_m + (tool_length_m/2.0)
                 start_extension_m = initial_wrist_position + extension_m
                 pose = {'wrist_extension': start_extension_m}
                 rospy.loginfo('Extend tool above surface.')
@@ -154,7 +151,6 @@ class CleanSurfaceNode(hm.HelloNode):
                         rospy.sleep(0.2) # wait for new lift position
 
                 extension_m = start['end_wrist_extension_m']
-                #end_extension_m = initial_wrist_position + extension_m - (tool_length_m/2.0)
                 end_extension_m = initial_wrist_position + extension_m
                 pose = {'wrist_extension': end_extension_m}
                 rospy.loginfo('Extend tool to end of surface.')
@@ -172,7 +168,6 @@ class CleanSurfaceNode(hm.HelloNode):
                     self.move_to_pose(pose)
 
                     extension_m = m['start_wrist_extension_m']
-                    #start_extension_m = initial_wrist_position + extension_m + (tool_length_m/2.0)
                     start_extension_m = initial_wrist_position + extension_m
                     start_extension_m = max(start_extension_m, min_extension_m)
                     pose = {'wrist_extension': start_extension_m}
@@ -180,7 +175,6 @@ class CleanSurfaceNode(hm.HelloNode):
                     self.move_to_pose(pose)
 
                     extension_m = m['end_wrist_extension_m']
-                    #end_extension_m = initial_wrist_position + extension_m - (tool_length_m/2.0)
                     end_extension_m = initial_wrist_position + extension_m
                     end_extension_m = min(end_extension_m, max_extension_m)
                     pose = {'wrist_extension': end_extension_m}

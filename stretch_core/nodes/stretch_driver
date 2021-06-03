@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-#from __future__ import print_function
 
 import yaml
 import numpy as np
@@ -60,8 +59,6 @@ class StretchBodyNode:
         self.head_tilt_backlash_transition_angle_rad = -0.4
 
         self.gripper_conversion = GripperConversion()
-
-        #self.mobile_base_manipulation_origin = None #{'x':None, 'y':None, 'theta':None}
 
         self.robot_stop_lock = threading.Lock()
         self.stop_the_robot = False
@@ -128,11 +125,6 @@ class StretchBodyNode:
         x_effort_raw = x_effort
         theta_vel = base_status['theta_vel']
         pose_time_s = base_status['pose_time_s']
-
-        # if self.robot_mode == 'manipulation':
-        #     x = self.mobile_base_manipulation_origin['x']
-        #     x_vel = 0.0
-        #     x_effort = 0.0
 
         # assign relevant arm status to variables
         arm_status = robot_status['arm']
@@ -286,18 +278,6 @@ class StretchBodyNode:
             velocities.append(gripper_finger_vel)
             efforts.append(gripper_finger_effort)
 
-        # # set virtual joint for mobile base translation
-        # joint_state.name.append('joint_mobile_base_translation')
-        # if self.robot_mode == 'manipulation':
-        #     manipulation_translation = x_raw - self.mobile_base_manipulation_origin['x']
-        #     positions.append(manipulation_translation)
-        #     velocities.append(x_vel_raw)
-        #     efforts.append(x_effort_raw)
-        # else:
-        #     positions.append(0.0)
-        #     velocities.append(0.0)
-        #     efforts.append(0.0)
-
         # set joint_state
         joint_state.position = positions
         joint_state.velocity = velocities
@@ -370,28 +350,6 @@ class StretchBodyNode:
             self.angular_velocity_radps = 0.0
         self.change_mode('navigation', code_to_run)
 
-    # def turn_on_manipulation_mode(self):
-    #     # Manipulation mode enables mobile base translation using
-    #     # position control via joint_mobile_base_translation, and
-    #     # disables velocity control of the mobile base. It also
-    #     # updates the virtual prismatic joint named
-    #     # joint_mobile_base_translation that relates 'floor_link' and
-    #     # 'base_link'. This mode was originally created so that
-    #     # MoveIt! could treat the robot like an arm. This mode does
-    #     # not allow base rotation.
-    #     def code_to_run():
-    #         self.robot.base.enable_pos_incr_mode()
-    #         # get copy of the current robot status (uses lock held by the robot)
-    #         robot_status = self.robot.get_status()
-    #         # obtain odometry
-    #         # assign relevant base status to variables
-    #         base_status = robot_status['base']
-    #         x = base_status['x']
-    #         y = base_status['y']
-    #         theta = base_status['theta']
-    #         self.mobile_base_manipulation_origin = {'x':x, 'y':y, 'theta':theta} 
-    #     self.change_mode('manipulation', code_to_run)
-
     def turn_on_position_mode(self):
         # Position mode enables mobile base translation and rotation
         # using position control with sequential incremental rotations
@@ -439,13 +397,6 @@ class StretchBodyNode:
             success=True,
             message='Now in navigation mode.'
             )
-
-    # def manipulation_mode_service_callback(self, request):
-    #     self.turn_on_manipulation_mode()
-    #     return TriggerResponse(
-    #         success=True,
-    #         message='Now in manipulation mode.'
-    #         )
 
     def position_mode_service_callback(self, request):
         self.turn_on_position_mode()
@@ -500,8 +451,6 @@ class StretchBodyNode:
             self.turn_on_position_mode()
         elif mode == "navigation":
             self.turn_on_navigation_mode()
-#        elif mode == "manipulation":
-#            self.turn_on_manipulation_mode()
 
         self.broadcast_odom_tf = rospy.get_param('~broadcast_odom_tf', False)
         rospy.loginfo('broadcast_odom_tf = ' + str(self.broadcast_odom_tf))
@@ -586,10 +535,6 @@ class StretchBodyNode:
         self.fail_out_of_range_goal = rospy.get_param('~fail_out_of_range_goal', True)
         self.joint_trajectory_action = JointTrajectoryAction(self)
         self.joint_trajectory_action.server.start()
-
-        # self.switch_to_manipulation_mode_service = rospy.Service('/switch_to_manipulation_mode',
-        #                                                          Trigger,
-        #                                                          self.manipulation_mode_service_callback)
 
         self.switch_to_navigation_mode_service = rospy.Service('/switch_to_navigation_mode',
                                                                Trigger,

@@ -397,7 +397,6 @@ def estimate_navigation_channels( floor_mask, idealized_height_image, m_per_pix,
 
     # create kernel for morphological operations
     kernel_width_pix = 11
-    #kernel_radius_pix = (kernel_width_pix - 1) / 2
     kernel_radius_pix = (kernel_width_pix - 1) // 2
     kernel = np.zeros((kernel_width_pix, kernel_width_pix), np.uint8)
     cv2.circle(kernel, (kernel_radius_pix, kernel_radius_pix), kernel_radius_pix, 255, -1)
@@ -624,9 +623,7 @@ def find_exits( floor_mask, max_height_image, m_per_pix,
     distance_map = cv2.distanceTransform(traversable_mask, cv2.DIST_L2, 5)
     
     # fill in floor mask holes
-    #kernel = np.ones((11,11), np.uint8)
     kernel_width_pix = 11
-    #kernel_radius_pix = (kernel_width_pix - 1) / 2
     kernel_radius_pix = (kernel_width_pix - 1) // 2
     kernel = np.zeros((kernel_width_pix, kernel_width_pix), np.uint8)
     cv2.circle(kernel, (kernel_radius_pix, kernel_radius_pix), kernel_radius_pix, 255, -1)

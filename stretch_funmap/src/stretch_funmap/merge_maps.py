@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-#from __future__ import print_function
-
 import stretch_funmap.max_height_image as mh
 import numpy as np
 import scipy.ndimage as nd

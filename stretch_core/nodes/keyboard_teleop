@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-#from __future__ import print_function
 
 import math
 import keyboard as kb
@@ -25,10 +24,6 @@ class GetKeyboardCommands:
         self.deliver_object_on = deliver_object_on
 
         self.step_size = 'medium'
-        # self.persistent_command_count = 0
-        # self.prev_persistent_c = None
-        # self.persistent_start_s = time.time()
-        # self.max_persistent_delay_s = 1.0
         self.rad_per_deg = math.pi/180.0
         self.small_deg = 3.0
         self.small_rad = self.rad_per_deg * self.small_deg

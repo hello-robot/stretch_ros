@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-#from __future__ import print_function
-
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
@@ -74,7 +72,6 @@ class OpenDrawerNode(hm.HelloNode):
         use_correction = True
         if use_correction:
             # raise due to drop down after contact detection
-            #rospy.sleep(0.5) # wait for new lift position
             rospy.sleep(0.2) # wait for new lift position
             lift_m = self.lift_position + 0.015
             pose = {'joint_lift': lift_m}
@@ -89,8 +86,6 @@ class OpenDrawerNode(hm.HelloNode):
         pose = {'joint_lift': (lift_m, lift_contact_effort)}
         self.move_to_pose(pose, custom_contact_thresholds=True)
 
-        #rospy.sleep(1.0) # needed to correct for bounce after contact
-        
         use_correction = True
         if use_correction:
             # raise due to drop down after contact detection

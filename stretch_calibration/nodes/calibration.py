@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-from __future__ import print_function
+#!/usr/bin/env python3
 
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import Twist
@@ -176,9 +174,7 @@ class Chain:
         self.chain_names = self.urdf.get_chain(start_name, end_name)
         self.chain = []
         for name in self.chain_names:
-            #is_joint = self.urdf.joint_map.has_key(name)
             is_joint = name in self.urdf.joint_map
-            #is_link = self.urdf.link_map.has_key(name)
             is_link = name in self.urdf.link_map
             if is_joint and is_link:
                 print('ERROR: a joint and a link have the same name. This is not supported.')

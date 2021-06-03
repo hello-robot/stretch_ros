@@ -40,10 +40,8 @@ def numba_sample_ridge(window_width, ridge_mask, distance_map, distance_threshol
             l_x += window_width
         l_y += window_width
 
-    #l_y = window_width/2
     l_y = window_width//2
     while l_y < l_y_max:
-        #l_x = window_width/2
         l_x = window_width//2
         while l_x < l_x_max:
             max_found = False
@@ -115,10 +113,8 @@ def numba_sample_ridge_list(window_width, ridge_mask, distance_map, distance_thr
 
     sample_list = []
     
-    #l_y = window_width/2
     l_y = window_width//2
     while l_y < l_y_max:
-        #l_x = window_width/2
         l_x = window_width//2
         while l_x < l_x_max:
             max_found = False

@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-#from __future__ import print_function
-
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
