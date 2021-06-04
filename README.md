@@ -6,7 +6,7 @@ This is an experimental development branch that we are using to port *stretch_ro
 
 In the near future, we expect to begin using the port internally at Hello Robot to continue refining it while adding new capabilities. We also expect some customers who have requested this port to begin trying it out. For users who wish to test out the Noetic port, please see the [installation guide](install_noetic.md). **This guide is in active development as well. Please proceed with caution.**
 
-If you do begin using this branch, **please file issues here and ask general questions on the [forum](forum.hello-robot.com)**. 
+If you do begin using this branch, **please file issues here and ask general questions on the [forum](forum.hello-robot.com)**.
 
 ## Known Issues
 
