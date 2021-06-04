@@ -10,7 +10,8 @@ If you do begin using this branch, **please file issues here and ask general que
 
 ## Known Issues
 
- - There no support for the Respeaker Microphone Array in Noetic yet.
+ - There is no support for the Respeaker Microphone Array in Noetic yet.
+ - There is no support for the Dexterous Wrist yet.
 
 
 ---
