@@ -14,9 +14,13 @@
 
 ### Copy materials from the robot's original Ubuntu 18.04 partition
 1. Boot into the robot's original Ubuntu 18.04 partition.
-2. Open a file explorer to `/etc/hello-robot` and copy the folder called "stretch-re1-xxxx" onto a USB key.
+2. Copy the `/etc/hello-robot` to a USB key. 
+    1. For example, you can run `cp -r /etc/hello-robot /media/$USER/USBKEY` from the command line where USBKEY is the mounted USB key.
+    2. Or, you can open the file explorer to copy the directory. Make sure you look for `/etc/hello-robot` on the original Ubuntu 18.04 partition rather than the new partition. 
 3. Boot into the robot's new Ubuntu 20.04 partition.
-4. Copy the "stretch-re1-xxxx" folder into the home folder (i.e. `/home/$USER`).
+4. Copy the folder of the form "stretch-re1-xxxx" found in the `hello-robot` directory into the home folder (i.e. `/home/$USER/`).
+    1. For example, you can run a command similar to `cp -r /media/$USER/USBKEY/hello-robot/stretch-re1-xxxx /home/$USER/`
+    2. Or, you can use the visual file explorer. 
 
 ### Run the setup script with the robot's new Ubuntu 20.04 installation
 1. `sudo apt install git`
