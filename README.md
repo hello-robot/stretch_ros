@@ -4,7 +4,7 @@
 
 This is an experimental development branch that we are using to port *stretch_ros* to ROS Noetic, Python 3, and Ubuntu 20.04. We plan to begin shipping this version preinstalled on Stretch RE1 robots at the end of the summer of 2021. It is close to being in a usable state, but **we don't recommend trying it yet**. This is because, first, there has been limited testing of this port, so standard use may result in unexected behaviors. And second, the installation **requires Ubuntu 20.04 on a second partition** on your robot. As such, it's a significant installation process.
 
-In the near future, we expect to begin using the port internally at Hello Robot to continue refining it while adding new capabilities. We also expect some customers who have requested this port to begin trying it out. For users who wish to test out the Noetic port, please see the [installation guide](#install_noetic.md). **This guide is in active development as well. Please proceed with caution.**
+In the near future, we expect to begin using the port internally at Hello Robot to continue refining it while adding new capabilities. We also expect some customers who have requested this port to begin trying it out. For users who wish to test out the Noetic port, please see the [installation guide](install_noetic.md). **This guide is in active development as well. Please proceed with caution.**
 
 If you do begin using this branch, **please file issues here and ask general questions on the [forum](forum.hello-robot.com)**. 
 
