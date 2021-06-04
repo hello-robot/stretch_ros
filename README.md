@@ -2,26 +2,18 @@
 
 ## Experimental ROS Noetic, Python 3, Ubuntu 20.04 Development Branch
 
-This is an experimental development branch that we are using to port *stretch_ros* to ROS Noetic, Python 3, and Ubuntu 20.04. We plan to begin shipping this version preinstalled on Stretch RE1 robots at the end of the summer of 2021. It is close to being in a usable state. but **we don't recommend trying it yet**. 
+This is an experimental development branch that we are using to port *stretch_ros* to ROS Noetic, Python 3, and Ubuntu 20.04. We plan to begin shipping this version preinstalled on Stretch RE1 robots at the end of the summer of 2021. It is close to being in a usable state, but **we don't recommend trying it yet**. This is because, first, there has been limited testing of this port, so standard use may result in unexected behaviors. And second, the installation **requires Ubuntu 20.04 on a second partition** on your robot. As such, it's a significant installation process.
 
-In the near future, we expect to begin using it internally at Hello Robot to continue refining it while adding new capabilities. We also expect some customers who have requested this port to begin trying it out. However, we have more work to do before this happens, including writing installation documentation.
+In the near future, we expect to begin using the port internally at Hello Robot to continue refining it while adding new capabilities. We also expect some customers who have requested this port to begin trying it out. For users who wish to test out the Noetic port, please see the [installation guide](#install_noetic.md). **This guide is in active development as well. Please proceed with caution.**
 
-If you decide to use this branch, **you will need to install Ubuntu 20.04 on a second partition on your robot**. As such, it's a significant installation process. 
+If you do begin using this branch, **please file issues here and ask general questions on the [forum](forum.hello-robot.com)**. 
 
-If you do begin using this branch, **please file issues here and ask general questions on the forum**. 
+## Known Issues
 
-## Installation Instructions
+ - There no support for the Respeaker Microphone Array in Noetic yet.
 
-1. Install a partition with 20.04
-    1. Download and write the Ubuntu 20.04 iso file to a USB key.
-    2. Make sure you have sufficient space on your robot’s solid state drive (SSD) and backup all of your critical files.
-    3. Boot the robot with the USB key plugged into a USB port in the robot’s trunk. 
-    4. The installer should detect your Ubuntu 18.04 installation and provide the option to install Ubuntu 20.04 alongside Ubuntu 18.04. This option will be selected by default. 
-    5. Proceeding with this option will result in a new partition with Ubuntu 20.04, although there must be sufficient available space on the robot’s SSD.
-2. Copy materials from your Ubuntu 18.04 partition
-   1. Boot into your Ubuntu 20.04 partition.
-   2. Mount your Ubuntu 18.04 partition. For example, you can do this by going to “+ Other Locations” using the file explorer GUI and clicking on the Volume  associaed with your Ubuntu 18.04 partition. 
 
+---
 
 ## Directories
 
