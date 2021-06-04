@@ -23,10 +23,11 @@
     2. Or, you can use the visual file explorer. 
 
 ### Run the setup script with the robot's new Ubuntu 20.04 installation
-1. `sudo apt install git`
-2. `git clone https://github.com/hello-robot/stretch_install.git -b dev/install_20.04`
-3. `cd ./stretch_install/factory && ./stretch_install_nonfactory.sh`
-    - Supply the password if asked for it
+1. Go to the home directory of the new Ubuntu 20.04 installation with `cd`. Then run the following commands.
+2. `sudo apt install git`
+3. `git clone https://github.com/hello-robot/stretch_install.git -b dev/install_20.04`
+4. `cd ./stretch_install/factory && ./stretch_install_nonfactory.sh`
+    - You will need to provide input when prompted, including your robot's number and possibly your password.
 
 ### Clean up and verify the robot's Noetic ROS installation
 1. `cd ~ && rm -rf ./stretch-re1-xxxx`
