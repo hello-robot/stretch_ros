@@ -37,3 +37,6 @@
 5. Run `roslaunch stretch_core wheel_odometry_test.launch`. You should see coherent visualizations of the robot's body, the laser range finder output, and the D435i point cloud output. You should be able to move the robot around using keyboard commands and see reasonable visualizations in RViz. 
 6. You may delete the `./stretch-re1-xxxx` directory and its contents that you copied over from the Ubuntu 18.04 partition, if you'd like.
 
+### Recalibrate your robot
+1. The new Noetic ROS installation starts out by using the calibrated URDF that was created at the Hello Robot factory. 
+2. We recommend that you recalibrate your robot by following the [stretch_calibration instructions](https://github.com/hello-robot/stretch_ros/tree/dev/noetic/stretch_calibration). This takes about 1.5 hours of robot time, but will result in a higher-quality model that matches the current state of the robot. For example, shipping can sometimes shift components a little. 
