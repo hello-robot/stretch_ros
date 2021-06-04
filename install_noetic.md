@@ -27,7 +27,7 @@
 2. `sudo apt install git`
 3. `git clone https://github.com/hello-robot/stretch_install.git -b dev/install_20.04`
 4. `cd ./stretch_install/factory && ./stretch_install_nonfactory.sh`
-    - You will need to provide input when prompted, including your robot's number and possibly your password.
+    - You will need to provide input when prompted, including your robot's number and your password. The password request can come late in the process and freeze installation until you provide it.
 
 ### Clean up and verify the robot's Noetic ROS installation
 1. `cd ~ && rm -rf ./stretch-re1-xxxx`
