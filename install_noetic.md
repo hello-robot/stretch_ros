@@ -27,8 +27,16 @@
 2. `sudo apt install git`
 3. `git clone https://github.com/hello-robot/stretch_install.git -b dev/install_20.04`
 4. `cd ./stretch_install/factory && ./stretch_install_nonfactory.sh`
-    - You will need to provide input when prompted, including your robot's number and possibly your password.
+    - You will need to provide input when prompted, including your robot's number and your password. The password request can come late in the process and freeze installation until you provide it.
 
-### Clean up and verify the robot's Noetic ROS installation
-1. `cd ~ && rm -rf ./stretch-re1-xxxx`
-2. `stretch_robot_home.py` and `stretch_robot_system_check.py`
+### Check that the robot's Noetic ROS installation is working
+1. Shutdown and power off your robot. Then turn your robot back on. Once you're logged in, you can test your robot with the following commands.
+2. Go ahead and attempt to home your robot using `stretch_robot_home.py`. It should be calibrated afterward.
+3. Run `stretch_robot_system_check.py` to make sure that things are normal. Ideally, you will see all green and no red. 
+4. Make sure the game controller dongle is plugged in and run `stretch_xbox_controller_teleop.py`. Use the game controller to test out the motions of the robot.
+5. Run `roslaunch stretch_core wheel_odometry_test.launch`. You should see coherent visualizations of the robot's body, the laser range finder output, and the D435i point cloud output. You should be able to move the robot around using keyboard commands and see reasonable visualizations in RViz. 
+6. You may delete the `./stretch-re1-xxxx` directory and its contents that you copied over from the Ubuntu 18.04 partition, if you'd like.
+
+### Recalibrate your robot
+1. The new Noetic ROS installation starts out by using the calibrated URDF that was created at the Hello Robot factory. 
+2. We recommend that you recalibrate your robot by following the [stretch_calibration instructions](https://github.com/hello-robot/stretch_ros/tree/dev/noetic/stretch_calibration). This takes about 1.5 hours of robot time, but will result in a higher-quality model that matches the current state of the robot. For example, shipping can sometimes shift components a little. 
