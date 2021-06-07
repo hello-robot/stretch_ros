@@ -40,3 +40,23 @@
 ### Recalibrate your robot
 1. The new Noetic ROS installation starts out by using the calibrated URDF that was created at the Hello Robot factory. 
 2. We recommend that you recalibrate your robot by following the [stretch_calibration instructions](https://github.com/hello-robot/stretch_ros/tree/dev/noetic/stretch_calibration). This takes about 1.5 hours of robot time, but will result in a higher-quality model that matches the current state of the robot. For example, shipping can sometimes shift components a little. 
+
+### Troubleshooting
+
+##### Firmware Mismatch Error
+
+If you are seeing the following error:
+```
+----------------
+Firmware protocol mismatch on hello-.
+Protocol on board is pX.
+Valid protocol is: pX.
+Disabling device.
+Please upgrade the firmware and/or version of Stretch Body.
+----------------
+```
+Your version of Stretch Body does not align with the firmware installed with your robot. Run the firmware updater tool to automatically update the firmware to the required version for your software.
+```
+$ python -m pip install hello-robot-stretch-factory
+$ RE1_firmware_updater.py
+```
