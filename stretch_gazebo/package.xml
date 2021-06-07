@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>stretch_gazebo</name>
+  <version>0.0.0</version>
+  <description>The stretch_gazebo package</description>
+
+  <maintainer email="davidvlu@gmail.com">David V. Lu!!</maintainer>
+  <maintainer email="vatan@picknik.ai">Vatan Aksoy Tezer</maintainer>
+  <maintainer email="support@hello-robot.com">Hello Robot Inc.</maintainer>
+
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>controller_manager</depend>
+  <depend>gazebo_msgs</depend>
+  <depend>gazebo_plugins</depend>
+  <depend>gazebo_ros</depend>
+  <depend>nav_msgs</depend>
+  <depend>realsense_gazebo_plugin</depend>
+  <depend>realsense2_camera</depend>
+  <depend>realsense2_description</depend>
+  <depend>robot_state_publisher</depend>
+  <depend>rospy</depend>
+  <depend>rviz</depend>
+  <depend>std_msgs</depend>
+  <depend>xacro</depend>
+
+</package>
