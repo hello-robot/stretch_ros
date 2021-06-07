@@ -1,0 +1,23 @@
+stretch_arm_controller:
+  type: "position_controllers/JointTrajectoryController"
+  joints:
+    - joint_lift
+    - joint_arm_l3
+    - joint_arm_l2
+    - joint_arm_l1
+    - joint_arm_l0
+    - joint_wrist_yaw
+  allow_partial_joints_goal: true
+
+  constraints:
+    goal_time: 0.6
+    stopped_velocity_tolerance: 0.05
+    joint_lift: {trajectory: 0.1, goal: 0.1}
+    joint_arm_l3: {trajectory: 0.1, goal: 0.1}
+    joint_arm_l2: {trajectory: 0.1, goal: 0.1}
+    joint_arm_l1: {trajectory: 0.1, goal: 0.1}
+    joint_arm_l0: {trajectory: 0.1, goal: 0.1}
+    joint_wrist_yaw: {trajectory: 0.1, goal: 0.1}
+    stop_trajectory_duration: 0.5
+    state_publish_rate:  25
+    action_monitor_rate: 10
