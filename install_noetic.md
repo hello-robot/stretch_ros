@@ -25,7 +25,7 @@ These instructions will guide you through the process of installing the Noetic v
     2. Or, you can use the visual file explorer. 
 
 ### Run the setup script with the robot's new Ubuntu 20.04 installation
-1. Go to the home directory of the new Ubuntu 20.04 installation with `cd`. Then run the following commands.
+1. Using a terminal, go to the home directory of the new Ubuntu 20.04 installation with `cd`. Then run the following commands.
 2. `sudo apt install git`
 3. `git clone https://github.com/hello-robot/stretch_install.git -b dev/install_20.04`
 4. `cd ./stretch_install/factory && ./stretch_install_nonfactory.sh`
