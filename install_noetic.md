@@ -45,6 +45,8 @@ These instructions will guide you through the process of installing the Noetic v
 
 # Noetic Installation Troubleshooting
 
+This section provides suggestions for common errors that occur during installation. If you become stuck and don't find an answer here, please email us or contact us through the forum. 
+
 ### Firmware Mismatch Error
 
 If you are seeing the following error:
@@ -62,3 +64,11 @@ Your version of Stretch Body does not align with the firmware installed with you
 $ python -m pip install hello-robot-stretch-factory
 $ RE1_firmware_updater.py
 ```
+
+### Homing Error
+
+If using `stretch_robot_home.py` does not result in the robot being calibrated, try running the command again. If this does not work, try shutting down the robot, turning off the robot with the power switch, waiting for a few seconds, and then powering it on again. Then, try `stretch_robot_home.py` again. 
+
+### ROS Launch File Fails
+
+The launch files have nondeterministic behavior. Sometimes they need to be run more than once for the nodes to start in a successful order that works. For example, a common symptom of a failed launch is the visualization of the robot's body appearing white and flat in RViz. 
