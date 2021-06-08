@@ -2,6 +2,8 @@
 
 # Noetic Installation Instructions
 
+These instructions will guide you through the process of installing the Noetic version of stretch_ros onto a Stretch RE1 robot that has a factory installation of the Melodic version of stretch_ros. If you run into a problem, you may find a solution in the trouble shooting section at the end of this document.
+
 ### Install a partition with Ubuntu 20.04 Desktop Edition
 1. Download and write the [Ubuntu 20.04 iso file](https://releases.ubuntu.com/20.04/ubuntu-20.04.2.0-desktop-amd64.iso) to a USB key.
 2. Backup all of the critical files from the existing Ubuntu 18.04 partition on the robot.
@@ -41,9 +43,9 @@
 1. The new Noetic ROS installation starts out by using the calibrated URDF that was created at the Hello Robot factory. 
 2. We recommend that you recalibrate your robot by following the [stretch_calibration instructions](https://github.com/hello-robot/stretch_ros/tree/dev/noetic/stretch_calibration). This takes about 1.5 hours of robot time, but will result in a higher-quality model that matches the current state of the robot. For example, shipping can sometimes shift components a little. 
 
-### Troubleshooting
+# Noetic Installation Troubleshooting
 
-##### Firmware Mismatch Error
+### Firmware Mismatch Error
 
 If you are seeing the following error:
 ```
