@@ -2,6 +2,8 @@
 
 # Noetic Installation Instructions
 
+These instructions will guide you through the process of installing the Noetic version of stretch_ros onto a Stretch RE1 robot that has a factory installation of the Melodic version of stretch_ros. If you run into a problem, you may find a solution in the trouble shooting section at the end of this document.
+
 ### Install a partition with Ubuntu 20.04 Desktop Edition
 1. Download and write the [Ubuntu 20.04 iso file](https://releases.ubuntu.com/20.04/ubuntu-20.04.2.0-desktop-amd64.iso) to a USB key.
 2. Backup all of the critical files from the existing Ubuntu 18.04 partition on the robot.
@@ -40,3 +42,33 @@
 ### Recalibrate your robot
 1. The new Noetic ROS installation starts out by using the calibrated URDF that was created at the Hello Robot factory. 
 2. We recommend that you recalibrate your robot by following the [stretch_calibration instructions](https://github.com/hello-robot/stretch_ros/tree/dev/noetic/stretch_calibration). This takes about 1.5 hours of robot time, but will result in a higher-quality model that matches the current state of the robot. For example, shipping can sometimes shift components a little. 
+
+# Noetic Installation Troubleshooting
+
+This section provides suggestions for common errors that occur during installation. If you become stuck and don't find an answer here, please email us or contact us through the forum. 
+
+### Firmware Mismatch Error
+
+If you are seeing the following error:
+```
+----------------
+Firmware protocol mismatch on hello-.
+Protocol on board is pX.
+Valid protocol is: pX.
+Disabling device.
+Please upgrade the firmware and/or version of Stretch Body.
+----------------
+```
+Your version of Stretch Body does not align with the firmware installed with your robot. Run the firmware updater tool to automatically update the firmware to the required version for your software.
+```
+$ python -m pip install hello-robot-stretch-factory
+$ RE1_firmware_updater.py
+```
+
+### Homing Error
+
+If using `stretch_robot_home.py` does not result in the robot being calibrated, try running the command again. If this does not work, try shutting down the robot, turning off the robot with the power switch, waiting for a few seconds, and then powering it on again. Then, try `stretch_robot_home.py` again. 
+
+### ROS Launch File Fails
+
+The launch files have nondeterministic behavior. Sometimes they need to be run more than once for the nodes to start in a successful order that works. For example, a common symptom of a failed launch is the visualization of the robot's body appearing white and flat in RViz. 
