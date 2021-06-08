@@ -34,7 +34,7 @@ These instructions will guide you through the process of installing the Noetic v
 ### Check that the robot's Noetic ROS installation is working
 1. Shutdown and power off your robot. Then turn your robot back on. Once you're logged in, you can test your robot with the following commands.
 2. Go ahead and attempt to home your robot using `stretch_robot_home.py`. It should be calibrated afterward.
-3. Run `stretch_robot_system_check.py` to make sure that things are normal. Ideally, you will see all green and no red. 
+3. Run `stretch_robot_system_check.py` to make sure that things are normal. Ideally, you will see all green and no red. It's not unusual for a cliff sensor to be red due to reporting a value outside of its ideal range.
 4. Make sure the game controller dongle is plugged in and run `stretch_xbox_controller_teleop.py`. Use the game controller to test out the motions of the robot.
 5. Run `roslaunch stretch_core wheel_odometry_test.launch`. You should see coherent visualizations of the robot's body, the laser range finder output, and the D435i point cloud output. You should be able to move the robot around using keyboard commands and see reasonable visualizations in RViz. 
 6. You may delete the `./stretch-re1-xxxx` directory and its contents that you copied over from the Ubuntu 18.04 partition, if you'd like.
@@ -67,7 +67,7 @@ $ RE1_firmware_updater.py
 
 ### Homing Error
 
-If using `stretch_robot_home.py` does not result in the robot being calibrated, try running the command again. If this does not work, try shutting down the robot, turning off the robot with the power switch, waiting for a few seconds, and then powering it on again. Then, try `stretch_robot_home.py` again. 
+If using `stretch_robot_home.py` does not result in the robot being calibrated, try running the command again. If this does not work, try shutting down the robot, turning off the robot with the power switch, waiting for a few seconds, and then powering it on again. Then, try `stretch_robot_home.py` again. For unknown reasons, one of our robots has needed to be homed, rebooted, and homed again after following this installation guide.
 
 ### ROS Launch File Fails
 
