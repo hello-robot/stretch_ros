@@ -22,14 +22,6 @@
   </node>
   <!-- -->
 
-  <!-- IMU FILTER -->
-  <include file="$(find stretch_core)/launch/imu_filter.launch" />
-  <!-- -->
-
-  <!-- ROBOT LOCALIZATION FILTER -->
-  <include file="$(find stretch_core)/launch/stretch_ekf.launch" />
-  <!-- -->
-
   <!-- LASER RANGE FINDER -->
   <include file="$(find stretch_core)/launch/rplidar.launch" />
   <!-- -->
