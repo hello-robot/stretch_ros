@@ -72,3 +72,14 @@ If using `stretch_robot_home.py` does not result in the robot being calibrated, 
 ### ROS Launch File Fails
 
 The launch files have nondeterministic behavior. Sometimes they need to be run more than once for the nodes to start in a successful order that works. For example, a common symptom of a failed launch is the visualization of the robot's body appearing white and flat in RViz. 
+
+### Start Over by Reinstalling Ubuntu 20.04
+
+You may decide to start over. If so, you can follow these steps to first delete your current Ubuntu 20.04 partition and then reinstall Ubuntu 20.04. 
+
+1. Backup any materials you wish to keep in your Ubuntu 20.04 partition. 
+2. Boot into Ubuntu 18.04, so that you can delete your Ubuntu 20.04 partition. 
+3. While in Ubuntu 18.04, run GNOME Disks. You can find this disk management software by going to "Show Applications" and searching for "Disks". 
+4. Use GNOME Disks to delete your Ubuntu 20.04 partition. For example, you can click on the partition to select it and then press the minus sign to start the process. Once you succeed in deleting the partition, it should be labeled as "Free Space".
+5. Shutdown your robot. 
+6. Now proceed with the instructions above, starting with "Install a partition with Ubuntu 20.04 Desktop Edition"
