@@ -2,6 +2,8 @@
 
 # Noetic Installation Instructions
 
+**The code in this development branch and this installation guide are both under active development. Please proceed with caution.**
+
 These instructions will guide you through the process of installing the Noetic version of stretch_ros onto a Stretch RE1 robot that has a factory installation of the Melodic version of stretch_ros. If you run into a problem, you may find a solution in the trouble shooting section at the end of this document.
 
 ### Install a partition with Ubuntu 20.04 Desktop Edition
