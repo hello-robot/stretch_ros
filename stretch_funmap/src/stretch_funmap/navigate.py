@@ -202,7 +202,7 @@ class MoveBase():
         
     def head_to_forward_motion_pose(self):
         # Move head to navigation pose.
-        pose = {'joint_head_pan': 0.1, 'joint_head_tilt': -0.9}
+        pose = {'joint_head_pan': 0.1, 'joint_head_tilt': -1.1}
         self.node.move_to_pose(pose)
 
     def check_move_state(self, trajectory_client):
