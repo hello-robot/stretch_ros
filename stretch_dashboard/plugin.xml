@@ -1,0 +1,20 @@
+<library path="src">
+    <class name="StretchDashboard" type="stretch_dashboard.stretch_dashboard.StretchDashboard"
+           base_class_type="rqt_gui_py::Plugin">
+        <description>
+            A Python GUI plugin for displaying a dashboard that displays and interacts with the Stretch robot.
+        </description>
+        <qtgui>
+            <group>
+                <label>Robot</label>
+                <icon type="theme">folder</icon>
+                <statustip>Plugins related to specific robots.</statustip>
+            </group>
+            <label>Stretch Dashboard</label>
+            <icon type="theme">emblem-important</icon>
+            <statustip>
+                A Python GUI plugin for displaying a dashboard that displays and interacts with the Stretch robot.
+            </statustip>
+        </qtgui>
+    </class>
+</library>
