@@ -40,5 +40,8 @@
     <remap from="joint_states" to="/stretch/joint_states" />
     <param name="controller_calibration_file" type="string" value="$(arg calibrated_controller_yaml_file)"/>
   </node>
-  
+
+  <node name="aggregator_node" pkg="diagnostic_aggregator" type="aggregator_node">
+    <rosparam command="load" file="$(find stretch_core)/config/diagnostics.yaml" />
+  </node>
 </launch>
