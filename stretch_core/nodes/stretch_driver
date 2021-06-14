@@ -29,6 +29,7 @@ from std_msgs.msg import Header
 import hello_helpers.hello_misc as hm
 from hello_helpers.gripper_conversion import GripperConversion
 from joint_trajectory_server import JointTrajectoryAction
+from stretch_diagnostics import StretchDiagnostics
 
 GRIPPER_DEBUG = False
 BACKLASH_DEBUG = False
@@ -535,6 +536,7 @@ class StretchBodyNode:
         self.fail_out_of_range_goal = rospy.get_param('~fail_out_of_range_goal', True)
         self.joint_trajectory_action = JointTrajectoryAction(self)
         self.joint_trajectory_action.server.start()
+        self.diagnostics = StretchDiagnostics(self, self.robot)
 
         self.switch_to_navigation_mode_service = rospy.Service('/switch_to_navigation_mode',
                                                                Trigger,
