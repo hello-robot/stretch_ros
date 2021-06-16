@@ -5,7 +5,7 @@ find_package(catkin REQUIRED)
 
 catkin_package()
 
-install(FILES config
+install(DIRECTORY config
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 install(DIRECTORY launch
