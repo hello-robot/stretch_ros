@@ -1,6 +1,7 @@
 <launch>
 
   <arg name="map_yaml" />
+  <arg name="rviz" default="true"/>
 
   <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="true"/>
   <param name="/stretch_driver/mode" type="string" value="navigation" />
@@ -21,6 +22,6 @@
     <remap from="/cmd_vel" to="/stretch/cmd_vel" />
   </node>
 
-  <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find stretch_navigation)/rviz/navigation.rviz" />
+  <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find stretch_navigation)/rviz/navigation.rviz" if="$(arg rviz)" />
 
 </launch>
