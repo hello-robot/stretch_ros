@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 from gazebo_msgs.srv import GetModelState, GetModelStateRequest
 from nav_msgs.msg import Odometry
