@@ -355,7 +355,7 @@ Visualization Manager:
     - Alpha: 0.699999988079071
       Class: rviz/Map
       Color Scheme: costmap
-      Draw Behind: false
+      Draw Behind: true
       Enabled: true
       Name: Local Costmap
       Topic: /move_base/local_costmap/costmap
@@ -390,7 +390,7 @@ Visualization Manager:
       Head Length: 0.019999999552965164
       Length: 0.05000000074505806
       Line Style: Billboards
-      Line Width: 0.009999999776482582
+      Line Width: 0.029999999329447746
       Name: Path
       Offset:
         X: 0
@@ -433,7 +433,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 7.274391174316406
+      Distance: 6.303590297698975
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -451,7 +451,7 @@ Visualization Manager:
       Near Clip Distance: 0.009999999776482582
       Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
-      Yaw: 1.5781160593032837
+      Yaw: 3.1631202697753906
     Saved: ~
 Window Geometry:
   Displays:
