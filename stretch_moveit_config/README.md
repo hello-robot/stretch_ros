@@ -1,4 +1,4 @@
-![](../images/HelloRobotLogoBar.png)
+![](./images/banner.png)
 
 ## Stretch & MoveIt!
 MoveIt is the standard ROS manipulation platform, and this package is the configuration for working with Stretch with the MoveIt framework.
