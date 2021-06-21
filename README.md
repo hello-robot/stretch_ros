@@ -1,6 +1,6 @@
 ![](./images/banner.png)
 
-## Overview
+# Overview
 
 The *stretch_ros* repository holds ROS related code for the Stretch RE1 mobile manipulator from Hello Robot Inc. For an overview of the capabilities in this repository, we recommend you look at the following forum post: https://forum.hello-robot.com/t/autonomy-video-details
 
