@@ -24,6 +24,7 @@
   <depend>rospy</depend>
   <depend>rviz</depend>
   <depend>std_msgs</depend>
+  <depend>teleop_twist_joy</depend>
   <depend>xacro</depend>
 
 </package>
