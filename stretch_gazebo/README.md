@@ -85,6 +85,7 @@ This will launch an Rviz instance that visualizes the joints with markers and an
 * When planning with *stretch_head* group make sure you select *Approx IK Solutions* in Planning tab of Motion Planning Rviz plugin.
 
 ![](../images/gazebo_moveit.gif)
+
 ## License
 
 For license information, please see the LICENSE files.
