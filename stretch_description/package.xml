@@ -59,7 +59,6 @@
 
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
-  <depend>realsense_ros</depend>
   <build_depend>roslaunch</build_depend>
   
   <exec_depend>robot_state_publisher</exec_depend>

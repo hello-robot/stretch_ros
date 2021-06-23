@@ -23,6 +23,7 @@
   <depend>realsense2_description</depend>
   <depend>robot_state_publisher</depend>
   <depend>ros_controllers</depend>
+  <depend>joint_state_controller</depend>
   <depend>rospy</depend>
   <depend>rviz</depend>
   <depend>std_msgs</depend>
