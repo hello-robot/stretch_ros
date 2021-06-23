@@ -12,12 +12,12 @@
       <mass
         value="0.101902711393094" />
       <inertia
-        ixx="0.001"
-        ixy="0"
-        ixz="0"
-        iyy="0.001"
-        iyz="0"
-        izz="0.001" />
+        ixx="2.79241618017607E-05"
+        ixy="-1.10819247449605E-05"
+        ixz="-1.50343284036654E-05"
+        iyy="3.67945130513069E-05"
+        iyz="-4.33280448535579E-06"
+        izz="4.14524691955231E-05" />
     </inertial>
     <visual>
       <origin
@@ -69,12 +69,12 @@
       <mass
         value="0.0476207785199474" />
       <inertia
-        ixx="0.001"
+        ixx="0"
         ixy="0"
         ixz="0"
-        iyy="0.001"
+        iyy="0"
         iyz="0"
-        izz="0.001" />
+        izz="0" />
     </inertial>
     <visual>
       <origin
@@ -125,12 +125,12 @@
       <mass
         value="0.00382159917455729" />
       <inertia
-        ixx="0.001"
+        ixx="0"
         ixy="0"
         ixz="0"
-        iyy="0.001"
+        iyy="0"
         iyz="0"
-        izz="0.001" />
+        izz="0" />
     </inertial>
     <visual>
       <origin
@@ -180,12 +180,12 @@
       <mass
         value="0.0476207785199481" />
       <inertia
-        ixx="0.001"
+        ixx="0"
         ixy="0"
         ixz="0"
-        iyy="0.001"
+        iyy="0"
         iyz="0"
-        izz="0.001" />
+        izz="0" />
     </inertial>
     <visual>
       <origin
@@ -236,12 +236,12 @@
       <mass
         value="0.00382160037319545" />
       <inertia
-        ixx="0.001"
+        ixx="0"
         ixy="0"
         ixz="0"
-        iyy="0.001"
+        iyy="0"
         iyz="0"
-        izz="0.001" />
+        izz="0" />
     </inertial>
     <visual>
       <origin
@@ -300,3 +300,6 @@
   </joint>
   
 </robot>
+
+  
+
