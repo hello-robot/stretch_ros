@@ -21,3 +21,7 @@ To run MoveIt with the actual hardware, (assuming `stretch_driver` is already ru
 This will runs all of the planning capabilities, but without the setup, simulation and interface that the above demo provides. In order to create plans for the robot with the same interface as the offline demo, you can run
 
     roslaunch stretch_moveit_config moveit_rviz.launch
+
+## License
+
+For license information, please see the LICENSE files.
