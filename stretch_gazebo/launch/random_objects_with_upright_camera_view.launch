@@ -20,6 +20,7 @@
     <arg name="world_name" value="$(find stretch_gazebo)/worlds/random_objects.world"/>
   </include>
 
+  <!--- Run upright_camera_view.launch file -->
   <include file="$(find stretch_gazebo)/launch/upright_camera_view.launch">
     <arg name="image_topic" value="$(arg image_topic)"/>
   </include>
