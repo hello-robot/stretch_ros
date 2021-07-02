@@ -1,6 +1,3 @@
-[submodule "stretch_gazebo/stretch_gazebo/deps/image_pipeline"]
-	path = stretch_gazebo/stretch_gazebo/deps/image_pipeline
-	url = https://github.com/ros-perception/image_pipeline.git
 [submodule "stretch_gazebo/deps/image_pipeline"]
 	path = stretch_gazebo/deps/image_pipeline
 	url = https://github.com/ros-perception/image_pipeline.git
