@@ -1,6 +1,6 @@
 <launch>
     <!--- Argument for the image_topic. In this instance it is the Stretch's realsense camera-->
-    <arg name="image_topic" default="/realsense/color/image_raw"/>
+    <arg name="image_topic" default="/camera/color/image_raw"/>
 
     <!--- Run image_rotate package and set the desired image_topic to rotate.
           The orientation parameters are set with the next node-->

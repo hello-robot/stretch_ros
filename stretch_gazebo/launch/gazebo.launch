@@ -7,7 +7,7 @@
   <arg name="debug" default="false"/>
   <arg name="rviz" default="false"/>
   <arg name="model" default="$(find stretch_gazebo)/urdf/stretch_gazebo.urdf.xacro"/>
-  <arg name="image_topic" default="/realsense/color/image_raw"/>
+  <arg name="image_topic" default="/camera/color/image_raw"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="debug" value="$(arg debug)" />
