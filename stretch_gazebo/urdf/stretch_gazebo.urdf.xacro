@@ -167,7 +167,7 @@
     </sensor>
   </gazebo>
   <gazebo>
-      <plugin name="realsense" filename="librealsense_gazebo_plugin.so">
+      <plugin name="camera" filename="librealsense_gazebo_plugin.so">
         <depthUpdateRate>30</depthUpdateRate>
         <colorUpdateRate>30</colorUpdateRate>
         <infraredUpdateRate>30</infraredUpdateRate>
@@ -528,7 +528,7 @@
       <material>Gazebo/Black</material>
       <minDepth>0.001</minDepth>
   </gazebo>
-  
+
   <gazebo reference="link_gripper">
       <mu1 value="100.0"/>
       <mu2 value="200.0"/>
