@@ -1,0 +1,79 @@
+base_local_planner: "dwa_local_planner/DWAPlannerROS"
+
+TrajectoryPlannerROS:
+  acc_lim_x: 0.35
+  acc_lim_y: 0.0
+  acc_lim_theta: 0.8
+  max_vel_x: 1.0
+  min_vel_x: 0.15
+  max_vel_y: 0.0
+  min_vel_y: 0.0
+  max_vel_theta: 1.5
+  min_vel_theta: -1.5
+  min_in_place_vel_theta: 0.3
+  holonomic_robot: false
+  # base vel/accel profile is in robot folders
+  # tolerances (defaults)
+  yaw_goal_tolerance: 0.1
+  xy_goal_tolerance: 0.1
+  latch_xy_goal_tolerance: true
+  # forward simulation
+  sim_time: 1.0
+  sim_granularity: 0.025
+  angular_sim_granularity: 0.025
+  vx_samples: 3
+  vtheta_samples: 10
+  # scoring (defaults)
+  meter_scoring: true
+  path_distance_bias: 0.5
+  goal_distance_bias: 0.75
+  occdist_scale: 0.00625
+  heading_lookahead: 0.325
+  heading_scoring_timestep: 0.8
+  heading_scoring: true
+  dwa: false
+  # other
+  oscillation_reset_dist: 0.05
+  # debug
+  publish_cost_grid_pc: false
+
+DWAPlannerROS:
+  #vel params
+  max_vel_x: 0.6 #safe speed for fetch to travel at
+  min_vel_x: 0
+  max_trans_vel: 0.6
+  min_trans_vel: 0.1
+  max_vel_y: 0  #diff drive
+  min_vel_y: 0
+  max_rot_vel: 1.5
+  min_rot_vel: 0.4
+
+  #accel params
+  acc_lim_x: 0.7
+  acc_lim_y: 0  #diff drive
+  acc_limit_trans: 0.7
+  acc_lim_theta: 4
+
+  #forward sim params
+  sim_time: 1.1
+  vx_samples: 5
+  vy_samples: 0 #diff drive
+  vth_samples: 15
+
+  #scoring params
+  path_distance_bias: 80
+  goal_distance_bias: 60
+  occdist_scale: 1.4
+  forward_point_distance: 0.3
+
+  #higher goal tolerance
+  yaw_goal_tolerance: 0.1
+  xy_goal_tolerance: 0.2
+  latch_xy_goal_tolerance: true
+
+  #lower goal tolerance
+  #yaw_goal_tolerance: 0.05
+  #xy_goal_tolerance: 0.1
+  #latch_xy_goal_tolerance: false
+  
+  prune_plan: true
