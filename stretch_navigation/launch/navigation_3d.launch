@@ -22,8 +22,8 @@
   <arg name="pointcloud_topic" default="/camera/depth/color/points"/>
   <arg name="cmd_vel_topic" default="/stretch_diff_drive_controller/cmd_vel"/>
   <arg name="odom_topic" default="/stretch_diff_drive_controller/odom"/>
-  <arg name="odom_link" />
-  <arg name="base_link" />
+  <arg name="odom_link" default="map"/>
+  <arg name="base_link" default="base_link"/>
 
   <!-- use static map -->
   <group if="$(arg use_static_map)">
@@ -34,40 +34,18 @@
 
     <!-- Launch positive and negative Octomap Server -->
     <include file="$(find stretch_navigation)/launch/navigation/octomap_server.launch">
-      <arg name="map" value="$(arg map)" />
+      <arg name="map" value="/home/csrobot/catkin_ws/src/stretch_ros/stretch_navigation/resources/static_maps/3d/$(arg map).bt" />
       <arg name="base_link" value="$(arg base_link)" />
     </include>
 
     <!--- Launch AMCL (Laser Localization) -->
-    <group if="$(arg has_laser)">
-      <include file="$(find stretch_navigation)/launch/navigation/amcl.launch" if="$(eval not namespace)">
+    <!-- <include file="$(find stretch_navigation)/launch/navigation/amcl.launch" >
         <arg name="obstacle_bot" value="false" />
         <arg name="scan_topic" value="$(arg laser_topic)" />
         <arg name="odom_link" value="$(arg odom_link)" />
         <arg name="base_link" value="$(arg base_link)" />
-      </include>
-
-      <include file="$(find stretch_navigation)/launch/navigation/amcl.launch" unless="$(eval not namespace)" ns="$(arg namespace)">
-        <arg name="obstacle_bot" value="false" />
-        <arg name="scan_topic" value="$(arg laser_topic)" />
-        <arg name="odom_link" value="$(arg odom_link)" />
-        <arg name="base_link" value="$(arg base_link)" />
-      </include>
-    </group>
-
-    <group unless="$(arg has_laser)">
-      <include file="$(find stretch_navigation)/launch/navigation/amcl.launch" if="$(eval not namespace)">
-        <arg name="scan_topic" value="pointcloud_scan" />
-        <arg name="odom_link" value="$(arg odom_link)" />
-        <arg name="base_link" value="$(arg base_link)" />
-      </include>
-
-      <include file="$(find stretch_navigation)/launch/navigation/amcl.launch" unless="$(eval not namespace)" ns="$(arg namespace)">
-        <arg name="scan_topic" value="pointcloud_scan" />
-        <arg name="odom_link" value="$(arg odom_link)" />
-        <arg name="base_link" value="$(arg base_link)" />
-      </include>
-    </group>
+      </include> -->
+    <include file="$(find amcl)/examples/amcl_diff.launch" />
   </group>
 
   <!-- dont use static map -->
@@ -92,32 +70,10 @@
   <!-- Launch move_base -->
   <!-- Note that you will also need to change the relevant .yaml files (or make new copies)
        if you wish to use another namespace/robot_name. -->
-  <group if="$(eval not namespace)">
-    <include file="$(find stretch_navigation)/launch/navigation/move_base.launch" if="$(arg use_static_map)">
+  <include file="$(find stretch_navigation)/launch/navigation/move_base.launch">
       <arg name="config" value="$(arg move_base_config)" />
       <arg name="cmd_vel_topic" value="$(arg cmd_vel_topic)" />
       <arg name="odom_topic" value="$(arg odom_topic)" />
-    </include>
-
-    <include file="$(find stretch_navigation)/launch/navigation/move_base.launch" unless="$(arg use_static_map)">
-      <arg name="config" value="$(arg move_base_config)_unknown" />
-      <arg name="cmd_vel_topic" value="$(arg cmd_vel_topic)" />
-      <arg name="odom_topic" value="$(arg odom_topic)" />
-    </include>
-  </group>
-
-  <group unless="$(eval not namespace)">
-    <include file="$(find stretch_navigation)/launch/navigation/move_base.launch" if="$(arg use_static_map)" ns="$(arg namespace)">
-      <arg name="config" value="$(arg move_base_config)" />
-      <arg name="cmd_vel_topic" value="$(arg cmd_vel_topic)" />
-      <arg name="odom_topic" value="$(arg odom_topic)" />
-    </include>
-
-    <include file="$(find stretch_navigation)/launch/navigation/move_base.launch" unless="$(arg use_static_map)" ns="$(arg namespace)">
-      <arg name="config" value="$(arg move_base_config)_unknown" />
-      <arg name="cmd_vel_topic" value="$(arg cmd_vel_topic)" />
-      <arg name="odom_topic" value="$(arg odom_topic)" />
-    </include>
-  </group>
+  </include>
 
 </launch>

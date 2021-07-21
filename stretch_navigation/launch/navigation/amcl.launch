@@ -5,8 +5,8 @@
 	<arg name="obstacle_bot" default="false" />
 
 	<!-- Topic remappings-->
-	<arg name="scan_topic" default="base_scan" />
-  	<arg name="odom_link" default="odom" />
+	<arg name="scan_topic" default="scan" />
+  	<arg name="odom_link" default="map" />
   	<arg name="base_link" default="base_link" />
 
 	<!-- AMCL Node -->
