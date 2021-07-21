@@ -11,6 +11,7 @@
 
     <!--- Run dynamic_reconfigure node to set target_z to -1.0. This rotates the image_raw upright.-->
     <node name="$(anon dynparam)" pkg="dynamic_reconfigure" type="dynparam" args="set_from_parameters image_rotate">
+      <param name="target_frame_id" type="str" value="camera_link"/>
       <param name="target_z" type="double" value="-1.0" />
     </node>
 
