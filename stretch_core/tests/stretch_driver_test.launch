@@ -27,6 +27,6 @@
         <param name="controller_calibration_file" type="string" value="$(arg calibrated_controller_yaml_file)"/>
     </node>
 
-    <param name = "test_module" value = "node_tests"/>
-    <test test-name = "test_stretch_driver" pkg = "stretch_core" type = "pytest_runner.py"/>
+    <param name="test_module" value="node_tests"/>
+    <test test-name="test_stretch_driver" pkg ="stretch_core" type ="pytest_runner.py"/>
 </launch>
