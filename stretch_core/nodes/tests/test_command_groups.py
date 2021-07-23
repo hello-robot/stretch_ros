@@ -50,6 +50,12 @@ def mobile_base_cg():
     virtual_range_m = (-0.5,0.5)
     return cg.MobileBaseCommandGroup(virtual_range_m)
 
+@pytest.fixture  
+def invalid_joints_callback():
+    pass
+
+
+
 
 #Begin tests 
 def test_get_num_valid_commands(head_pan_cg,head_tilt_cg,wrist_yaw_cg,gripper_cg,telescoping_cg,lift_cg,mobile_base_cg): 
@@ -62,4 +68,21 @@ def test_get_num_valid_commands(head_pan_cg,head_tilt_cg,wrist_yaw_cg,gripper_cg
         assert True
     else:
         assert False 
-     
+
+
+''' IN DEVELOPMENT 
+def test_update(head_pan_cg,head_tilt_cg,wrist_yaw_cg,gripper_cg,telescoping_cg,lift_cg,mobile_base_cg,invalid_joints_callback):
+    
+    command_groups = [head_pan_cg,head_tilt_cg,wrist_yaw_cg,gripper_cg,
+                      telescoping_cg,lift_cg,mobile_base_cg]
+
+    commanded_joint_names = [cg.name for cg in command_groups]
+
+
+    updates = [c.update(commanded_joint_names, invalid_joints_callback)
+                for c in command_groups]
+
+    if not all(updates):
+        assert False
+    assert True  
+'''

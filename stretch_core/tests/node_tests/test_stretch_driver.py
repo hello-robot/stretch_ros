@@ -3,7 +3,10 @@ import rospy
 import time 
 
 from std_msgs.msg import String
-from sensor_msgs.msg import JointState
+from sensor_msgs.msg import JointState, Imu, MagneticField
+from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
+
 
 @pytest.fixture
 def node():
@@ -11,7 +14,7 @@ def node():
 
 @pytest.fixture
 def waiter():
-    class Waiter(object):
+    class Waiter:
         def __init__(self):
             self.received = []
             self.condition = lambda x: False
@@ -33,7 +36,8 @@ def waiter():
 
     return Waiter()
 
-def test_listener_receives_something(node, waiter):
+
+def test_joint_states_receives_something(node, waiter):
     waiter.condition = lambda data: True  # any message is good
     
     rospy.Subscriber("/stretch/joint_states", JointState, waiter.callback) 
@@ -41,7 +45,38 @@ def test_listener_receives_something(node, waiter):
 
     assert waiter.success 
 
-def test_hello_works():
-    assert True 
+def test_odom_receives_something(node, waiter):
+    waiter.condition = lambda data: True  # any message is good
+    
+    rospy.Subscriber("/odom", Odometry, waiter.callback) 
+    waiter.wait(10.0)
 
+    assert waiter.success 
+
+
+def test_imu_mobile_base_receives_something(node, waiter):
+    waiter.condition = lambda data: True  # any message is good
+    
+    rospy.Subscriber("/imu_mobile_base", Imu, waiter.callback) 
+    waiter.wait(10.0)
+
+    assert waiter.success 
+
+
+def test_imu_wrist_receives_something(node, waiter):
+    waiter.condition = lambda data: True  # any message is good
+    
+    rospy.Subscriber("/imu_wrist", Imu, waiter.callback) 
+    waiter.wait(10.0)
+
+    assert waiter.success 
+
+
+def test_magnetometer_mobile_base_receives_something(node, waiter):
+    waiter.condition = lambda data: True  # any message is good
+    
+    rospy.Subscriber("/magnetometer_mobile_base", MagneticField, waiter.callback) 
+    waiter.wait(10.0)
+
+    assert waiter.success 
 
