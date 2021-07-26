@@ -4,6 +4,5 @@
   <arg name="map_name" default="map" />
 
   <!-- launch map server -->
-	<node name="map_server" pkg="map_server" type="map_server"
-        args="$(find stretch_navigation)/resources/static_maps/2d/$(arg map_name).yaml"/>
+	<node name="map_server" pkg="map_server" type="map_server" output="log" args="$(arg map_name)"/>
 </launch>

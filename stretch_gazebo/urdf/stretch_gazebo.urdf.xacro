@@ -198,7 +198,7 @@
       <always_on>true</always_on>
       <visualize>false</visualize>
       <plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
-        <topicName>realsense/imu/data</topicName>
+        <topicName>camera/imu/data</topicName>
         <bodyName>camera_gyro_frame</bodyName>
         <updateRateHZ>50.0</updateRateHZ>
         <gaussianNoise>0.001</gaussianNoise>

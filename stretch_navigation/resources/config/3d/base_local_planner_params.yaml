@@ -61,8 +61,8 @@ DWAPlannerROS:
   vth_samples: 15
 
   #scoring params
-  path_distance_bias: 80
-  goal_distance_bias: 60
+  path_distance_bias: 32
+  goal_distance_bias: 24
   occdist_scale: 1.4
   forward_point_distance: 0.3
 

@@ -12,7 +12,7 @@
     <remap from="/cmd_vel" to="/stretch_diff_drive_controller/cmd_vel" />
   </node>
 
-  <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find stretch_navigation)/rviz/mapping.rviz" />
+  <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find stretch_navigation)/rviz/octomap_mapper.rviz" />
 
   <node pkg="gmapping" type="slam_gmapping" name="gmapping_record_map" output="log" />
   <include file="$(find stretch_navigation)/launch/octomap_mapper.launch">

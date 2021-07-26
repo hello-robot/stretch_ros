@@ -62,5 +62,5 @@ map_type: costmap
 
 
 inflation_layer:
-  inflation_radius: 0.75
+  inflation_radius: 0.2
   cost_scaling_factor: 2.5
