@@ -143,6 +143,14 @@ class JointTrajectoryAction:
                 named_errors = [c.update_execution(robot_status, success_callback=self.success_callback,
                                                    backlash_state=self.node.backlash_state)
                                 for c in command_groups]
+                lift_waiting = robot_status['lift']['motor']['waiting_on_sync']
+                arm_waiting = robot_status['arm']['motor']['waiting_on_sync']
+                left_waiting = robot_status['base']['left_wheel']['waiting_on_sync']
+                right_waiting = robot_status['base']['right_wheel']['waiting_on_sync']
+                if lift_waiting or arm_waiting or left_waiting or right_waiting:
+                    rospy.loginfo("SYNC WAITING lift = {0}, arm = {1}, leftwheel = {2}, rightwheel = {3}"
+                                    .format(lift_waiting, arm_waiting, left_waiting, right_waiting))
+                    self.node.robot.pimu.trigger_motor_sync()
                 # It's not clear how this could ever happen. The
                 # groups in command_groups.py seem to return
                 # (self.name, self.error) or None, rather than True.
