@@ -193,7 +193,11 @@ class JointTrajectoryAction:
         clean_named_errors = []
         for named_error in named_errors:
             if type(named_error) == tuple:
-                clean_named_errors.append(named_error)
+                if type(named_error[0]) == list:
+                    for j in named_error[0]:
+                        clean_named_errors.append((j, named_error[1] / len(named_error[0])))
+                else:
+                    clean_named_errors.append(named_error)
             elif type(named_error) == list:
                 clean_named_errors += named_error
         clean_named_errors_dict = dict((k, v) for k, v in clean_named_errors)
