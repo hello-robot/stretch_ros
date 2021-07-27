@@ -25,6 +25,6 @@
     <remap from="/cmd_vel" to="/stretch_diff_drive_controller/cmd_vel" />
   </node>
 
-  <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find stretch_navigation)/rviz/navigation.rviz" />
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_navigation)/rviz/navigation.rviz" />
 
 </launch>

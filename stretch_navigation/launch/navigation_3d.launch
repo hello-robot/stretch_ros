@@ -5,7 +5,7 @@
   <!-- Map name -->
   <arg name="map" default="map"/>
   <!-- Move_base configuration folder. -->
-  <arg name="move_base_config" value="2d" />
+  <arg name="move_base_config" value="3d" />
 
   <!-- Robot sensor topic mapping-->
   <arg name="laser_topic" default="scan"/>
@@ -27,7 +27,7 @@
   </include>
 
   <!--- Launch AMCL (Laser Localization) -->
-    <node pkg="amcl" type="amcl" name="amcl" output="log">
+    <node pkg="amcl" type="amcl" name="amcl" output="screen">
       <rosparam file="$(find stretch_navigation)/resources/config/amcl.yaml" command="load" />
     </node>
 
