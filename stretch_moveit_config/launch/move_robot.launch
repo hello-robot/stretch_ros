@@ -1,0 +1,37 @@
+<launch>
+
+  <arg name="rviz" default="true"/>
+  <arg name="debug" default="false" /> <!-- uses GDB -->
+  <arg name="verbose" default="false"/>
+  <arg name="db" default="false" />
+  <arg name="db_path" default="$(find stretch_moveit_config)/default_warehouse_mongo_db" />
+
+  <!-- STRETCH DRIVER -->
+  <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="true"/>
+  <param name="/stretch_driver/fail_out_of_range_goal" type="bool" value="true"/>
+  <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true"/>
+  <!-- -->
+
+  <!-- LOAD SRDF & OTHER CONFIG -->
+  <include file="$(find stretch_moveit_config)/launch/planning_context.launch" />
+  <!-- -->
+
+  <!-- MOVEIT -->
+  <include file="$(find stretch_moveit_config)/launch/moveit.launch">
+    <arg name="allow_trajectory_execution" value="true"/>
+    <arg name="verbose" value="$(arg verbose)"/>
+    <arg name="debug" value="$(arg debug)"/>
+  </include>
+
+  <!-- RVIZ -->
+  <include file="$(find stretch_moveit_config)/launch/moveit_rviz.launch" if="$(arg rviz)">
+    <arg name="rviz_config" value="$(find stretch_moveit_config)/launch/moveit.rviz"/>
+    <arg name="debug" value="$(arg debug)"/>
+  </include>
+
+  <!-- WAREHOUSE -->
+  <include file="$(find stretch_moveit_config)/launch/default_warehouse_db.launch" if="$(arg db)">
+    <arg name="moveit_warehouse_database_path" value="$(arg db_path)"/>
+  </include>
+
+</launch>
