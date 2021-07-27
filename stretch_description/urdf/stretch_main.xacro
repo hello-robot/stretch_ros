@@ -92,7 +92,7 @@
     name="joint_right_wheel"
     type="continuous">
     <origin
-      xyz="-0.003 -0.15765 0.05"
+      xyz="-0.00300000000000034 -0.15765 0.0508000000000004"
       rpy="-1.57079632679489 -1.11022302462516E-16 7.28583859910277E-17" />
     <parent
       link="base_link" />
@@ -100,7 +100,7 @@
       link="link_right_wheel" />
     <axis
       xyz="0 0 1" />
-      <dynamics damping="${joint_damping}" friction="${joint_friction}" spring_reference="${joint_spring_reference}" spring_stiffness="{joint_spring_stiffness}"/>
+    <dynamics damping="${joint_damping}" friction="${joint_friction}" spring_reference="${joint_spring_reference}" spring_stiffness="{joint_spring_stiffness}"/>
   </joint>
   
   <link
@@ -148,7 +148,7 @@
     name="joint_left_wheel"
     type="continuous">
     <origin
-      xyz="-0.003 0.15765 0.05"
+      xyz="-0.00300000000001899 0.15765 0.0507999999999994"
       rpy="-1.5707963267949 3.16227047920818E-31 7.88745438253713E-16" />
     <parent
       link="base_link" />
@@ -156,7 +156,7 @@
       link="link_left_wheel" />
     <axis
       xyz="0 0 1" />
-      <dynamics damping="${joint_damping}" friction="${joint_friction}" spring_reference="${joint_spring_reference}" spring_stiffness="{joint_spring_stiffness}"/>
+    <dynamics damping="${joint_damping}" friction="${joint_friction}" spring_reference="${joint_spring_reference}" spring_stiffness="{joint_spring_stiffness}"/>
   </joint>
 
   <link name="caster_link">
@@ -310,7 +310,7 @@
     name="joint_lift"
     type="prismatic">
     <origin
-      xyz="-0.0369217062323472 0.268771199999996 -0.000341653286793524"
+      xyz="-0.0369217062323472 0.165471199999996 -0.000341653286793524"
       rpy="-1.57079632679552 1.5615431375292 -6.2942004366467E-13" />
     <parent
       link="link_mast" />
@@ -318,7 +318,10 @@
       link="link_lift" />
     <axis
 	xyz="0 0 1" />
-  <limit effort="100" lower="-0.1033" upper="0.9967" velocity="1.0"/>
+  <!-- for now: hand copied range_m: from lift: from ~/repos/stretch_fleet/stretch-re1-1001/stretch_re1_factory_params.yaml -->
+  <!--<limit effort="100" lower="0.0" upper="1.095" velocity="1.0"/>-->
+  <!-- copied value did not reach the top of mesh model with GUI sliders and RViz -->
+  <limit effort="100" lower="0.0" upper="1.1" velocity="1.0"/>
   </joint>
   
   <link
@@ -429,6 +432,7 @@
       link="link_arm_l3" />
     <axis
 	xyz="0 0 1" />
+    <!-- 0.13 = 0.52/4-->
     <limit effort="100" lower="0.0" upper="0.13" velocity="1.0"/>
   </joint>
   
@@ -485,6 +489,7 @@
       link="link_arm_l2" />
     <axis
 	xyz="0 0 1" />
+    <!-- 0.13 = 0.52/4-->
     <limit effort="100" lower="0.0" upper="0.13" velocity="1.0"/>
   </joint>
   
@@ -541,6 +546,7 @@
       link="link_arm_l1" />
     <axis
 	xyz="0 0 1" />
+    <!-- 0.13 = 0.52/4-->
     <limit effort="100" lower="0.0" upper="0.13" velocity="1.0"/>
   </joint>
   
@@ -597,6 +603,7 @@
       link="link_arm_l0" />
     <axis
 	xyz="0 0 1" />
+    <!-- 0.13 = 0.52/4-->
     <limit effort="100" lower="0.0" upper="0.13" velocity="1.0"/>
   </joint>
   
@@ -627,7 +634,7 @@
       <material
         name="">
         <color
-	rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+	        rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
       </material>
     </visual>
     <collision>
@@ -653,6 +660,12 @@
       link="link_wrist_yaw" />
     <axis
       xyz="0 0 -1" />
+    <!--
+      stowed to front ~225 deg: 3.15159 x 1.25 = 3.9395
+      using 4.0
+      stowed to back ~100 deg:  100 / 180 x 3.14159 = 1.7453
+      using -1.75
+    -->
     <limit effort="100" lower="-1.75" upper="4.0" velocity="1.0"/>
   </joint>
   
@@ -764,6 +777,7 @@
       link="link_head_pan" />
     <axis
 	xyz="0 0 1" />
+    <!-- unconstrained range for now -->
     <limit effort="100" lower="-3.9" upper="1.5" velocity="1.0"/>
   </joint>
   
@@ -820,6 +834,7 @@
       link="link_head_tilt" />
     <axis
       xyz="0 0 1" />
+    <!-- unconstrained range for now -->
     <limit effort="100" lower="-1.53" upper="0.79" velocity="1.0"/>
   </joint>
 
