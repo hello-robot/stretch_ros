@@ -1,12 +1,18 @@
 import pytest
 import rospy 
 import time 
+import actionlib
 
 from std_msgs.msg import String
 from sensor_msgs.msg import JointState, Imu, MagneticField
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
-
+from std_srvs.srv import Trigger, TriggerRequest
+from std_srvs.srv import SetBool, SetBoolRequest
+from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
+from control_msgs.msg import FollowJointTrajectoryFeedback
+from control_msgs.msg import FollowJointTrajectoryResult
+######## DEFINE TEST FIXTURES #######
 
 @pytest.fixture
 def node():
@@ -36,6 +42,8 @@ def waiter():
 
     return Waiter()
 
+
+######## TEST PUBLISHERS #######
 
 def test_joint_states_receives_something(node, waiter):
     waiter.condition = lambda data: True  # any message is good
@@ -80,3 +88,67 @@ def test_magnetometer_mobile_base_receives_something(node, waiter):
 
     assert waiter.success 
 
+
+
+######## TEST SERVICES #######
+
+def test_switch_to_navigation_mode(node): 
+    rospy.wait_for_service('switch_to_navigation_mode') 
+
+    s = rospy.ServiceProxy('switch_to_navigation_mode', Trigger)
+
+    s_request = TriggerRequest()
+
+    result = s(s_request)
+
+    assert result.success == True
+
+def test_switch_to_position_mode(node): 
+    rospy.wait_for_service('switch_to_position_mode') 
+
+    s = rospy.ServiceProxy('switch_to_position_mode', Trigger)
+
+    s_request = TriggerRequest()
+
+    result = s(s_request)
+
+    assert result.success == True
+
+def test_stop_the_robot(node): 
+    rospy.wait_for_service('stop_the_robot') 
+
+    s = rospy.ServiceProxy('stop_the_robot', Trigger)
+
+    s_request = TriggerRequest()
+
+    result = s(s_request)
+
+    assert result.success == True
+
+def test_runstop(node): 
+    rospy.wait_for_service('runstop') 
+
+    s = rospy.ServiceProxy('runstop', SetBool)
+
+    s_request = SetBoolRequest()
+
+    result = s(s_request)
+
+    assert result.success == True
+
+
+''' Test timing out (60s), error could be due to calibration
+
+def test_switch_to_manipulation_mode(node): 
+    rospy.wait_for_service('switch_to_manipulation_mode') 
+
+    s = rospy.ServiceProxy('switch_to_manipulation_mode', Trigger)
+
+    s_request = TriggerRequest()
+
+    result = s(s_request)
+
+    assert result.success == True
+'''
+
+######## TEST ACTION SERVER #######
