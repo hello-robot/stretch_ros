@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="stretch_description">
   <xacro:arg name="gpu_lidar" default="false" />
+  <xacro:arg name="visualize_lidar" default="false" />
 
   <xacro:include filename="$(find stretch_description)/urdf/stretch_main.xacro" />
   <xacro:include filename="$(find stretch_description)/urdf/stretch_aruco.xacro" />
@@ -245,7 +246,7 @@
       <material>Gazebo/Black</material>
       <sensor type="ray" name="laser_sensor">
         <pose>0 0 0 0 0 0</pose>
-        <visualize>true</visualize>
+        <visualize>$(arg visualize_lidar)</visualize>
         <update_rate>5.5</update_rate>
         <ray>
           <scan>
@@ -281,7 +282,7 @@
       <material>Gazebo/Black</material>
       <sensor type="gpu_ray" name="laser_sensor">
         <pose>0 0 0 0 0 0</pose>
-        <visualize>true</visualize>
+        <visualize>$(arg visualize_lidar)</visualize>
         <update_rate>5.5</update_rate>
         <ray>
           <scan>
