@@ -1,0 +1,28 @@
+<launch>
+
+  <arg name="rviz" default="true"/>
+  <arg name="gazebo_gpu_lidar" default="false"/>
+  <arg name="gazebo_visualize_lidar" default="false"/>
+  <arg name="gazebo_world" default="worlds/empty.world"/>
+
+  <!-- GAZEBO SIMULATION -->
+  <include file="$(find stretch_gazebo)/launch/gazebo.launch">
+    <arg name="world" value="$(arg gazebo_world)" />
+    <arg name="visualize_lidar" value="$(arg gazebo_visualize_lidar)" />
+    <arg name="gpu_lidar" value="$(arg gazebo_gpu_lidar)" />
+  </include>
+
+  <!-- TELEOP -->
+  <node name="teleop_twist_keyboard" pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" output="screen" >
+    <param name="speed" type="double" value="1.0" />
+    <param name="turn" type="double" value="2.0" />
+    <remap from="/cmd_vel" to="/stretch_diff_drive_controller/cmd_vel" />
+  </node>
+
+  <!-- RVIZ -->
+  <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find stretch_navigation)/rviz/mapping.rviz" if="$(arg rviz)" />
+
+  <!-- GMAPPING -->
+  <node pkg="gmapping" type="slam_gmapping" name="gmapping_record_map" output="log" />
+
+</launch>
