@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="paused" default="false"/>
+  <arg name="paused" default="true"/>
   <arg name="use_sim_time" default="true"/>
   <arg name="gui" default="true"/>
   <arg name="headless" default="false"/>
@@ -24,7 +24,7 @@
 
   <!-- push robot_description to factory and spawn robot in gazebo -->
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
-        args=" -urdf -model robot -param robot_description" respawn="false" output="screen" />
+        args=" -urdf -model robot -param robot_description -J joint_lift 0.2 -J joint_wrist_yaw 3.14" respawn="false" output="screen" />
 
   <node pkg="robot_state_publisher" type="robot_state_publisher"  name="robot_state_publisher">
     <param name="publish_frequency" type="double" value="30.0" />
