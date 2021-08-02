@@ -3,19 +3,19 @@
   <arg name="localization" default="false" />
 
   <arg name="database_path"     default="rtabmap.db"/>
-  <arg name="args"              default="--delete_db_on_start"/>
+  <arg name="args"              default=""/>
 
   <arg name="wait_for_transform"  default="0.2"/> 
   <arg name="move_base_config" value="2d" />
 
 
   <group if="$(arg sim)">
-    <arg name="pointcloud_topic" default="/camera/depth/color/points"/>
+    <arg name="pointcloud_topic" default="/camera/depth/image_raw"/>
     <arg name="cmd_vel_topic" value="/stretch_diff_drive_controller/cmd_vel"/>
     <arg name="odom_topic" default="/stretch_diff_drive_controller/odom"/>
     <arg name="scan_topic" default="/scan"/>
     <arg name="rgb_topic" default="/camera/color/image_raw"/>
-    <arg name="rgb_camera_info" default="/camera/depth/camera_info"/>
+    <arg name="rgb_camera_info" default="/camera/color/camera_info"/>
 
     <include file="$(find stretch_navigation)/launch/rtab/move_base.launch">
       <arg name="move_base_config" value="$(arg move_base_config)" />
