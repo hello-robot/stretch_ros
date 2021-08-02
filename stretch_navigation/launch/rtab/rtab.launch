@@ -16,6 +16,8 @@
       <param name="database_path"       type="string" value="$(arg database_path)"/>
       <param name="frame_id"            type="string" value="base_link"/>
       <param name="odom_frame_id"       type="string" value="odom"/>
+      <param name="odom_tf_angular_variance" type="double" value="0.005"/>
+      <param name="odom_tf_linear_variance"  type="double" value="0.005"/>
       <param name="wait_for_transform_duration"  type="double"   value="$(arg wait_for_transform)"/>
       <param name="subscribe_depth"     type="bool"   value="true"/>
       <param name="subscribe_scan"      type="bool"   value="true"/>
@@ -41,8 +43,9 @@
       <param name="RGBD/LinearUpdate"            type="string" value="0.1"/>    
       <param name="Rtabmap/TimeThr"              type="string" value="700"/>
       <param name="Mem/RehearsalSimilarity"      type="string" value="0.30"/>
-      <param name="Optimizer/Slam2D"             type="string" value="true"/>
-      <param name="Reg/Force3DoF"                type="string" value="true"/>   
+      <param name="Reg/Force3DoF"                type="string" value="true"/>  
+      <param name="Grid/FromDepth"               type="string" value="true"/>
+      <param name="RGBD/ProximityPathMaxNeighbors" type="string" value="10"/> 
       
     </node>
     

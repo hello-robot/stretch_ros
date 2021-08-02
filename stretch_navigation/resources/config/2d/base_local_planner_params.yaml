@@ -1,15 +1,15 @@
 base_local_planner: "dwa_local_planner/DWAPlannerROS"
 
 TrajectoryPlannerROS:
-  acc_lim_x: 0.35
+  acc_lim_x: 0.20
   acc_lim_y: 0.0
-  acc_lim_theta: 0.8
-  max_vel_x: 1.0
+  acc_lim_theta: 0.20
+  max_vel_x: 0.25
   min_vel_x: 0.15
   max_vel_y: 0.0
   min_vel_y: 0.0
-  max_vel_theta: 1.5
-  min_vel_theta: -1.5
+  max_vel_theta: 0.25
+  min_vel_theta: -0.25
   min_in_place_vel_theta: 0.3
   holonomic_robot: false
   # base vel/accel profile is in robot folders
