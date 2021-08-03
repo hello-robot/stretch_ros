@@ -17,8 +17,8 @@
     <arg name="rgb_topic" default="/camera/color/image_raw"/>
     <arg name="rgb_camera_info" default="/camera/color/camera_info"/>
 
-    <include file="$(find stretch_navigation)/launch/rtab/move_base.launch">
-      <arg name="move_base_config" value="$(arg move_base_config)" />
+    <include file="$(find stretch_navigation)/launch/navigation/move_base.launch">
+      <arg name="config" value="$(arg move_base_config)" />
       <arg name="cmd_vel_topic" value="$(arg cmd_vel_topic)"/>
       <arg name="odom_topic" value="$(arg odom_topic)"/>
     </include>
@@ -44,8 +44,8 @@
     <arg name="rgb_camera_info" default="/camera/color/camera_info"/>
 
     <include file="$(find stretch_navigation)/launch/rtab/robot.launch"/>
-    <include file="$(find stretch_navigation)/launch/rtab/move_base.launch">
-      <arg name="move_base_config" value="$(arg move_base_config)" />
+    <include file="$(find stretch_navigation)/launch/navigation/move_base.launch">
+      <arg name="config" value="$(arg move_base_config)" />
       <arg name="cmd_vel_topic" value="$(arg cmd_vel_topic)"/>
       <arg name="odom_topic" value="$(arg odom_topic)"/>
     </include>
