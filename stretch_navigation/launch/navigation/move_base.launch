@@ -1,10 +1,10 @@
 <launch>
   <!-- Doc: http://wiki.ros.org/move_base?distro=kinetic -->
 
-  <arg name="config" default="3d" />
+  <arg name="config"/>
   
-  <arg name="cmd_vel_topic" default="cmd_vel" />
-  <arg name="odom_topic" default="odom" />
+  <arg name="cmd_vel_topic"/>
+  <arg name="odom_topic"/>
 
   <!-- Use global costmap-->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
