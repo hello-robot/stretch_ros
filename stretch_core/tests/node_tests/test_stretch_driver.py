@@ -50,40 +50,48 @@ def action_server_client():
         def __init__(self):
             self.trajectory_client = None
             self.joint_state = None
-            
+            self.initial_position = None 
+            self.final_position = None 
+
         def joint_state_callback(self,joint_state):
             self.joint_state = joint_state 
-
+        
         def start_trajectory_client(self):
             self.trajectory_client = actionlib.SimpleActionClient("/stretch_controller/follow_joint_trajectory", FollowJointTrajectoryAction)
             server_reached = self.trajectory_client.wait_for_server(timeout=rospy.Duration(60.0))
             return server_reached
 
         def send_trajectory(self,command):
+            joint_name = command['joint']          
+            joint_index = self.joint_state.name.index(joint_name)
+            self.initial_position = self.joint_state.position[joint_index]
+
             for delta in command['deltas']: 
                 point = JointTrajectoryPoint()
                 point.time_from_start = rospy.Duration(0.0)
                 trajectory_goal = FollowJointTrajectoryGoal()
                 trajectory_goal.goal_time_tolerance = rospy.Time(3.0)
-                joint_name = command['joint']
                 trajectory_goal.trajectory.joint_names = [joint_name]            
-                joint_index = self.joint_state.name.index(joint_name)
                 joint_value = self.joint_state.position[joint_index]
                 delta_val = command['deltas'][delta]
                 rospy.loginfo('delta = {0}, joint_index = {1}, joint_value = {2}'.format(delta, joint_index, joint_value))        
                 new_value = joint_value + delta_val
                 point.positions = [new_value]
                 trajectory_goal.trajectory.points = [point]
-                trajectory_goal.trajectory.header.stamp = rospy.Time.now()
+
                 rospy.loginfo('joint_name = {0}, trajectory_goal = {1}'.format(joint_name, trajectory_goal))
                 rospy.loginfo('Done sending pose.')
-                time.sleep(3)
                 self.trajectory_client.send_goal(trajectory_goal)
+                time.sleep(2)
+
+            
+            self.final_position = self.joint_state.position[joint_index]
+
+        
+        def move_multiple_joints(self,joint_names,translate,rotate):
+            pass
 
     return ActionServerClient()
-
-
-
      
 
 ######## TEST PUBLISHERS #######
@@ -104,7 +112,6 @@ def test_odom_receives_something(node, waiter):
 
     assert waiter.success 
 
-
 def test_imu_mobile_base_receives_something(node, waiter):
     waiter.condition = lambda data: True  # any message is good
     
@@ -112,7 +119,6 @@ def test_imu_mobile_base_receives_something(node, waiter):
     waiter.wait(10.0)
 
     assert waiter.success 
-
 
 def test_imu_wrist_receives_something(node, waiter):
     waiter.condition = lambda data: True  # any message is good
@@ -122,7 +128,6 @@ def test_imu_wrist_receives_something(node, waiter):
 
     assert waiter.success 
 
-
 def test_magnetometer_mobile_base_receives_something(node, waiter):
     waiter.condition = lambda data: True  # any message is good
     
@@ -131,9 +136,31 @@ def test_magnetometer_mobile_base_receives_something(node, waiter):
 
     assert waiter.success 
 
+######## TEST SUBSCRIBERS #######
+
+#pub.get_num_connections() continues to return 0 when cmd_vel should be subscribed to in stretch_driver
+'''
+def test_cmd_vel_subbed(node):
+    cmd_pub = rospy.Publisher('cmd_vel', Twist, queue_size = None)
+    time.sleep(0.5)
+    connections = cmd_pub.get_num_connections()
+    
+    assert connections == 1 
+'''
 
 
 ######## TEST SERVICES #######
+
+def test_switch_to_position_mode(node): 
+    rospy.wait_for_service('switch_to_position_mode') 
+
+    s = rospy.ServiceProxy('switch_to_position_mode', Trigger)
+
+    s_request = TriggerRequest()
+
+    result = s(s_request)
+
+    assert result.success 
 
 def test_switch_to_navigation_mode(node): 
     rospy.wait_for_service('switch_to_navigation_mode') 
@@ -144,7 +171,7 @@ def test_switch_to_navigation_mode(node):
 
     result = s(s_request)
 
-    assert result.success == True
+    assert result.success 
 
 
 def test_stop_the_robot(node): 
@@ -156,7 +183,7 @@ def test_stop_the_robot(node):
 
     result = s(s_request)
 
-    assert result.success == True
+    assert result.success
 
 def test_runstop(node): 
     rospy.wait_for_service('runstop') 
@@ -167,21 +194,12 @@ def test_runstop(node):
 
     result = s(s_request)
 
-    assert result.success == True
+    assert result.success 
 
-def test_switch_to_position_mode(node): 
-    rospy.wait_for_service('switch_to_position_mode') 
 
-    s = rospy.ServiceProxy('switch_to_position_mode', Trigger)
 
-    s_request = TriggerRequest()
-
-    result = s(s_request)
-
-    assert result.success == True
-
-''' Test timing out (60s), error could be due to calibration
-
+# Test timing out (60s), error could be due to calibration
+'''
 def test_switch_to_manipulation_mode(node): 
     rospy.wait_for_service('switch_to_manipulation_mode') 
 
@@ -191,9 +209,8 @@ def test_switch_to_manipulation_mode(node):
 
     result = s(s_request)
 
-    assert result.success == True
+    assert result.success
 '''
-
 ######## TEST ACTION SERVER #######
 
 def test_move_lift(node, action_server_client):
@@ -202,17 +219,17 @@ def test_move_lift(node, action_server_client):
     translate = 0.05
     deltas = {'down' : -translate , 'up' : translate}
     command = {'joint' : 'joint_lift' , 'deltas' : deltas} 
-
+    
     if not action_server_client.start_trajectory_client():
         assert False 
     else: 
         action_server_client.send_trajectory(command)
-        assert True
+        assert (action_server_client.initial_position) == pytest.approx(action_server_client.final_position, 0.01)
 
 def test_move_wrist(node, action_server_client):
     rospy.Subscriber("/stretch/joint_states", JointState, action_server_client.joint_state_callback)
     time.sleep(0.5)  
-    translate = 0.05
+    translate = 0.08
     deltas = {'in' : -translate , 'out' : translate}
     command = {'joint' : 'wrist_extension' , 'deltas' : deltas} 
 
@@ -220,14 +237,13 @@ def test_move_wrist(node, action_server_client):
         assert False 
     else: 
         action_server_client.send_trajectory(command)
-        assert True
-        
 
+        assert action_server_client.initial_position == pytest.approx(action_server_client.final_position, 0.01)
 
 def test_wrist_yaw(node, action_server_client):
     rospy.Subscriber("/stretch/joint_states", JointState, action_server_client.joint_state_callback)
     time.sleep(0.5)  
-    deg = 10
+    deg = 15
     deltas = {'ccw' : -((math.pi/180) * deg) , 'cw' : ((math.pi/180) * deg)}
     command = {'joint' : 'joint_wrist_yaw' , 'deltas' : deltas} 
 
@@ -235,12 +251,27 @@ def test_wrist_yaw(node, action_server_client):
         assert False 
     else: 
         action_server_client.send_trajectory(command)
-        assert True
+   
+        assert action_server_client.initial_position == pytest.approx(action_server_client.final_position, 0.01)
+
+def test_gripper_finger(node, action_server_client):
+    rospy.Subscriber("/stretch/joint_states", JointState, action_server_client.joint_state_callback)
+    time.sleep(0.5)  
+    deg = 15
+    deltas = {'ccw' : -((math.pi/180) * deg) , 'cw' : ((math.pi/180) * deg)}
+    command = {'joint' : 'joint_gripper_finger_left' , 'deltas' : deltas} 
+
+    if not action_server_client.start_trajectory_client():
+        assert False 
+    else: 
+        action_server_client.send_trajectory(command)
+
+        assert action_server_client.initial_position == pytest.approx(action_server_client.final_position, 0.1) #0.01
 
 def test_head_tilt(node, action_server_client):
     rospy.Subscriber("/stretch/joint_states", JointState, action_server_client.joint_state_callback)
     time.sleep(0.5)  
-    deg = 10
+    deg = 15
     deltas = {'ccw' : -((math.pi/180) * deg) , 'cw' : ((math.pi/180) * deg)}
     command = {'joint' : 'joint_head_tilt' , 'deltas' : deltas} 
 
@@ -248,13 +279,13 @@ def test_head_tilt(node, action_server_client):
         assert False 
     else: 
         action_server_client.send_trajectory(command)
-        assert True
 
+        assert action_server_client.initial_position == pytest.approx(action_server_client.final_position, 0.1)
 
 def test_head_pan(node, action_server_client):
     rospy.Subscriber("/stretch/joint_states", JointState, action_server_client.joint_state_callback)
     time.sleep(0.5)  
-    deg = 10
+    deg = 15
     deltas = {'ccw' : -((math.pi/180) * deg) , 'cw' : ((math.pi/180) * deg)}
     command = {'joint' : 'joint_head_pan' , 'deltas' : deltas} 
 
@@ -262,4 +293,38 @@ def test_head_pan(node, action_server_client):
         assert False 
     else: 
         action_server_client.send_trajectory(command)
+
+        assert action_server_client.initial_position == pytest.approx(action_server_client.final_position, 0.01)
+        #assert True
+
+''' IN DEVELOPMENT
+def test_rotate_mobile_base(node, action_server_client):
+    rospy.Subscriber("/stretch/joint_states", JointState, action_server_client.joint_state_callback)
+    time.sleep(0.5)  
+    deg = 10
+    deltas = {'ccw' : -((math.pi/180) * deg) , 'cw' : ((math.pi/180) * deg)}
+    command = {'joint' : 'rotate_mobile_base' , 'deltas' : deltas} 
+
+    if not action_server_client.start_trajectory_client():
+        assert False 
+    else: 
+        action_server_client.send_trajectory(command)
+
+        #assert action_server_client.initial_position == pytest.approx(action_server_client.final_position, 0.01)
         assert True
+
+def test_translate_mobile_base(node, action_server_client):
+    rospy.Subscriber("/stretch/joint_states", JointState, action_server_client.joint_state_callback)
+    time.sleep(0.5)  
+    translate = 0.08
+    deltas = {'in' : -translate , 'out' : translate}
+    command = {'joint' : 'joint_mobile_base_translation' , 'deltas' : deltas} 
+
+    if not action_server_client.start_trajectory_client():
+        assert False 
+    else: 
+        action_server_client.send_trajectory(command)
+        
+        #assert action_server_client.initial_position == pytest.approx(action_server_client.final_position, 0.01)
+        assert True
+'''
