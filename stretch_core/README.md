@@ -14,7 +14,7 @@
 
 ## Testing
 
-The primary testing framework being used within *stretch_ros* is pytest. Pytest is an open source testing framework that scales well and takes a functional approah resulting in minimal boiler plate code. First you should ensure that pytest is installed and up to date:  
+The primary testing framework being used within *stretch_ros* is pytest. Pytest is an open source testing framework that scales well and takes a functional approah resulting in minimal boiler plate code. First we should ensure that pytest is installed and up to date:  
 
 
 ```bash
@@ -59,7 +59,7 @@ Pytest Clarity: https://github.com/darrenburns/pytest-clarity
 Pytest Randomly: https://github.com/pytest-dev/pytest-randomly
 ```
 
-Before running any tests you should launch test suites that require nodes to be running via the roslaunch command as follows (you should not launch any test suites if you are using the *catkin_tools* package to build and run tests):
+Before running any tests we should launch test suites that require nodes to be running via the roslaunch command as follows (we should not launch any test suites if we are using the *catkin_tools* package to build and run tests):
 
 ```bash
 >>$ roslaunch <package_name> <test_suite_name> 
@@ -72,26 +72,26 @@ In order to run tests the following commands can be typed into the command line:
 ```
 A test session will bootup that reports the root directory and all the plugins currently running. Within the test session pytest will search for all tests in the current directory and all subdirectories. 
 
-You can also run individual tests by specify the test name after the option -k as follows: 
+We can also run individual tests by specify the test name after the option -k as follows: 
 
 ```bash
 >>$ pytest -vv -k 'test_name'
 ```
-In order to run all tests in all packages, you should call the *pytest* command inside of your *catkin_ws*. 
+In order to run all tests in all packages, we should call the *pytest* command inside of our *catkin_ws*. 
 
-Note, we can also run tests using the *catkin_tools* package. Thus we can assume we will be using *catkin build* instead of *catkin_make*. To install *catkin_tools* first ensure that you have the ROS repositories that contain *.deb* and *catkin_tools*:
+Note, we can also run tests using the *catkin_tools* package. Thus we can assume we will be using *catkin build* instead of *catkin_make*. To install *catkin_tools* first ensure that we have the ROS repositories that contain *.deb* and *catkin_tools*:
 
 ```bash
 >>$ sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'
 >>$ wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
 ```
-Next you can install *catkin_tools* by running:
+Next we can install *catkin_tools* by running:
 
 ```bash
 >>$ sudo apt-get update
 >>$ sudo apt-get install python-catkin-tools
 ```
-If you are currently using the *catkin_make* build system you should delete the *devel* and *build* directories in your *catkin_ws* before running *catkin build*. Next, you can type the following inside of your *catkin_ws* to compile and run all tests from all packages:
+If we are currently using the *catkin_make* build system we should delete the *devel* and *build* directories in our *catkin_ws* before running *catkin build*. Next, we can type the following inside of our *catkin_ws* to compile and run all tests from all packages:
 
 ```bash
 >>$ catkin run_tests
@@ -103,7 +103,7 @@ The following line can be modifed to specify indvidual packages as such:
 >>$ catkin run_tests <package_name>
 ```
 
-Finally, if you navigate to any ROS package within your work space you can run all of the tests associated with the package with the following command: 
+Finally, if we navigate to any ROS package within our work space we can run all of the tests associated with the package with the following command: 
 
 ```bash 
 >>$ catkin run_tests --this 
