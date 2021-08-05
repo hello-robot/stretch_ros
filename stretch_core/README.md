@@ -14,33 +14,14 @@
 
 ## Testing
 
-The primary testing framework being used within *stretch_ros* is pytest. Running tests are depedent on the catkin_tools library. Thus we can assume we will be using *catkin build* instead of *catkin_make*. To install catkin_tools first ensure that you have the ROS repositories that contain .deb and catkin_tools: 
+The primary testing framework being used within *stretch_ros* is pytest. Pytest is an open source testing framework that scales well and takes a functional approah resulting in minimal boiler plate code. First you should ensure that pytest is installed and up to date:  
 
-```bash
->>$ sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'
->>$ wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
-```
-
-Next you can install catkin_tools by running:
-
-```bash
->>$ sudo apt-get update
->>$ sudo apt-get install python-catkin-tools
-```
-
-If you are currently using the *catkin_make* build system you should delete the devel and build directories in your catkin_ws before running *catkin build*. Once catkin_tools is up and running you should then ensure that pytest is installed by running:
 
 ```bash
 >>$ pip3 install -U pytest
-```
-
-And you can ensure the version is correct by running: 
-
-```bash
 >>$ pytest --version
 pytest 6.2.4
 ```
-
 Testing can be split into four different categories: 
 
 1. Python library unit tests (pytest)
@@ -48,7 +29,7 @@ Testing can be split into four different categories:
 3. ROS node integration tests (pytest + rostest)
 4. ROS functional tests (pytest + rostest)
 
-Tests suites are organized using the rostest framework which is an extention on standard ROS launch files. The runner script converts the output file parameter to the pytest supported format, additionally, it passes the test directory to pytest. Test suites can be created simply by adding the following line to the desired test file: 
+Tests suites are organized using the rostest framework which is an extention of standard ROS launch files. Test suites can be created simply by adding the following lines to the desired test file: 
 
 Python Library Tests: 
 
@@ -59,7 +40,7 @@ Python Library Tests:
 </launch>
 ```
 
-ROS Node Unit Tests: 
+ROS Node Unit/Integration Tests: 
 
 ```html 
 <launch>
@@ -69,7 +50,48 @@ ROS Node Unit Tests:
 </launch>
 ```
 
-Next, you can type the following inside of your catkin_ws to compile and run all tests from all packages:
+It is also important that test suites are created in a directory that has access to the *pytest_runner.py* file. This script converts the output file parameter to the pytest supported format. Additionally, it passes the test directory to pytest.
+
+Below are some optional plugins that help make test reports more readable and with decoupling of test dependencies: 
+
+```
+Pytest Clarity: https://github.com/darrenburns/pytest-clarity
+Pytest Randomly: https://github.com/pytest-dev/pytest-randomly
+```
+
+Before running any tests you should launch test suites that require nodes to be running via the roslaunch command as follows (you should not launch any test suites if you are using the *catkin_tools* package to build and run tests):
+
+```bash
+>>$ roslaunch <package_name> <test_suite_name> 
+```
+
+In order to run tests the following commands can be typed into the command line: 
+
+```bash
+>>$ pytest -vv 
+```
+A test session will bootup that reports the root directory and all the plugins currently running. Within the test session pytest will search for all tests in the current directory and all subdirectories. 
+
+You can also run individual tests by specify the test name after the option -k as follows: 
+
+```bash
+>>$ pytest -vv -k 'test_name'
+```
+In order to run all tests in all packages, you should call the *pytest* command inside of your *catkin_ws*. 
+
+Note, we can also run tests using the *catkin_tools* package. Thus we can assume we will be using *catkin build* instead of *catkin_make*. To install *catkin_tools* first ensure that you have the ROS repositories that contain *.deb* and *catkin_tools*:
+
+```bash
+>>$ sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'
+>>$ wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+```
+Next you can install *catkin_tools* by running:
+
+```bash
+>>$ sudo apt-get update
+>>$ sudo apt-get install python-catkin-tools
+```
+If you are currently using the *catkin_make* build system you should delete the *devel* and *build* directories in your *catkin_ws* before running *catkin build*. Next, you can type the following inside of your *catkin_ws* to compile and run all tests from all packages:
 
 ```bash
 >>$ catkin run_tests
@@ -93,7 +115,7 @@ Results can be visualized by typing in the following command:
 >>$ catkin_test_results
 ```
 
-This will show descriptive messages based on how many tests were run, errors, failures, skipped tests, and the respective pacakge where the failure occured. 
+This will show descriptive messages based on how many tests were run, errors, failures, skipped tests, and the respective pacakge where the failure occured. However, when running tests with *catkin_tools* some plugins will lose functionality such as Pytest Clarity.  
 
 
 ## License
