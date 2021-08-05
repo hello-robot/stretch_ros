@@ -3,10 +3,10 @@
   <arg name="localization" default="false" />
 
   <arg name="database_path"     default="rtabmap.db"/>
-  <arg name="args"              default=""/>
+  <arg name="args"              default="-d"/>  <!--Possible arg -d to delete database on startup-->
 
   <arg name="wait_for_transform"  default="0.2"/> 
-  <arg name="move_base_config" value="2d" />
+  <arg name="move_base_config" value="3d" />
 
 
   <group if="$(arg sim)">
