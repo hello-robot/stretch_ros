@@ -59,7 +59,12 @@ Pytest Clarity: https://github.com/darrenburns/pytest-clarity
 Pytest Randomly: https://github.com/pytest-dev/pytest-randomly
 ```
 
-Before running any tests we should launch test suites that require nodes to be running via the roslaunch command as follows (we should not launch any test suites if we are using the *catkin_tools* package to build and run tests):
+
+Before running any tests we should run the *stretch_robot_home.py* script at least once after startup and launch test suites that require nodes to be running via the roslaunch command as follows (we should not launch any test suites if we are using the *catkin_tools* package to build and run tests):
+
+```bash
+>>$ stretch_robot_home.py 
+```
 
 ```bash
 >>$ roslaunch <package_name> <test_suite_name> 
