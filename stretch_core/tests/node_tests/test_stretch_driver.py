@@ -184,14 +184,11 @@ def test_magnetometer_mobile_base_receives_something(node, waiter):
 ######## TEST SUBSCRIBERS #######
 
 #pub.get_num_connections() continues to return 0 when cmd_vel should be subscribed to in stretch_driver
-'''
+
 def test_cmd_vel_subbed(node):
-    cmd_pub = rospy.Publisher('cmd_vel', Twist, queue_size = None)
+    cmd_pub = rospy.Publisher('/stretch/cmd_vel', Twist, queue_size = None)
     time.sleep(0.5)
-    connections = cmd_pub.get_num_connections()
-    
-    assert connections == 1 
-'''
+    assert cmd_pub.get_num_connections() == 1 
 
 
 ######## TEST SERVICES #######
