@@ -6,7 +6,7 @@
   <arg name="args"              default="-d"/>  <!--Possible arg -d to delete database on startup-->
 
   <arg name="wait_for_transform"  default="0.2"/> 
-  <arg name="move_base_config" value="3d" />
+  <arg name="move_base_config"/>
 
 
   <group if="$(arg sim)">
