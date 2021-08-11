@@ -170,7 +170,7 @@
     </sensor>
   </gazebo>
   <gazebo>
-      <plugin name="camera" filename="librealsense_gazebo_plugin.so">
+      <plugin name="realsense" filename="librealsense_gazebo_plugin.so">
         <depthUpdateRate>30</depthUpdateRate>
         <colorUpdateRate>30</colorUpdateRate>
         <infraredUpdateRate>30</infraredUpdateRate>
@@ -201,7 +201,7 @@
       <always_on>true</always_on>
       <visualize>false</visualize>
       <plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
-        <topicName>camera/imu/data</topicName>
+        <topicName>realsense/imu/data</topicName>
         <bodyName>camera_gyro_frame</bodyName>
         <updateRateHZ>50.0</updateRateHZ>
         <gaussianNoise>0.001</gaussianNoise>
