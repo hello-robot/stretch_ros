@@ -49,11 +49,10 @@
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
+  <exec_depend>move_base</exec_depend>
+  <exec_depend>rtabmap_ros</exec_depend>
+  <exec_depend>global_planner</exec_depend>
+  <exec_depend>dwa_local_planner</exec_depend>
 
 
-  <!-- The export tag contains other, unspecified, tags -->
-  <export>
-    <!-- Other tools can request additional information be placed here -->
-
-  </export>
 </package>
