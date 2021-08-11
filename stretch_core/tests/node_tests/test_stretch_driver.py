@@ -17,7 +17,7 @@ from trajectory_msgs.msg import JointTrajectoryPoint
 
 @pytest.fixture
 def node():
-    rospy.init_node('test_stretch_driver', anonymous=True)
+    rospy.init_node("test_stretch_driver", anonymous=True)
 
 @pytest.fixture
 def waiter():
@@ -68,10 +68,13 @@ def action_server_client():
             return server_reached
 
         def move_joint(self,command):
+
+            #Unpack joint name and store inital state in member variable  
             joint_name = command['joint']          
             joint_index = self.joint_state.name.index(joint_name)
             self.initial_position = self.joint_state.position[joint_index]
 
+            #Loop through desired deltas in command dictionary and send goal 
             for delta in command['deltas']: 
                 point = JointTrajectoryPoint()
                 point.time_from_start = rospy.Duration(0.0)
@@ -80,59 +83,59 @@ def action_server_client():
                 trajectory_goal.trajectory.joint_names = [joint_name]            
                 joint_value = self.joint_state.position[joint_index]
                 delta_val = command['deltas'][delta]
-                rospy.loginfo('delta = {0}, joint_index = {1}, joint_value = {2}'.format(delta, joint_index, joint_value))        
                 new_value = joint_value + delta_val
                 point.positions = [new_value]
                 trajectory_goal.trajectory.points = [point]
 
-                rospy.loginfo('joint_name = {0}, trajectory_goal = {1}'.format(joint_name, trajectory_goal))
                 rospy.loginfo('Done sending pose.')
                 self.trajectory_client.send_goal(trajectory_goal)
                 time.sleep(2)
 
-            
+            #Store final state in memeber variable 
             self.final_position = self.joint_state.position[joint_index]
 
         
         def move_multiple_joints(self,joint_names,rotate,translate):
 
+            #Unpack joint names and store inital states in member variable  
             joint_names_rotate = [joint_name for joint_name in joint_names if joint_name != 'joint_lift' and joint_name != 'wrist_extension']
             joint_names_translate = [joint_name for joint_name in joint_names if joint_name == 'joint_lift' or joint_name == 'wrist_extension']
             joint_index_rotate = [self.joint_state.name.index(joint_name) for joint_name in joint_names_rotate]
             joint_index_translate = [self.joint_state.name.index(joint_name) for joint_name in joint_names_translate]
             self.joint_initial_rotate = [self.joint_state.position[joint_index] for joint_index in joint_index_rotate] 
             self.joint_initial_translate = [self.joint_state.position[joint_index] for joint_index in joint_index_translate] 
-
             
+            #Declare points in trajectory 
             point_move_forward = JointTrajectoryPoint()
             point_move_back = JointTrajectoryPoint()
 
             point_move_forward.time_from_start = rospy.Duration(0.0)
-
-            
             point_move_back.time_from_start = rospy.Duration(5.0)
 
             trajectory_goal = FollowJointTrajectoryGoal()
             trajectory_goal.goal_time_tolerance = rospy.Time(10.0)
-            
                                  
             trajectory_goal.trajectory.joint_names = joint_names_rotate + joint_names_translate 
             
-            new_values_rotate = [joint_values + rotate for joint_values in self.joint_initial_rotate]
-            new_values_translate = [joint_values + translate for joint_values in self.joint_initial_translate]
-            new_value_forward = new_values_rotate + new_values_translate 
+            #Set forward point to inital_values + desired_movements  
+            new_values_rotate_forward = [joint_values + rotate for joint_values in self.joint_initial_rotate]
+            new_values_translate_forward = [joint_values + translate for joint_values in self.joint_initial_translate]
+            new_value_forward = new_values_rotate_forward + new_values_translate_forward 
 
-            new_values_rotate = [joint_values for joint_values in self.joint_initial_rotate]
-            new_values_translate = [joint_values for joint_values in self.joint_initial_translate]
-            new_value_back = new_values_rotate + new_values_translate 
+            #Set back point to inital values 
+            new_values_rotate_back = [joint_values for joint_values in self.joint_initial_rotate]
+            new_values_translate_back = [joint_values for joint_values in self.joint_initial_translate]
+            new_value_back = new_values_rotate_back + new_values_translate_back 
 
             point_move_forward.positions = new_value_forward
             point_move_back.positions = new_value_back
 
+            #Add points to trajectory and send goal 
             trajectory_goal.trajectory.points = [point_move_forward,point_move_back]
             self.trajectory_client.send_goal(trajectory_goal)
             time.sleep(3)
 
+            #Store final states in member variable 
             self.joint_final_rotate = [self.joint_state.position[joint_index] for joint_index in joint_index_rotate] 
             self.joint_final_translate = [self.joint_state.position[joint_index] for joint_index in joint_index_translate] 
 
@@ -183,10 +186,8 @@ def test_magnetometer_mobile_base_receives_something(node, waiter):
 
 ######## TEST SUBSCRIBERS #######
 
-#pub.get_num_connections() continues to return 0 when cmd_vel should be subscribed to in stretch_driver
-
 def test_cmd_vel_subbed(node):
-    cmd_pub = rospy.Publisher('/stretch/cmd_vel', Twist, queue_size = None)
+    cmd_pub = rospy.Publisher("/stretch/cmd_vel", Twist, queue_size = None)
     time.sleep(0.5)
     assert cmd_pub.get_num_connections() == 1 
 
@@ -239,20 +240,6 @@ def test_runstop(node):
     assert result.success 
 
 
-
-# Test timing out (60s), error could be due to calibration
-'''
-def test_switch_to_manipulation_mode(node): 
-    rospy.wait_for_service('switch_to_manipulation_mode') 
-
-    s = rospy.ServiceProxy('switch_to_manipulation_mode', Trigger)
-
-    s_request = TriggerRequest()
-
-    result = s(s_request)
-
-    assert result.success
-'''
 ######## TEST ACTION SERVER #######
 
 def test_move_lift(node, action_server_client):
@@ -266,7 +253,7 @@ def test_move_lift(node, action_server_client):
         assert False 
     else: 
         action_server_client.move_joint(command)
-        assert (action_server_client.initial_position) == pytest.approx(action_server_client.final_position, 0.01)
+        assert (action_server_client.initial_position) == pytest.approx(action_server_client.final_position, abs=1e-2)
 
 def test_move_wrist(node, action_server_client):
     rospy.Subscriber("/stretch/joint_states", JointState, action_server_client.joint_state_callback)
@@ -280,7 +267,7 @@ def test_move_wrist(node, action_server_client):
     else: 
         action_server_client.move_joint(command)
 
-        assert action_server_client.initial_position == pytest.approx(action_server_client.final_position, 0.01)
+        assert action_server_client.initial_position == pytest.approx(action_server_client.final_position, abs=1e-2)
 
 def test_move_wrist_yaw(node, action_server_client):
     rospy.Subscriber("/stretch/joint_states", JointState, action_server_client.joint_state_callback)
@@ -294,12 +281,12 @@ def test_move_wrist_yaw(node, action_server_client):
     else: 
         action_server_client.move_joint(command)
     
-        assert action_server_client.initial_position == pytest.approx(action_server_client.final_position, 0.01)
+        assert action_server_client.initial_position == pytest.approx(action_server_client.final_position, abs=1e-1)
 
 def test_move_gripper_finger(node, action_server_client):
     rospy.Subscriber("/stretch/joint_states", JointState, action_server_client.joint_state_callback)
     time.sleep(0.5)  
-    deg = 8
+    deg = 5
     deltas = {'ccw' : ((math.pi/180) * deg) , 'cw' : -((math.pi/180) * deg)}
     command = {'joint' : 'joint_gripper_finger_left' , 'deltas' : deltas} 
 
@@ -308,12 +295,12 @@ def test_move_gripper_finger(node, action_server_client):
     else: 
         action_server_client.move_joint(command)
 
-        assert action_server_client.initial_position == pytest.approx(action_server_client.final_position, 0.1) #0.01
+        assert action_server_client.initial_position == pytest.approx(action_server_client.final_position, abs=1e-1) #0.01
 
 def test_move_head_tilt(node, action_server_client):
     rospy.Subscriber("/stretch/joint_states", JointState, action_server_client.joint_state_callback)
     time.sleep(0.5)  
-    deg = 15
+    deg = 20
     deltas = {'ccw' : ((math.pi/180) * deg) , 'cw' : -((math.pi/180) * deg)}
     command = {'joint' : 'joint_head_tilt' , 'deltas' : deltas} 
 
@@ -322,12 +309,12 @@ def test_move_head_tilt(node, action_server_client):
     else: 
         action_server_client.move_joint(command)
 
-        assert action_server_client.initial_position == pytest.approx(action_server_client.final_position, 0.1)
+        assert action_server_client.initial_position == pytest.approx(action_server_client.final_position, abs = 1e-1)
 
 def test_move_head_pan(node, action_server_client):
     rospy.Subscriber("/stretch/joint_states", JointState, action_server_client.joint_state_callback)
     time.sleep(0.5)  
-    deg = 15
+    deg = 20
     deltas = {'ccw' : ((math.pi/180) * deg) , 'cw' : -((math.pi/180) * deg)}
     command = {'joint' : 'joint_head_pan' , 'deltas' : deltas} 
 
@@ -336,7 +323,7 @@ def test_move_head_pan(node, action_server_client):
     else: 
         action_server_client.move_joint(command)
 
-        assert action_server_client.initial_position == pytest.approx(action_server_client.final_position, 0.1)
+        assert action_server_client.initial_position == pytest.approx(action_server_client.final_position, abs = 1e-1)
 
 
 def test_move_multiple_joints(node, action_server_client):
@@ -353,7 +340,7 @@ def test_move_multiple_joints(node, action_server_client):
     else: 
         action_server_client.move_multiple_joints(joint_names,rad,translate)  
 
-        translate_results = all([initial  == pytest.approx(final,0.1) for initial, final in zip(action_server_client.joint_initial_translate, action_server_client.joint_final_translate)])
-        rotate_results = all([initial  == pytest.approx(final,0.1) for initial, final in zip(action_server_client.joint_initial_rotate, action_server_client.joint_final_rotate)])          
+        translate_results = all([initial  == pytest.approx(final,abs=1e-2) for initial, final in zip(action_server_client.joint_initial_translate, action_server_client.joint_final_translate)])
+        rotate_results = all([initial  == pytest.approx(final,abs=1e-2) for initial, final in zip(action_server_client.joint_initial_rotate, action_server_client.joint_final_rotate)])          
         assert translate_results + rotate_results
 
