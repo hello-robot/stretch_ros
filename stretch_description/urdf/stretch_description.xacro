@@ -3,7 +3,7 @@
 
 
 
-  <xacro:include filename="stretch_dex_wrist_beta.xacro" />
+  <xacro:include filename="stretch_dex_wrist.xacro" />
   <!--<xacro:include filename="stretch_gripper_with_puller.xacro" />-->
   <!--<xacro:include filename="stretch_gripper.xacro" />-->
   <!--<xacro:include filename="stretch_dry_erase_marker.xacro" />-->
