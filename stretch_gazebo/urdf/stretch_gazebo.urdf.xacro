@@ -170,7 +170,7 @@
     </sensor>
   </gazebo>
   <gazebo>
-      <plugin name="realsense" filename="librealsense_gazebo_plugin.so">
+      <plugin name="camera" filename="librealsense_gazebo_plugin.so">
         <depthUpdateRate>30</depthUpdateRate>
         <colorUpdateRate>30</colorUpdateRate>
         <infraredUpdateRate>30</infraredUpdateRate>
@@ -201,7 +201,7 @@
       <always_on>true</always_on>
       <visualize>false</visualize>
       <plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
-        <topicName>realsense/imu/data</topicName>
+        <topicName>camera/imu/data</topicName>
         <bodyName>camera_gyro_frame</bodyName>
         <updateRateHZ>50.0</updateRateHZ>
         <gaussianNoise>0.001</gaussianNoise>
@@ -253,12 +253,12 @@
             <horizontal>
               <samples>2000</samples>
               <resolution>1</resolution>
-              <min_angle>${-M_PI}</min_angle>
-              <max_angle>${M_PI}</max_angle>
+              <min_angle>-0.9</min_angle>
+              <max_angle>5.0</max_angle>
             </horizontal>
           </scan>
           <range>
-            <min>0.08</min>
+            <min>0.15</min>
             <max>12.0</max>
             <resolution>0.01</resolution>
           </range>
@@ -289,12 +289,12 @@
             <horizontal>
               <samples>2000</samples>
               <resolution>1</resolution>
-              <min_angle>${-M_PI}</min_angle>
-              <max_angle>${M_PI}</max_angle>
+              <min_angle>-0.9</min_angle>
+              <max_angle>5.0</max_angle>
             </horizontal>
           </scan>
           <range>
-            <min>0.08</min>
+            <min>0.15</min>
             <max>12.0</max>
             <resolution>0.01</resolution>
           </range>
