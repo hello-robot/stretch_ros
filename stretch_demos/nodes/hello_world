@@ -255,15 +255,18 @@ class HelloWorldNode(hm.HelloNode):
         self.trigger_write_hello_service = rospy.Service('/hello_world/trigger_write_hello',
                                                          Trigger,
                                                          self.trigger_write_hello_callback)
-        
+
+        rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /funmap/trigger_align_with_nearest_cliff.')
         rospy.wait_for_service('/funmap/trigger_align_with_nearest_cliff')
         rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_align_with_nearest_cliff.')
         self.trigger_align_with_nearest_cliff_service = rospy.ServiceProxy('/funmap/trigger_align_with_nearest_cliff', Trigger)
 
+        rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /funmap/trigger_reach_until_contact.')
         rospy.wait_for_service('/funmap/trigger_reach_until_contact')
         rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_reach_until_contact.')
         self.trigger_reach_until_contact_service = rospy.ServiceProxy('/funmap/trigger_reach_until_contact', Trigger)
 
+        # rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /funmap/trigger_turn_off_contact_regulation.')
         # rospy.wait_for_service('/funmap/trigger_turn_off_contact_regulation')
         # rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_turn_off_contact_regulation.')
         # self.trigger_turn_off_contact_regulation_service = rospy.ServiceProxy('/funmap/trigger_turn_off_contact_regulation', Trigger)

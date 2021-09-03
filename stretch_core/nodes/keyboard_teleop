@@ -313,63 +313,73 @@ class KeyboardTeleopNode(hm.HelloNode):
     def main(self):
         hm.HelloNode.main(self, 'keyboard_teleop', 'keyboard_teleop', wait_for_first_pointcloud=False)
 
-        if self.mapping_on: 
+        if self.mapping_on:
             rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /funmap/trigger_head_scan.')
-
             rospy.wait_for_service('/funmap/trigger_head_scan')
             rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_head_scan.')
             self.trigger_head_scan_service = rospy.ServiceProxy('/funmap/trigger_head_scan', Trigger)
 
+            rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /funmap/trigger_drive_to_scan.')
             rospy.wait_for_service('/funmap/trigger_drive_to_scan')
             rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_drive_to_scan.')
             self.trigger_drive_to_scan_service = rospy.ServiceProxy('/funmap/trigger_drive_to_scan', Trigger)
 
+            rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /funmap/trigger_global_localization.')
             rospy.wait_for_service('/funmap/trigger_global_localization')
             rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_global_localization.')
             self.trigger_global_localization_service = rospy.ServiceProxy('/funmap/trigger_global_localization', Trigger)
 
+            rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /funmap/trigger_local_localization.')
             rospy.wait_for_service('/funmap/trigger_local_localization')
             rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_local_localization.')
             self.trigger_local_localization_service = rospy.ServiceProxy('/funmap/trigger_local_localization', Trigger)
 
+            rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /funmap/trigger_align_with_nearest_cliff.')
             rospy.wait_for_service('/funmap/trigger_align_with_nearest_cliff')
             rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_align_with_nearest_cliff.')
             self.trigger_align_with_nearest_cliff_service = rospy.ServiceProxy('/funmap/trigger_align_with_nearest_cliff', Trigger)
 
+            rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /funmap/trigger_reach_until_contact.')
             rospy.wait_for_service('/funmap/trigger_reach_until_contact')
             rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_reach_until_contact.')
             self.trigger_reach_until_contact_service = rospy.ServiceProxy('/funmap/trigger_reach_until_contact', Trigger)
 
+            rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /funmap/trigger_lower_until_contact.')
             rospy.wait_for_service('/funmap/trigger_lower_until_contact')
             rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_lower_until_contact.')
             self.trigger_lower_until_contact_service = rospy.ServiceProxy('/funmap/trigger_lower_until_contact', Trigger)
 
-        if self.hello_world_on: 
+        if self.hello_world_on:
+            rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /hello_world/trigger_write_hello.')
             rospy.wait_for_service('/hello_world/trigger_write_hello')
             rospy.loginfo('Node ' + self.node_name + ' connected to /hello_world/trigger_write_hello.')
             self.trigger_write_hello_service = rospy.ServiceProxy('/hello_world/trigger_write_hello', Trigger)
 
         if self.open_drawer_on:
+            rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /open_drawer/trigger_open_drawer_down.')
             rospy.wait_for_service('/open_drawer/trigger_open_drawer_down')
             rospy.loginfo('Node ' + self.node_name + ' connected to /open_drawer/trigger_open_drawer_down.')
             self.trigger_open_drawer_down_service = rospy.ServiceProxy('/open_drawer/trigger_open_drawer_down', Trigger)
 
+            rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /open_drawer/trigger_open_drawer_up.')
             rospy.wait_for_service('/open_drawer/trigger_open_drawer_up')
             rospy.loginfo('Node ' + self.node_name + ' connected to /open_drawer/trigger_open_drawer_up.')
             self.trigger_open_drawer_up_service = rospy.ServiceProxy('/open_drawer/trigger_open_drawer_up', Trigger)
 
-            
         if self.clean_surface_on:
+            rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /clean_surface/trigger_clean_surface.')
             rospy.wait_for_service('/clean_surface/trigger_clean_surface')
             rospy.loginfo('Node ' + self.node_name + ' connected to /clean_surface/trigger_clean_surface.')
             self.trigger_clean_surface_service = rospy.ServiceProxy('/clean_surface/trigger_clean_surface', Trigger)
 
         if self.grasp_object_on:
+            rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /grasp_object/trigger_grasp_object.')
             rospy.wait_for_service('/grasp_object/trigger_grasp_object')
             rospy.loginfo('Node ' + self.node_name + ' connected to /grasp_object/trigger_grasp_object.')
             self.trigger_grasp_object_service = rospy.ServiceProxy('/grasp_object/trigger_grasp_object', Trigger)
 
         if self.deliver_object_on:
+            rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /deliver_object/trigger_deliver_object.')
             rospy.wait_for_service('/deliver_object/trigger_deliver_object')
             rospy.loginfo('Node ' + self.node_name + ' connected to /deliver_object/trigger_deliver_object.')
             self.trigger_deliver_object_service = rospy.ServiceProxy('/deliver_object/trigger_deliver_object', Trigger)

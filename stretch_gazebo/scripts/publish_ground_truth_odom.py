@@ -10,6 +10,7 @@ import time
 rospy.init_node('ground_truth_odometry_publisher')
 odom_pub=rospy.Publisher('ground_truth', Odometry, queue_size=10)
 
+rospy.loginfo('Waiting to connect to /gazebo/get_model_state.')
 rospy.wait_for_service('/gazebo/get_model_state')
 get_model_srv = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
 get_world_properties = rospy.ServiceProxy('/gazebo/get_world_properties', GetWorldProperties)

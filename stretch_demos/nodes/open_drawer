@@ -199,15 +199,17 @@ class OpenDrawerNode(hm.HelloNode):
                                                          Trigger,
                                                          self.trigger_open_drawer_up_callback)
         
-        
+        rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /funmap/trigger_align_with_nearest_cliff.')
         rospy.wait_for_service('/funmap/trigger_align_with_nearest_cliff')
         rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_align_with_nearest_cliff.')
         self.trigger_align_with_nearest_cliff_service = rospy.ServiceProxy('/funmap/trigger_align_with_nearest_cliff', Trigger)
 
+        rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /funmap/trigger_reach_until_contact.')
         rospy.wait_for_service('/funmap/trigger_reach_until_contact')
         rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_reach_until_contact.')
         self.trigger_reach_until_contact_service = rospy.ServiceProxy('/funmap/trigger_reach_until_contact', Trigger)
 
+        rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /funmap/trigger_lower_until_contact.')
         rospy.wait_for_service('/funmap/trigger_lower_until_contact')
         rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_lower_until_contact.')
         self.trigger_lower_until_contact_service = rospy.ServiceProxy('/funmap/trigger_lower_until_contact', Trigger)

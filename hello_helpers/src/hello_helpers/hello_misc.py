@@ -142,17 +142,20 @@ class HelloNode:
         rospy.loginfo("{0} started".format(self.node_name))
 
         self.trajectory_client = actionlib.SimpleActionClient('/stretch_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
+        rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /stretch_controller/follow_joint_trajectory server.')
         server_reached = self.trajectory_client.wait_for_server(timeout=rospy.Duration(60.0))
         if not server_reached:
-            rospy.signal_shutdown('Unable to connect to arm action server. Timeout exceeded.')
+            rospy.signal_shutdown('Unable to connect to /stretch_controller/follow_joint_trajectory server. Timeout exceeded.')
             sys.exit()
-        
+        rospy.loginfo('Node ' + self.node_name + ' connected to /stretch_controller/follow_joint_trajectory server.')
+
         self.tf2_buffer = tf2_ros.Buffer()
         self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
         
         self.point_cloud_subscriber = rospy.Subscriber('/camera/depth/color/points', PointCloud2, self.point_cloud_callback)
         self.point_cloud_pub = rospy.Publisher('/' + node_topic_namespace + '/point_cloud2', PointCloud2, queue_size=1)
 
+        rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /stop_the_robot service.')
         rospy.wait_for_service('/stop_the_robot')
         rospy.loginfo('Node ' + self.node_name + ' connected to /stop_the_robot service.')
         self.stop_the_robot_service = rospy.ServiceProxy('/stop_the_robot', Trigger)
@@ -160,11 +163,11 @@ class HelloNode:
         if wait_for_first_pointcloud:
             # Do not start until a point cloud has been received
             point_cloud_msg = self.point_cloud
-            print('Node ' + node_name + ' waiting to receive first point cloud.')
+            rospy.loginfo('Node ' + node_name + ' waiting to receive first point cloud.')
             while point_cloud_msg is None:
                 rospy.sleep(0.1)
                 point_cloud_msg = self.point_cloud
-            print('Node ' + node_name + ' received first point cloud, so continuing.')
+            rospy.loginfo('Node ' + node_name + ' received first point cloud, so continuing.')
 
 
 def create_time_string():

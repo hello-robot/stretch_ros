@@ -1264,7 +1264,7 @@ class FunmapNode(hm.HelloNode):
         
         default_service = '/camera/switch_to_default_mode'
         high_accuracy_service = '/camera/switch_to_high_accuracy_mode'
-        rospy.loginfo('Node ' + self.node_name + ' waiting to connect to ' + default_service + ' and ' + high_accuracy_service)
+        rospy.loginfo('Node ' + self.node_name + ' waiting to connect to ' + default_service + ' and ' + high_accuracy_service + ' services.')
         rospy.wait_for_service(default_service)
         rospy.loginfo('Node ' + self.node_name + ' connected to ' + default_service)
         self.trigger_d435i_default_mode_service = rospy.ServiceProxy(default_service, Trigger)
