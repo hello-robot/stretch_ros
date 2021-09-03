@@ -1,0 +1,43 @@
+<launch>
+
+  <arg name="rviz"                   default="true"                           doc="whether to show Rviz" />
+  <arg name="map_yaml"               default="''"                             doc="previously captured FUNMAP map (optional)" />
+  <arg name="debug_directory"        default="$(env HELLO_FLEET_PATH)/debug/" doc="directory where debug imagery is saved" />
+  <arg name="gazebo_world"           default="worlds/willowgarage.world"      doc="the environment within which Stretch is loaded in Gazebo" />
+  <arg name="gazebo_gpu_lidar"       default="false"                          doc="whether to compute lidar with hardware acceleration (requires GPU)" />
+  <arg name="gazebo_visualize_lidar" default="false"                          doc="whether to visualize planar lidar within Gazebo" />
+
+  <remap from="/stretch_diff_drive_controller/odom" to="/odom" />
+  <remap from="/joint_states" to="/stretch/joint_states" />
+
+  <!-- GAZEBO SIMULATION -->
+  <include file="$(find stretch_gazebo)/launch/gazebo.launch">
+    <arg name="world" value="$(arg gazebo_world)" />
+    <arg name="visualize_lidar" value="$(arg gazebo_visualize_lidar)" />
+    <arg name="gpu_lidar" value="$(arg gazebo_gpu_lidar)" />
+  </include>
+  <!-- -->
+
+  <!-- FRUSTUM FIELD OF VIEW VISUALIZATION -->
+  <node name="d435i_frustum_visualizer" pkg="stretch_core" type="d435i_frustum_visualizer" output="screen" />
+  <!-- -->
+
+  <!-- FUNMAP -->
+  <node name="funmap" pkg="stretch_funmap" type="funmap" output="screen" args="--load_map $(arg map_yaml)">
+    <param name="debug_directory" type="string" value="$(arg debug_directory)"/>
+  </node>
+  <!-- -->
+
+  <!-- LASER SCAN MATCHER FOR ODOMETRY -->
+  <include file="$(find stretch_core)/launch/stretch_scan_matcher.launch" />
+  <!-- -->
+
+  <!-- KEYBOARD TELEOP -->
+  <node name="keyboard_teleop" pkg="stretch_core" type="keyboard_teleop" output="screen" args='--mapping_on' />
+  <!-- -->
+
+  <!-- VISUALIZE -->
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_funmap)/rviz/stretch_mapping.rviz" if="$(arg rviz)" />
+  <!-- -->
+
+</launch>
