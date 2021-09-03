@@ -1,0 +1,33 @@
+<launch>
+
+  <arg name="teleop_type"   default="keyboard"         doc="how to teleop ('keyboard', 'joystick', or 'none')" />
+  <arg name="linear"        default="0.04"             doc="linear speed (m/s)" />
+  <arg name="angular"       default="0.1"              doc="angular speed (rad/s)" />
+  <arg name="twist_topic"   default="/stretch/cmd_vel" doc="topic to command Twist messages" />
+  <arg name="joystick_port" default="/dev/input/js0"   doc="joystick USB device name" />
+
+  <!-- KEYBOARD TELEOP -->
+  <group if="$(eval teleop_type == 'keyboard')">
+    <node name="teleop_twist_keyboard" pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" output="screen" >
+      <param name="speed" type="double" value="$(arg linear)" />
+      <param name="turn" type="double" value="$(arg angular)" />
+      <remap from="/cmd_vel" to="$(arg twist_topic)" />
+    </node>
+  </group>
+
+  <!-- JOYSTICK TELEOP -->
+  <group if="$(eval teleop_type == 'joystick')">
+    <node name="joy" pkg="joy" type="joy_node" output="screen">
+        <param name="dev" value="$(arg joystick_port)" />
+        <param name="autorepeat_rate" value="20" />
+        <param name="deadzone" value="0.05" />
+    </node>
+    <node name="teleop_twist_joy" pkg="teleop_twist_joy" type="teleop_node">
+        <param name="enable_button" type="int" value="-1" /> <!-- value="0" to enable deadman button -->
+        <param name="scale_linear" type="double" value="$(arg linear)" />
+        <param name="scale_angular" type="double" value="$(arg angular)" />
+        <remap from="/cmd_vel" to="$(arg twist_topic)" />
+    </node>
+  </group>
+
+</launch>
