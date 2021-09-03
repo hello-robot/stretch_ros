@@ -1,7 +1,7 @@
 <launch>
 
-  <arg name="map_yaml" />
-  <arg name="rviz" default="true"/>
+  <arg name="map_yaml"                doc="filepath to previously captured map (required)" />
+  <arg name="rviz"     default="true" doc="whether to show Rviz" />
 
   <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="true"/>
   <param name="/stretch_driver/mode" type="string" value="navigation" />
