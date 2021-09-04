@@ -29,21 +29,22 @@ The *script* directory contains a single python file that publishes ground truth
 These set up instructions will not be required on newly shipped robots. Follow these instructions if *stretch_gazebo* is not present in your ROS workspace or you are simulating Stretch on external hardware. Clone stretch_ros and realsense_gazebo_plugin packages to your catkin workspace. Then install dependencies and build the packages, with the following set of commands:
 
 ```bash
-    cd ~/catkin_ws/src
-    git clone https://github.com/hello-robot/stretch_ros -b dev/noetic
-    git clone https://github.com/pal-robotics/realsense_gazebo_plugin
-    cd ~/catkin_ws
-    rosdep install --from-paths src --ignore-src -r -y
-    catkin_make
+mkdir -p ~/catkin_ws/src
+cd ~/catkin_ws/src
+git clone https://github.com/hello-robot/stretch_ros -b dev/noetic
+git clone https://github.com/pal-robotics/realsense_gazebo_plugin
+cd ~/catkin_ws
+rosdep install --from-paths src --ignore-src -r -y
+catkin_make
 ```
 
 ## Running Demo
 
 ```bash
-    # Terminal 1:
-    roslaunch stretch_gazebo gazebo.launch rviz:=true
-    # Terminal 2:
-    roslaunch stretch_gazebo teleop_keyboard.launch # or use teleop_joy.launch if you have a controller
+# Terminal 1:
+roslaunch stretch_gazebo gazebo.launch rviz:=true
+# Terminal 2:
+roslaunch stretch_core teleop_twist.launch twist_topic:=/stretch_diff_drive_controller/cmd_vel linear:=1.0 angular:=2.0 teleop_type:=keyboard # or use teleop_type:=joystick if you have a controller
 ```
 
 This will launch an Rviz instance that visualizes the sensors and an empty world in Gazebo with Stretch and load all the controllers. Although, the base will be able to move with the joystick commands, the joystick won't give joint commands to arm, head or gripper. To move these joints see the next section about *Running Gazebo with MoveIt! and Stretch*.
@@ -53,12 +54,12 @@ This will launch an Rviz instance that visualizes the sensors and an empty world
 ## Running Gazebo with MoveIt! and Stretch
 
 ```bash
-    # Terminal 1:
-    roslaunch stretch_gazebo gazebo.launch
-    # Terminal 2:
-    roslaunch stretch_gazebo teleop_keyboard.launch # or use teleop_joy.launch if you have a controller
-    # Terminal 3
-    roslaunch stretch_moveit_config demo_gazebo.launch
+# Terminal 1:
+roslaunch stretch_gazebo gazebo.launch
+# Terminal 2:
+roslaunch stretch_core teleop_twist.launch twist_topic:=/stretch_diff_drive_controller/cmd_vel linear:=1.0 angular:=2.0 teleop_type:=keyboard # or use teleop_type:=joystick if you have a controller
+# Terminal 3
+roslaunch stretch_moveit_config demo_gazebo.launch
 ```
 
 This will launch an Rviz instance that visualizes the joints with markers and an empty world in Gazebo with Stretch and load all the controllers. There are pre-defined positions for each joint group for demonstration purposes. There are three joint groups, namely *stretch_arm*, *stretch_gripper* and *stretch_head* that can be controlled individually via Motion Planning Rviz plugin. Start and goal positions for joints can be selected similar to [this moveit tutorial](https://ros-planning.github.io/moveit_tutorials/doc/quickstart_in_rviz/quickstart_in_rviz_tutorial.html#choosing-specific-start-goal-states). A few notes to be kept in mind:
