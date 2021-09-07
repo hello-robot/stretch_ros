@@ -10,11 +10,20 @@ In addition, after changing a tool, this code can be used to generate a new cali
 
 ## Checking the Current Calibration with New Observations
 
+
+1. Make sure the basic joint limit calibration has been performed.
+
+   `stretch_robot_home.py`
+
+1. Make sure the uncalibrated URDF is up to date.
+
+   `rosrun stretch_calibration update_uncalibrated_urdf.sh`
+
 1. Collect new observations
 
    `roslaunch stretch_calibration collect_check_head_calibration_data.launch`
-   
-2. Test how well the current calibrated model fits the new observations
+
+1. Test how well the current calibrated model fits the new observations
 
    `rosrun stretch_calibration check_head_calibration.sh`
    
