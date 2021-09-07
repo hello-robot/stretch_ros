@@ -16,10 +16,10 @@
   <!-- MAP SERVER -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_yaml)" />
 
-  <!-- AMCL -->
+  <!-- LOCALIZATION -->
   <include file="$(find amcl)/examples/amcl_diff.launch" />
 
-  <!-- MOVE BASE -->
+  <!-- NAVIGATION -->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <rosparam file="$(find stretch_navigation)/config/common_costmap_params.yaml" command="load" ns="global_costmap" />
     <rosparam file="$(find stretch_navigation)/config/common_costmap_params.yaml" command="load" ns="local_costmap" />
@@ -29,7 +29,7 @@
     <remap from="/cmd_vel" to="/stretch_diff_drive_controller/cmd_vel" />
   </node>
 
-  <!-- RVIZ -->
+  <!-- VISUALIZE -->
   <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find stretch_navigation)/rviz/navigation.rviz" if="$(arg rviz)" />
 
 </launch>

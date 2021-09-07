@@ -3,16 +3,21 @@
   <arg name="map_yaml"                doc="filepath to previously captured map (required)" />
   <arg name="rviz"     default="true" doc="whether to show Rviz" />
 
+  <!-- STRETCH DRIVER -->
   <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="true"/>
   <param name="/stretch_driver/mode" type="string" value="navigation" />
   <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true"/>
 
+  <!-- LASER RANGE FINDER -->
   <include file="$(find stretch_core)/launch/rplidar.launch" />
 
+  <!-- MAP SERVER -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_yaml)" />
 
+  <!-- LOCALIZATION -->
   <include file="$(find amcl)/examples/amcl_diff.launch" />
 
+  <!-- NAVIGATION -->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <rosparam file="$(find stretch_navigation)/config/common_costmap_params.yaml" command="load" ns="global_costmap" />
     <rosparam file="$(find stretch_navigation)/config/common_costmap_params.yaml" command="load" ns="local_costmap" />
@@ -22,6 +27,7 @@
     <remap from="/cmd_vel" to="/stretch/cmd_vel" />
   </node>
 
+  <!-- VISUALIZE -->
   <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find stretch_navigation)/rviz/navigation.rviz" if="$(arg rviz)" />
 
 </launch>
