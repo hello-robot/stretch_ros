@@ -2,7 +2,7 @@
 
 ## Overview
 
-*stretch_rtab* provides RTAB-MAPPiNG. This package utilizes rtab-map, move_base, and AMCL to map and drive the stretch RE1 around a space. Running this code will require the robot to be untethered.
+*stretch_rtabmap* provides RTAB-MAPPiNG. This package utilizes rtab-map, move_base, and AMCL to map and drive the stretch RE1 around a space. Running this code will require the robot to be untethered.
 
 ## Setup
 
@@ -22,15 +22,15 @@ Use `rosdep` to install the required packages.
 ### Gazebo
 
 ```bash
-    roslaunch stretch_rtab gazebo.launch
-    roslaunch stretch_rtab start_rtab.launch sim:=true localization:=false move_base_config:=2d
-    roslaunch stretch_rtab rviz_rtab.launch mapping:=true
+    roslaunch stretch_rtabmap gazebo.launch
+    roslaunch stretch_rtabmap start_rtab.launch sim:=true localization:=false move_base_config:=2d
+    roslaunch stretch_rtabmap rviz_rtab.launch mapping:=true
 ```
 
 ### Stretch RE1
 ```bash
-    roslaunch stretch_rtab start_rtab.launch sim:=false localization:=false move_base_config:=2d
-    roslaunch stretch_rtab rviz_rtab.launch mapping:=true
+    roslaunch stretch_rtabmap start_rtab.launch sim:=false localization:=false move_base_config:=2d
+    roslaunch stretch_rtabmap rviz_rtab.launch mapping:=true
 ```
 ## Code Status & Development Plans
 

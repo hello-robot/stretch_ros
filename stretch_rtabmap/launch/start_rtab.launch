@@ -17,12 +17,12 @@
     <arg name="rgb_topic" default="/realsense/color/image_raw"/>
     <arg name="rgb_camera_info" default="/realsense/color/camera_info"/>
 
-    <include file="$(find stretch_rtab)/launch/move_base.launch">
+    <include file="$(find stretch_rtabmap)/launch/move_base.launch">
       <arg name="config" value="$(arg move_base_config)" />
       <arg name="cmd_vel_topic" value="$(arg cmd_vel_topic)"/>
       <arg name="odom_topic" value="$(arg odom_topic)"/>
     </include>
-    <include file="$(find stretch_rtab)/launch/rtab.launch">
+    <include file="$(find stretch_rtabmap)/launch/rtab.launch">
       <arg name="localization" value="$(arg localization)"/>
       <arg name="args" value="$(arg args)"/>
       <arg name="database_path"     default="$(arg database_path)"/>
@@ -43,13 +43,13 @@
     <arg name="rgb_topic" default="/camera/color/image_raw"/>
     <arg name="rgb_camera_info" default="/camera/color/camera_info"/>
 
-    <include file="$(find stretch_rtab)/launch/robot.launch"/>
-    <include file="$(find stretch_rtab)/launch/move_base.launch">
+    <include file="$(find stretch_rtabmap)/launch/robot.launch"/>
+    <include file="$(find stretch_rtabmap)/launch/move_base.launch">
       <arg name="config" value="$(arg move_base_config)" />
       <arg name="cmd_vel_topic" value="$(arg cmd_vel_topic)"/>
       <arg name="odom_topic" value="$(arg odom_topic)"/>
     </include>
-    <include file="$(find stretch_rtab)/launch/rtab.launch">
+    <include file="$(find stretch_rtabmap)/launch/rtab.launch">
       <arg name="localization" value="$(arg localization)"/>
       <arg name="args" value="$(arg args)"/>
       <arg name="database_path"     default="$(arg database_path)"/>
