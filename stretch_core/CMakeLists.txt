@@ -208,5 +208,5 @@ include_directories(
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
   add_rostest(tests/core_lib_test.launch)
-  add_rostest(tests/stretch_driver_test.launch) 
+  add_rostest(tests/stretch_driver_test.launch)
 endif()

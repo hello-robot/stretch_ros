@@ -33,7 +33,6 @@ The *stretch_ros* repository holds ROS related code for the Stretch RE1 mobile m
 [stretch_moveit_config](stretch_gazebo/README.md) | Config files to use Stretch with the MoveIt Motion Planning Framework
 [stretch_navigation](stretch_navigation/README.md) | Support for the ROS navigation stack, including move_base, gmapping, and AMCL
 
-
 ## Licenses
 
 This software is intended for use with the Stretch RE1 mobile manipulator, which is a robot produced and sold by Hello Robot Inc. For further information, including inquiries about dual licensing, please contact Hello Robot Inc.
@@ -52,7 +51,3 @@ stretch_funmap | [LGPLv3](https://www.gnu.org/licenses/lgpl-3.0.en.html)
 stretch_gazebo | [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 stretch_moveit_config | [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 stretch_navigation | [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0)
-
-
- 
-
