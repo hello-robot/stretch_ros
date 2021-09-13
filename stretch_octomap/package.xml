@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>stretch_octomap</name>
+  <version>0.0.0</version>
+  <description>Octree mapping for Stretch</description>
+  <maintainer email="support@hello-robot.com">Hello Robot Inc.</maintainer>
+  <license>Apache License 2.0</license>
+  <url type="repository">https://github.com/hello-robot/stretch_ros</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <exec_depend>grid_map_octomap</exec_depend>
+  <exec_depend>octomap</exec_depend>
+  <exec_depend>octomap_mapping</exec_depend>
+  <exec_depend>octomap_msgs</exec_depend>
+  <exec_depend>octomap_ros</exec_depend>
+  <exec_depend>octomap_rviz_plugins</exec_depend>
+  <exec_depend>octomap_server</exec_depend>
+  <exec_depend>octovis</exec_depend>
+  <exec_depend>stretch_core</exec_depend>
+  <exec_depend>stretch_gazebo</exec_depend>
+</package>
