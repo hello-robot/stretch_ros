@@ -1,0 +1,36 @@
+<launch>
+    <!-- REALSENSE D435i -->
+    <include file="$(find stretch_core)/launch/d435i_high_resolution.launch"></include>
+    <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen">
+    <!--<param name="initial_mode" type="string" value="Default"/>-->
+    <param name="initial_mode" type="string" value="High Accuracy"/>
+    </node>
+    <!-- -->
+
+    <!-- FRUSTUM FIELD OF VIEW VISUALIZATION -->
+    <node name="d435i_frustum_visualizer" pkg="stretch_core" type="d435i_frustum_visualizer" output="screen" />
+    <!-- -->
+
+    <!-- STRETCH DRIVER -->
+    <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="true"/>
+    <param name="/stretch_driver/mode" type="string" value="navigation" />
+    <param name="/stretch_driver/fail_out_of_range_goal" type="bool" value="false"/>
+    <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true"/>
+    <!-- -->
+
+    <!-- IMU FILTER -->
+    <!-- <include file="$(find stretch_core)/launch/imu_filter.launch" /> -->
+    <!-- -->
+
+    <!-- LASER RANGE FINDER -->
+    <include file="$(find stretch_core)/launch/rplidar.launch" />
+    <!-- -->
+
+    <!-- LASER SCAN MATCHER FOR ODOMETRY -->
+    <include file="$(find stretch_core)/launch/stretch_scan_matcher.launch" />
+    <!-- -->
+
+    <!-- ROBOT LOCALIZATION FILTER -->
+    <include file="$(find stretch_core)/launch/stretch_ekf.launch" />
+    <!-- -->
+</launch>

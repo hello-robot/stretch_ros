@@ -1,0 +1,3 @@
+3d_obstacles:
+  positive_obstacle:
+    max_obstacle_height: 1.5

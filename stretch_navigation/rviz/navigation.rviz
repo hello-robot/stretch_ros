@@ -340,7 +340,7 @@ Visualization Manager:
       Keep: 30
       Name: Odometry
       Position Tolerance: 0.10000000149011612
-      Queue Size: 30
+      Queue Size: 10
       Shape:
         Alpha: 1
         Axes Length: 1
@@ -449,6 +449,28 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /move_base/NavfnROS/plan
       Unreliable: false
+      Value: true
+    - Class: octomap_rviz_plugin/OccupancyGrid
+      Enabled: false
+      Max. Height Display: inf
+      Max. Octree Depth: 16
+      Min. Height Display: -inf
+      Name: OccupancyGrid
+      Octomap Topic: /octomap_full
+      Queue Size: 5
+      Value: false
+      Voxel Alpha: 1
+      Voxel Coloring: Z-Axis
+      Voxel Rendering: Occupied Voxels
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /projected_map
+      Unreliable: false
+      Use Timestamp: false
       Value: true
   Enabled: true
   Global Options:

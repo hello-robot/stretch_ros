@@ -1,0 +1,277 @@
+... logging to /home/nwright/.ros/log/fdd90a4a-eb0f-11eb-bdd6-2fa0df3c7078/roslaunch-nwright-ubuntu-301125.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;/home/nwright/catkin_ws/src/stretch_ros/stretch_navigation/launch/navigation_3d.launch
+[1mstarted roslaunch server http://nwright-ubuntu:37765/[0m
+
+SUMMARY
+========
+
+PARAMETERS
+ * /amcl/amcl/ros__parameters/alpha1: 0.2
+ * /amcl/amcl/ros__parameters/alpha2: 0.2
+ * /amcl/amcl/ros__parameters/alpha3: 0.2
+ * /amcl/amcl/ros__parameters/alpha4: 0.2
+ * /amcl/amcl/ros__parameters/alpha5: 0.2
+ * /amcl/amcl/ros__parameters/always_reset_initial_pose: False
+ * /amcl/amcl/ros__parameters/base_frame_id: base_link
+ * /amcl/amcl/ros__parameters/beam_skip_distance: 0.5
+ * /amcl/amcl/ros__parameters/beam_skip_error_threshold: 0.9
+ * /amcl/amcl/ros__parameters/beam_skip_threshold: 0.3
+ * /amcl/amcl/ros__parameters/do_beamskip: False
+ * /amcl/amcl/ros__parameters/global_frame_id: map
+ * /amcl/amcl/ros__parameters/lambda_short: 0.1
+ * /amcl/amcl/ros__parameters/laser_likelihood_max_dist: 2.0
+ * /amcl/amcl/ros__parameters/laser_max_range: 100.0
+ * /amcl/amcl/ros__parameters/laser_min_range: -1.0
+ * /amcl/amcl/ros__parameters/laser_model_type: likelihood_field
+ * /amcl/amcl/ros__parameters/map_topic: /map
+ * /amcl/amcl/ros__parameters/max_beams: 60
+ * /amcl/amcl/ros__parameters/max_particles: 2000
+ * /amcl/amcl/ros__parameters/min_particles: 500
+ * /amcl/amcl/ros__parameters/odom_frame_id: odom
+ * /amcl/amcl/ros__parameters/pf_err: 0.05
+ * /amcl/amcl/ros__parameters/pf_z: 0.99
+ * /amcl/amcl/ros__parameters/recovery_alpha_fast: 0.0
+ * /amcl/amcl/ros__parameters/recovery_alpha_slow: 0.0
+ * /amcl/amcl/ros__parameters/resample_interval: 1
+ * /amcl/amcl/ros__parameters/robot_model_type: differential
+ * /amcl/amcl/ros__parameters/save_pose_rate: 0.5
+ * /amcl/amcl/ros__parameters/scan_topic: /scan
+ * /amcl/amcl/ros__parameters/set_initial_pose: False
+ * /amcl/amcl/ros__parameters/sigma_hit: 0.2
+ * /amcl/amcl/ros__parameters/tf_broadcast: True
+ * /amcl/amcl/ros__parameters/transform_tolerance: 1.0
+ * /amcl/amcl/ros__parameters/update_min_a: 0.2
+ * /amcl/amcl/ros__parameters/update_min_d: 0.25
+ * /amcl/amcl/ros__parameters/use_map_topic: True
+ * /amcl/amcl/ros__parameters/z_hit: 0.5
+ * /amcl/amcl/ros__parameters/z_max: 0.05
+ * /amcl/amcl/ros__parameters/z_rand: 0.5
+ * /amcl/amcl/ros__parameters/z_short: 0.05
+ * /move_base/DWAPlannerROS/acc_lim_theta: 4
+ * /move_base/DWAPlannerROS/acc_lim_trans: 0.7
+ * /move_base/DWAPlannerROS/acc_lim_x: 0.7
+ * /move_base/DWAPlannerROS/acc_lim_y: 0
+ * /move_base/DWAPlannerROS/forward_point_distance: 0.3
+ * /move_base/DWAPlannerROS/goal_distance_bias: 60
+ * /move_base/DWAPlannerROS/latch_xy_goal_tolerance: True
+ * /move_base/DWAPlannerROS/max_vel_theta: 1.5
+ * /move_base/DWAPlannerROS/max_vel_trans: 0.6
+ * /move_base/DWAPlannerROS/max_vel_x: 0.6
+ * /move_base/DWAPlannerROS/max_vel_y: 0
+ * /move_base/DWAPlannerROS/min_vel_theta: 0.4
+ * /move_base/DWAPlannerROS/min_vel_trans: 0.1
+ * /move_base/DWAPlannerROS/min_vel_x: 0
+ * /move_base/DWAPlannerROS/min_vel_y: 0
+ * /move_base/DWAPlannerROS/occdist_scale: 1.4
+ * /move_base/DWAPlannerROS/path_distance_bias: 80
+ * /move_base/DWAPlannerROS/prune_plan: True
+ * /move_base/DWAPlannerROS/sim_time: 1.1
+ * /move_base/DWAPlannerROS/vth_samples: 15
+ * /move_base/DWAPlannerROS/vx_samples: 5
+ * /move_base/DWAPlannerROS/vy_samples: 0
+ * /move_base/DWAPlannerROS/xy_goal_tolerance: 0.2
+ * /move_base/DWAPlannerROS/yaw_goal_tolerance: 0.1
+ * /move_base/GlobalPlanner/allow_unknown: True
+ * /move_base/GlobalPlanner/cost_factor: 0.5
+ * /move_base/GlobalPlanner/default_tolerance: 0.2
+ * /move_base/GlobalPlanner/lethal_cost: 253
+ * /move_base/GlobalPlanner/neutral_cost: 66
+ * /move_base/GlobalPlanner/orientation_mode: 0
+ * /move_base/GlobalPlanner/orientation_window_size: 1
+ * /move_base/GlobalPlanner/outline_map: False
+ * /move_base/GlobalPlanner/publish_potential: False
+ * /move_base/TrajectoryPlannerROS/acc_lim_theta: 0.8
+ * /move_base/TrajectoryPlannerROS/acc_lim_x: 0.35
+ * /move_base/TrajectoryPlannerROS/acc_lim_y: 0.0
+ * /move_base/TrajectoryPlannerROS/angular_sim_granularity: 0.025
+ * /move_base/TrajectoryPlannerROS/dwa: False
+ * /move_base/TrajectoryPlannerROS/goal_distance_bias: 0.75
+ * /move_base/TrajectoryPlannerROS/heading_lookahead: 0.325
+ * /move_base/TrajectoryPlannerROS/heading_scoring: True
+ * /move_base/TrajectoryPlannerROS/heading_scoring_timestep: 0.8
+ * /move_base/TrajectoryPlannerROS/holonomic_robot: False
+ * /move_base/TrajectoryPlannerROS/latch_xy_goal_tolerance: True
+ * /move_base/TrajectoryPlannerROS/max_vel_theta: 1.5
+ * /move_base/TrajectoryPlannerROS/max_vel_x: 1.0
+ * /move_base/TrajectoryPlannerROS/max_vel_y: 0.0
+ * /move_base/TrajectoryPlannerROS/meter_scoring: True
+ * /move_base/TrajectoryPlannerROS/min_in_place_vel_theta: 0.3
+ * /move_base/TrajectoryPlannerROS/min_vel_theta: -1.5
+ * /move_base/TrajectoryPlannerROS/min_vel_x: 0.15
+ * /move_base/TrajectoryPlannerROS/min_vel_y: 0.0
+ * /move_base/TrajectoryPlannerROS/occdist_scale: 0.00625
+ * /move_base/TrajectoryPlannerROS/oscillation_reset_dist: 0.05
+ * /move_base/TrajectoryPlannerROS/path_distance_bias: 0.5
+ * /move_base/TrajectoryPlannerROS/publish_cost_grid_pc: False
+ * /move_base/TrajectoryPlannerROS/sim_granularity: 0.025
+ * /move_base/TrajectoryPlannerROS/sim_time: 1.0
+ * /move_base/TrajectoryPlannerROS/vtheta_samples: 10
+ * /move_base/TrajectoryPlannerROS/vx_samples: 3
+ * /move_base/TrajectoryPlannerROS/xy_goal_tolerance: 0.1
+ * /move_base/TrajectoryPlannerROS/yaw_goal_tolerance: 0.1
+ * /move_base/base_global_planner: global_planner/Gl...
+ * /move_base/base_local_planner: dwa_local_planner...
+ * /move_base/conservative_reset_dist: 3.0
+ * /move_base/controller_frequency: 7.0
+ * /move_base/global_costmap/2d_obstacles/laser/clearing: True
+ * /move_base/global_costmap/2d_obstacles/laser/data_type: LaserScan
+ * /move_base/global_costmap/2d_obstacles/laser/expected_update_rate: 0.3
+ * /move_base/global_costmap/2d_obstacles/laser/marking: True
+ * /move_base/global_costmap/2d_obstacles/laser/topic: scan
+ * /move_base/global_costmap/2d_obstacles/laser/track_unknown_space: True
+ * /move_base/global_costmap/2d_obstacles/observation_sources: laser
+ * /move_base/global_costmap/3d_obstacles/combination_method: 1
+ * /move_base/global_costmap/3d_obstacles/enabled: True
+ * /move_base/global_costmap/3d_obstacles/footprint_clearing_enabled: True
+ * /move_base/global_costmap/3d_obstacles/mark_threshold: 0
+ * /move_base/global_costmap/3d_obstacles/negative_obstacle/clearing: False
+ * /move_base/global_costmap/3d_obstacles/negative_obstacle/data_type: PointCloud2
+ * /move_base/global_costmap/3d_obstacles/negative_obstacle/decay_acceleration: 1
+ * /move_base/global_costmap/3d_obstacles/negative_obstacle/enabled: True
+ * /move_base/global_costmap/3d_obstacles/negative_obstacle/horizontal_fov_angle: 0.942478
+ * /move_base/global_costmap/3d_obstacles/negative_obstacle/marking: True
+ * /move_base/global_costmap/3d_obstacles/negative_obstacle/max_obstacle_height: -0.2
+ * /move_base/global_costmap/3d_obstacles/negative_obstacle/max_z: 0.1
+ * /move_base/global_costmap/3d_obstacles/negative_obstacle/min_obstacle_height: -5
+ * /move_base/global_costmap/3d_obstacles/negative_obstacle/min_z: -6
+ * /move_base/global_costmap/3d_obstacles/negative_obstacle/model_type: 0
+ * /move_base/global_costmap/3d_obstacles/negative_obstacle/topic: /camera/depth/col...
+ * /move_base/global_costmap/3d_obstacles/negative_obstacle/vertical_fov_angle: 0.785398
+ * /move_base/global_costmap/3d_obstacles/observation_sources: positive_obstacle...
+ * /move_base/global_costmap/3d_obstacles/origin_z: 0.0
+ * /move_base/global_costmap/3d_obstacles/positive_obstacle/clearing: True
+ * /move_base/global_costmap/3d_obstacles/positive_obstacle/data_type: PointCloud2
+ * /move_base/global_costmap/3d_obstacles/positive_obstacle/decay_acceleration: 1
+ * /move_base/global_costmap/3d_obstacles/positive_obstacle/enabled: True
+ * /move_base/global_costmap/3d_obstacles/positive_obstacle/horizontal_fov_angle: 0.942478
+ * /move_base/global_costmap/3d_obstacles/positive_obstacle/marking: True
+ * /move_base/global_costmap/3d_obstacles/positive_obstacle/max_obstacle_height: 1.5
+ * /move_base/global_costmap/3d_obstacles/positive_obstacle/max_z: 6
+ * /move_base/global_costmap/3d_obstacles/positive_obstacle/min_obstacle_height: 0.05
+ * /move_base/global_costmap/3d_obstacles/positive_obstacle/min_z: -0.1
+ * /move_base/global_costmap/3d_obstacles/positive_obstacle/model_type: 0
+ * /move_base/global_costmap/3d_obstacles/positive_obstacle/topic: /camera/depth/col...
+ * /move_base/global_costmap/3d_obstacles/positive_obstacle/vertical_fov_angle: 0.785398
+ * /move_base/global_costmap/3d_obstacles/publish_voxel_map: True
+ * /move_base/global_costmap/3d_obstacles/unknown_threshold: 15
+ * /move_base/global_costmap/3d_obstacles/z_resolution: 0.05
+ * /move_base/global_costmap/3d_obstacles/z_voxels: 16
+ * /move_base/global_costmap/footprint_padding: 0.0
+ * /move_base/global_costmap/global_frame: map
+ * /move_base/global_costmap/inflation_layer/cost_scaling_factor: 2.5
+ * /move_base/global_costmap/inflation_layer/inflation_radius: 0.2
+ * /move_base/global_costmap/map_type: costmap
+ * /move_base/global_costmap/obstacle_range: 2.5
+ * /move_base/global_costmap/plugins: [{'name': 'static...
+ * /move_base/global_costmap/publish_frequency: 0.5
+ * /move_base/global_costmap/raytrace_range: 3.0
+ * /move_base/global_costmap/robot_base_frame: base_link
+ * /move_base/global_costmap/robot_radius: 0.5
+ * /move_base/global_costmap/rolling_window: True
+ * /move_base/global_costmap/static_map_2d/map_topic: /map
+ * /move_base/global_costmap/static_map_3d_negative/map_topic: /projected_map_ne...
+ * /move_base/global_costmap/static_map_3d_positive/map_topic: /projected_map
+ * /move_base/global_costmap/transform_tolerance: 0.5
+ * /move_base/global_costmap/update_frequency: 10.0
+ * /move_base/local_costmap/2d_obstacles/laser/clearing: True
+ * /move_base/local_costmap/2d_obstacles/laser/data_type: LaserScan
+ * /move_base/local_costmap/2d_obstacles/laser/expected_update_rate: 0.3
+ * /move_base/local_costmap/2d_obstacles/laser/marking: True
+ * /move_base/local_costmap/2d_obstacles/laser/topic: scan
+ * /move_base/local_costmap/2d_obstacles/laser/track_unknown_space: True
+ * /move_base/local_costmap/2d_obstacles/observation_sources: laser
+ * /move_base/local_costmap/3d_obstacles/combination_method: 1
+ * /move_base/local_costmap/3d_obstacles/enabled: True
+ * /move_base/local_costmap/3d_obstacles/footprint_clearing_enabled: True
+ * /move_base/local_costmap/3d_obstacles/mark_threshold: 0
+ * /move_base/local_costmap/3d_obstacles/negative_obstacle/clearing: False
+ * /move_base/local_costmap/3d_obstacles/negative_obstacle/data_type: PointCloud2
+ * /move_base/local_costmap/3d_obstacles/negative_obstacle/decay_acceleration: 1
+ * /move_base/local_costmap/3d_obstacles/negative_obstacle/enabled: True
+ * /move_base/local_costmap/3d_obstacles/negative_obstacle/horizontal_fov_angle: 0.942478
+ * /move_base/local_costmap/3d_obstacles/negative_obstacle/marking: True
+ * /move_base/local_costmap/3d_obstacles/negative_obstacle/max_obstacle_height: -0.2
+ * /move_base/local_costmap/3d_obstacles/negative_obstacle/max_z: 0.1
+ * /move_base/local_costmap/3d_obstacles/negative_obstacle/min_obstacle_height: -5
+ * /move_base/local_costmap/3d_obstacles/negative_obstacle/min_z: -6
+ * /move_base/local_costmap/3d_obstacles/negative_obstacle/model_type: 0
+ * /move_base/local_costmap/3d_obstacles/negative_obstacle/topic: /camera/depth/col...
+ * /move_base/local_costmap/3d_obstacles/negative_obstacle/vertical_fov_angle: 0.785398
+ * /move_base/local_costmap/3d_obstacles/observation_sources: positive_obstacle...
+ * /move_base/local_costmap/3d_obstacles/origin_z: 0.0
+ * /move_base/local_costmap/3d_obstacles/positive_obstacle/clearing: True
+ * /move_base/local_costmap/3d_obstacles/positive_obstacle/data_type: PointCloud2
+ * /move_base/local_costmap/3d_obstacles/positive_obstacle/decay_acceleration: 1
+ * /move_base/local_costmap/3d_obstacles/positive_obstacle/enabled: True
+ * /move_base/local_costmap/3d_obstacles/positive_obstacle/horizontal_fov_angle: 0.942478
+ * /move_base/local_costmap/3d_obstacles/positive_obstacle/marking: True
+ * /move_base/local_costmap/3d_obstacles/positive_obstacle/max_obstacle_height: 1.5
+ * /move_base/local_costmap/3d_obstacles/positive_obstacle/max_z: 6
+ * /move_base/local_costmap/3d_obstacles/positive_obstacle/min_obstacle_height: 0.05
+ * /move_base/local_costmap/3d_obstacles/positive_obstacle/min_z: -0.1
+ * /move_base/local_costmap/3d_obstacles/positive_obstacle/model_type: 0
+ * /move_base/local_costmap/3d_obstacles/positive_obstacle/topic: /camera/depth/col...
+ * /move_base/local_costmap/3d_obstacles/positive_obstacle/vertical_fov_angle: 0.785398
+ * /move_base/local_costmap/3d_obstacles/publish_voxel_map: True
+ * /move_base/local_costmap/3d_obstacles/unknown_threshold: 15
+ * /move_base/local_costmap/3d_obstacles/z_resolution: 0.05
+ * /move_base/local_costmap/3d_obstacles/z_voxels: 16
+ * /move_base/local_costmap/footprint_padding: 0.0
+ * /move_base/local_costmap/global_frame: odom
+ * /move_base/local_costmap/height: 5.0
+ * /move_base/local_costmap/inflation_layer/cost_scaling_factor: 2.5
+ * /move_base/local_costmap/inflation_layer/inflation_radius: 0.2
+ * /move_base/local_costmap/map_type: costmap
+ * /move_base/local_costmap/obstacle_range: 2.5
+ * /move_base/local_costmap/plugins: [{'name': '3d_obs...
+ * /move_base/local_costmap/publish_frequency: 5.0
+ * /move_base/local_costmap/raytrace_range: 3.0
+ * /move_base/local_costmap/resolution: 0.06
+ * /move_base/local_costmap/robot_base_frame: base_link
+ * /move_base/local_costmap/robot_radius: 0.5
+ * /move_base/local_costmap/rolling_window: True
+ * /move_base/local_costmap/transform_tolerance: 0.5
+ * /move_base/local_costmap/update_frequency: 10.0
+ * /move_base/local_costmap/width: 5.0
+ * /move_base/max_planning_retries: 20
+ * /move_base/planner_patience: 10.0
+ * /octomap_server/base_frame_id: base_link
+ * /octomap_server/frame_id: map
+ * /octomap_server/occupancy_max_z: 2
+ * /octomap_server/occupancy_min_z: 0.23
+ * /octomap_server_negative/base_frame_id: base_link
+ * /octomap_server_negative/frame_id: map
+ * /octomap_server_negative/occupancy_max_z: -0.23
+ * /octomap_server_negative/occupancy_min_z: -10
+ * /rosdistro: noetic
+ * /rosversion: 1.15.11
+
+NODES
+  /
+    amcl (amcl/amcl)
+    map_server (map_server/map_server)
+    move_base (move_base/move_base)
+    octomap_server (octomap_server/octomap_server_node)
+    octomap_server_negative (octomap_server/octomap_server_node)
+    rviz (rviz/rviz)
+
+[1mROS_MASTER_URI=http://localhost:11311[0m
+]2;/home/nwright/catkin_ws/src/stretch_ros/stretch_navigation/launch/navigation_3d.launch http://localhost:11311
+[1mprocess[map_server-1]: started with pid [301150][0m
+[1mprocess[octomap_server-2]: started with pid [301151][0m
+[1mprocess[octomap_server_negative-3]: started with pid [301152][0m
+[1mprocess[amcl-4]: started with pid [301153][0m
+[1mprocess[move_base-5]: started with pid [301154][0m
+[1mprocess[rviz-6]: started with pid [301159][0m
+[rviz-6] killing on exit
+[move_base-5] killing on exit
+[amcl-4] killing on exit
+[octomap_server_negative-3] killing on exit
+[octomap_server-2] killing on exit
+[map_server-1] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m

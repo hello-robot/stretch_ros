@@ -9,7 +9,7 @@
   <arg name="model" default="$(find stretch_gazebo)/urdf/stretch_gazebo.urdf.xacro"/>
   <arg name="gpu_lidar" default="false"/>
   <arg name="visualize_lidar" default="false"/>
-  <arg name="world" default="worlds/empty.world"/>
+  <arg name="world" default="worlds/willowgarage.world"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(arg world)" />
