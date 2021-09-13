@@ -1,5 +1,5 @@
 <launch>
-  <!-- The navigation_3d launch file includes all of the launch files needed for a robot to accomplish 3D navigation.  
+  <!-- The navigation_3d launch file includes all of the launch files needed for a robot to accomplish 3D navigation.
   The nodes needed for navigation are map_server, octomap_server, amcl, and move_base.-->
 
   <!-- Map name -->

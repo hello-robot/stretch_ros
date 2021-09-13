@@ -1,6 +1,6 @@
 <launch>
   <!-- Doc: http://wiki.ros.org/octomap_server?distro=kinetic -->
-  
+
   <arg name="pointcloud_topic" />
   <arg name="base_link" default="base_link" />
 
@@ -12,6 +12,6 @@
     <param name="frame_id" type="string" value="map" />
     <param name="sensor_model/max_range" value="3.0" />
     <param name="filter_ground" value="false" />
-      
+
   </node>
 </launch>

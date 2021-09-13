@@ -6,4 +6,4 @@
 
 ## License
 
-For license information, please see the LICENSE files. 
+For license information, please see the LICENSE files.

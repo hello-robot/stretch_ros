@@ -2,7 +2,7 @@
   <!-- Doc: http://wiki.ros.org/move_base?distro=kinetic -->
 
   <arg name="config"/>
-  
+
   <arg name="cmd_vel_topic"/>
   <arg name="odom_topic"/>
 

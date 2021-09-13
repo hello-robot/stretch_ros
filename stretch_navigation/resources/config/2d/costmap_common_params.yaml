@@ -12,10 +12,10 @@ map_type: costmap
 
 2d_obstacles:
   observation_sources: laser
-  laser: {data_type: LaserScan, 
-          topic: scan, 
-          marking: true, 
-          clearing: true, 
+  laser: {data_type: LaserScan,
+          topic: scan,
+          marking: true,
+          clearing: true,
           expected_update_rate: 0.3,
           track_unknown_space: true
           }

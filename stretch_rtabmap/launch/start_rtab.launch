@@ -5,7 +5,7 @@
   <arg name="database_path"     default="rtabmap.db"/>
   <arg name="args"              default="-d"/>  <!--Possible arg -d to delete database on startup-->
 
-  <arg name="wait_for_transform"  default="0.2"/> 
+  <arg name="wait_for_transform"  default="0.2"/>
   <arg name="move_base_config"/>
 
 
@@ -26,7 +26,7 @@
       <arg name="localization" value="$(arg localization)"/>
       <arg name="args" value="$(arg args)"/>
       <arg name="database_path"     default="$(arg database_path)"/>
-      <arg name="wait_for_transform"  default="$(arg wait_for_transform)"/> 
+      <arg name="wait_for_transform"  default="$(arg wait_for_transform)"/>
       <arg name="pointcloud_topic" value="$(arg pointcloud_topic)"/>
       <arg name="cmd_vel_topic" value="/stretch/cmd_vel"/>
       <arg name="odom_topic" default="$(arg odom_topic)"/>
@@ -53,7 +53,7 @@
       <arg name="localization" value="$(arg localization)"/>
       <arg name="args" value="$(arg args)"/>
       <arg name="database_path"     default="$(arg database_path)"/>
-      <arg name="wait_for_transform"  default="$(arg wait_for_transform)"/> 
+      <arg name="wait_for_transform"  default="$(arg wait_for_transform)"/>
       <arg name="pointcloud_topic" value="$(arg pointcloud_topic)"/>
       <arg name="cmd_vel_topic" value="/stretch/cmd_vel"/>
       <arg name="odom_topic" default="$(arg odom_topic)"/>

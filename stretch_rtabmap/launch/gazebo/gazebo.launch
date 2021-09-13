@@ -31,7 +31,7 @@
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find stretch_gazebo)/config/sim.rviz" if="$(arg rviz)"/>
 
   <rosparam command="load"
-            file="$(find stretch_gazebo)/config/joints.yaml" 
+            file="$(find stretch_gazebo)/config/joints.yaml"
             ns="stretch_joint_state_controller" />
 
   <rosparam command="load"

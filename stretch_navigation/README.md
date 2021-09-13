@@ -30,7 +30,7 @@ Rviz will show the robot and the map that is being constructed. With the termina
 ```bash
 mkdir -p ~/stretch_user/maps
 rosrun map_server map_saver -f ${HELLO_FLEET_PATH}/maps/<map_name>
-``` 
+```
 
 The `<map_name>` does not include an extension. Map_saver will save two files as `<map_name>.pgm` and `<map_name>.yaml`.
 
@@ -76,4 +76,4 @@ roslaunch stretch_core teleop_twist.launch teleop_type:=keyboard # or use teleop
 
 ## License
 
-For license information, please see the LICENSE files. 
+For license information, please see the LICENSE files.

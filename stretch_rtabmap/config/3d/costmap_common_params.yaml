@@ -35,11 +35,11 @@ map_type: voxel
 2d_obstacles:
   enabled: true
   observation_sources: laser
-  laser: 
-    data_type: LaserScan 
+  laser:
+    data_type: LaserScan
     topic: /scan
     marking: true
-    clearing: true 
+    clearing: true
     expected_update_rate: 0.3
     track_unknown_space: true
 

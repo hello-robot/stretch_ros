@@ -7,7 +7,5 @@ global_costmap:
   robot_base_frame: base_link
   update_frequency: 10.0
   publish_frequency: 0.5
-  static_map: 
+  static_map:
     map_topic: /map
-    
-

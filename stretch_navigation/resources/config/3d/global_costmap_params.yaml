@@ -11,10 +11,9 @@ global_costmap:
   update_frequency: 10.0
   publish_frequency: 0.5
   rolling_window: false #idk about this one
-  static_map_2d: 
+  static_map_2d:
     map_topic: /map
-  static_map_3d_positive: 
+  static_map_3d_positive:
     map_topic: /projected_map
-  static_map_3d_negative: 
+  static_map_3d_negative:
     map_topic: /projected_map_negative
-    

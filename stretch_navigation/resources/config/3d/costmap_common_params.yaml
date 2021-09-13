@@ -33,7 +33,7 @@ map_type: costmap
     horizontal_fov_angle: 0.942478   #default 1.04, radians
     decay_acceleration: 1       #default 0, 1/s^2. If laser scanner MUST be 0
     model_type: 0                #default 0 (depth camera). Use 1 for 3D Lidar
-    
+
   negative_obstacle:
     enabled: true                #default true, can be toggled on/off with associated service call
     data_type: PointCloud2
@@ -52,10 +52,10 @@ map_type: costmap
 
 2d_obstacles:
   observation_sources: laser
-  laser: {data_type: LaserScan, 
-          topic: scan, 
-          marking: true, 
-          clearing: true, 
+  laser: {data_type: LaserScan,
+          topic: scan,
+          marking: true,
+          clearing: true,
           expected_update_rate: 0.3,
           track_unknown_space: true
           }

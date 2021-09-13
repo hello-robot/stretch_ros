@@ -34,9 +34,9 @@ Use `rosdep` to install the required packages.
 ```
 ## Code Status & Development Plans
 
-Move_base_config | Gazebo | Stretch RE1
---- | --- | ---
-2d | okay | Good
-2d_unkown | Not Implemented | Not Implemented
-3d | Testing | Testing
-3d_unkown | Not Implemented | Not Implemented
+Move_base_config | Gazebo          | Stretch RE1
+-----------------|-----------------|----------------
+2d               | okay            | Good
+2d_unkown        | Not Implemented | Not Implemented
+3d               | Testing         | Testing
+3d_unkown        | Not Implemented | Not Implemented

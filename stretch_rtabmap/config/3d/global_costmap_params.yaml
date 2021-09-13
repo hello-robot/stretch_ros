@@ -9,6 +9,5 @@ global_costmap:
   update_frequency: 1.0
   publish_frequency: 0.5
   rolling_window: true
-  static_map_2d: 
+  static_map_2d:
     map_topic: /map
-    

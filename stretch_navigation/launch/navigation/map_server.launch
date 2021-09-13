@@ -4,5 +4,5 @@
   <arg name="map_name" default="map" />
 
   <!-- launch map server -->
-	<node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(arg map_name)"/>
+  <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(arg map_name)"/>
 </launch>

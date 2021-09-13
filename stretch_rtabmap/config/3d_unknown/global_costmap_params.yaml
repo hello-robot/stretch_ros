@@ -12,4 +12,3 @@ global_costmap:
   width: 500.0
   height: 500.0
   resolution: 0.1
-    
