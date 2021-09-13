@@ -1,18 +1,16 @@
 <launch>
-    <!--- Argument for the image_topic. In this instance it is the Stretch's realsense camera-->
+    <!--- Argument for the image_topic, target_frame_id, and target_z. In this instance it is the Stretch's realsense camera-->
     <arg name="image_topic" default="/camera/color/image_raw"/>
+    <arg name="target_frame_id"  default="camera_link"/>
+    <arg name="target_z" default="-1.0"/>
 
     <!--- Run image_rotate package and set the desired image_topic to rotate.
           The orientation parameters are set with the next node-->
     <node name="image_rotate" pkg="image_rotate" type="image_rotate">
       <remap from="image" to="$(arg image_topic)" />
       <remap from="rotated/image" to="$(arg image_topic)_upright_view"/>
-    </node>
-
-    <!--- Run dynamic_reconfigure node to set target_z to -1.0. This rotates the image_raw upright.-->
-    <node name="$(anon dynparam)" pkg="dynamic_reconfigure" type="dynparam" args="set_from_parameters image_rotate">
-      <param name="target_frame_id" type="str" value="camera_link"/>
-      <param name="target_z" type="double" value="-1.0" />
+      <param name="target_frame_id" type="str" value="$(arg target_frame_id)"/>
+      <param name="target_z" type="double" value="$(arg target_z)" />
     </node>
 
 </launch>
