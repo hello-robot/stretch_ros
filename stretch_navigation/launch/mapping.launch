@@ -6,22 +6,21 @@
   <!-- STRETCH DRIVER -->
   <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="true"/>
   <param name="/stretch_driver/mode" type="string" value="navigation" />
-  <!-- <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true"/> -->
+  <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true"/>
 
-  <!-- <include file="$(find stretch_core)/launch/rplidar.launch" /> -->
+  <!-- LASER RANGE FINDER -->
+  <include file="$(find stretch_core)/launch/rplidar.launch" />
 
-  <node name="teleop_twist_keyboard" pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" output="screen" >
-    <param name="speed" type="double" value="0.04" />
-    <param name="turn" type="double" value="0.1" />
-    <remap from="/cmd_vel" to="/stretch_diff_drive_controller/cmd_vel" />
-  </node>
-
-  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_navigation)/rviz/octomap_mapper.rviz" />
-
-  <node pkg="gmapping" type="slam_gmapping" name="gmapping_record_map" output="screen" />
-  <include file="$(find stretch_navigation)/launch/octomap_mapper.launch">
-    <arg name="pointcloud_topic" value="/camera/depth/color/points"/>
+  <!-- TELEOP -->
+  <include file="$(find stretch_core)/launch/teleop_twist.launch">
+    <arg name="teleop_type" value="$(arg teleop_type)" />
+    <arg name="linear" value="0.04" />
+    <arg name="angular" value="0.1" />
+    <arg name="twist_topic" value="/stretch/cmd_vel" />
   </include>
+
+  <!-- MAPPING -->
+  <node pkg="gmapping" type="slam_gmapping" name="gmapping_record_map" output="log" />
 
   <!-- VISUALIZE -->
   <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find stretch_navigation)/rviz/mapping.rviz" if="$(arg rviz)" />
