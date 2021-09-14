@@ -18,7 +18,7 @@
     <arg name="paused" value="$(arg paused)"/>
     <arg name="use_sim_time" value="$(arg use_sim_time)"/>
     <arg name="headless" value="$(arg headless)"/>
-    <arg name="verbose" value="true"/>
+    <arg name="verbose" value="false"/>
   </include>
 
   <param name="robot_description" command="$(find xacro)/xacro $(arg model) gpu_lidar:=$(arg gpu_lidar) visualize_lidar:=$(arg visualize_lidar)" />
