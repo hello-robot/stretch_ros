@@ -32,6 +32,8 @@ The *stretch_ros* repository holds ROS related code for the Stretch RE1 mobile m
 [stretch_gazebo](stretch_gazebo/README.md) | Support for simulation of Stretch in the Gazebo simulator
 [stretch_moveit_config](stretch_gazebo/README.md) | Config files to use Stretch with the MoveIt Motion Planning Framework
 [stretch_navigation](stretch_navigation/README.md) | Support for the ROS navigation stack, including move_base, gmapping, and AMCL
+[stretch_octomap](stretch_octomap/README.md) | Support for mapping using OctoMap: efficient probabilistic 3D Mapping based on Octrees
+[stretch_rtabmap](stretch_rtabmap/README.md) | Support for mapping using Real-Time Appearance-Based Mapping (RTAB-Map)
 
 ## Licenses
 
@@ -51,3 +53,5 @@ stretch_funmap | [LGPLv3](https://www.gnu.org/licenses/lgpl-3.0.en.html)
 stretch_gazebo | [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 stretch_moveit_config | [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 stretch_navigation | [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+stretch_octomap | [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+stretch_rtabmap | [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0)

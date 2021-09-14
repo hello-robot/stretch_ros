@@ -2,6 +2,8 @@
 
 ## Overview
 
+This package is in active development. Proceed with caution.
+
 *stretch_rtabmap* provides RTAB-MAPPiNG. This package utilizes rtab-map, move_base, and AMCL to map and drive the stretch RE1 around a space. Running this code will require the robot to be untethered.
 
 ## Setup
@@ -40,3 +42,7 @@ Move_base_config | Gazebo          | Stretch RE1
 2d_unkown        | Not Implemented | Not Implemented
 3d               | Testing         | Testing
 3d_unkown        | Not Implemented | Not Implemented
+
+## License
+
+For license information, please see the LICENSE files.

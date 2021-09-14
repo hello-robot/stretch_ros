@@ -2,7 +2,9 @@
 
 ## Overview
 
-*stretch_octomap* provides mapping of Stretch's environment into an Octree representation. This package is in development.
+This package is in active development. Proceed with caution.
+
+*stretch_octomap* provides mapping of Stretch's environment into an Octree representation.
 
 ## License
 
