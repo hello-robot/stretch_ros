@@ -1,0 +1,11 @@
+base_global_planner: global_planner/GlobalPlanner
+GlobalPlanner:
+  allow_unknown: true
+  cost_factor: 0.5
+  lethal_cost: 253
+  neutral_cost: 66
+  orientation_mode: 0
+  orientation_window_size: 1
+  publish_potential: false
+  default_tolerance: 0.2
+  outline_map: false

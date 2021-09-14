@@ -1381,7 +1381,7 @@ if __name__ == '__main__':
         parser.add_argument('--load_map', default=None,
                             help='Provide directory from which to load a map.')
         args, unknown = parser.parse_known_args()
-        map_filename = args.load_map
+        map_filename = args.load_map if args.load_map else None
         node = FunmapNode(map_filename)
         node.main()
         rospy.spin()

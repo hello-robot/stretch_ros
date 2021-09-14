@@ -1,0 +1,9 @@
+<launch>
+  <arg name="mapping" />
+  <group if="$(arg mapping)">
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find stretch_rtabmap)/rviz/rtab_mapping.rviz"/>
+  </group>
+  <group unless="$(arg mapping)">
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find stretch_rtabmap)/rviz/rtab_navigation.rviz"/>
+  </group>
+</launch>

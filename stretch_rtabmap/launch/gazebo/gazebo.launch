@@ -1,0 +1,55 @@
+<launch>
+
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+  <arg name="rviz" default="false"/>
+  <arg name="model" default="$(find stretch_gazebo)/urdf/stretch_gazebo.urdf.xacro"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="/usr/share/gazebo-11/worlds/willowgarage.world"/>
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="verbose" value="true"/>
+  </include>
+
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+
+  <!-- push robot_description to factory and spawn robot in gazebo -->
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
+        args=" -urdf -model robot -param robot_description" respawn="false" output="screen" />
+
+  <node pkg="robot_state_publisher" type="robot_state_publisher"  name="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="30.0" />
+  </node>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find stretch_gazebo)/config/sim.rviz" if="$(arg rviz)"/>
+
+  <rosparam command="load"
+            file="$(find stretch_gazebo)/config/joints.yaml"
+            ns="stretch_joint_state_controller" />
+
+  <rosparam command="load"
+            file="$(find stretch_gazebo)/config/drive_config.yaml"
+            ns="stretch_diff_drive_controller" />
+
+  <rosparam command="load"
+            file="$(find stretch_gazebo)/config/arm.yaml"/>
+
+  <rosparam command="load"
+            file="$(find stretch_gazebo)/config/head.yaml" />
+
+  <rosparam command="load"
+            file="$(find stretch_gazebo)/config/gripper.yaml" />
+
+  <node name="stretch_controller_spawner" pkg="controller_manager" type="spawner"
+        args="stretch_joint_state_controller stretch_diff_drive_controller stretch_arm_controller stretch_head_controller stretch_gripper_controller"/>
+
+  <node name="publish_ground_truth_odom" pkg="stretch_gazebo" type="publish_ground_truth_odom.py" output="screen"/>
+
+</launch>

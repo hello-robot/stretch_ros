@@ -1,0 +1,19 @@
+global_costmap:
+  plugins:
+  - {name: static_map_3d_negative, type: "costmap_2d::StaticLayer"}
+  - {name: static_map_3d_positive, type: "costmap_2d::StaticLayer"}
+  - {name: static_map_2d, type: "costmap_2d::StaticLayer"}
+  - {name: 3d_obstacles, type: "costmap_2d::VoxelLayer"}
+  - {name: 2d_obstacles, type: "costmap_2d::ObstacleLayer"}
+  - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
+  global_frame: map
+  robot_base_frame: base_link
+  update_frequency: 10.0
+  publish_frequency: 0.5
+  rolling_window: false #idk about this one
+  static_map_2d:
+    map_topic: /map
+  static_map_3d_positive:
+    map_topic: /projected_map
+  static_map_3d_negative:
+    map_topic: /projected_map_negative

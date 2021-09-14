@@ -1,0 +1,30 @@
+<launch>
+
+  <arg name="rviz"                   default="true"                      doc="whether to show Rviz" />
+  <arg name="teleop_type"            default="keyboard"                  doc="how to teleop ('keyboard', 'joystick', or 'none')" />
+  <arg name="gazebo_world"           default="worlds/willowgarage.world" doc="the environment within which Stretch is loaded in Gazebo" />
+  <arg name="gazebo_gpu_lidar"       default="false"                     doc="whether to compute lidar with hardware acceleration (requires GPU)" />
+  <arg name="gazebo_visualize_lidar" default="false"                     doc="whether to visualize planar lidar within Gazebo" />
+
+  <!-- GAZEBO SIMULATION -->
+  <include file="$(find stretch_gazebo)/launch/gazebo.launch">
+    <arg name="world" value="$(arg gazebo_world)" />
+    <arg name="visualize_lidar" value="$(arg gazebo_visualize_lidar)" />
+    <arg name="gpu_lidar" value="$(arg gazebo_gpu_lidar)" />
+  </include>
+
+  <!-- TELEOP -->
+  <include file="$(find stretch_core)/launch/teleop_twist.launch">
+    <arg name="teleop_type" value="$(arg teleop_type)" />
+    <arg name="linear" value="1.0" />
+    <arg name="angular" value="2.0" />
+    <arg name="twist_topic" value="/stretch_diff_drive_controller/cmd_vel" />
+  </include>
+
+  <!-- MAPPING -->
+  <node pkg="gmapping" type="slam_gmapping" name="gmapping_record_map" output="log" />
+
+  <!-- VISUALIZE -->
+  <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find stretch_navigation)/rviz/mapping.rviz" if="$(arg rviz)" />
+
+</launch>
