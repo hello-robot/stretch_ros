@@ -1,0 +1,8 @@
+<launch>
+<group ns="rtabmap">
+  <!-- Visualisation RTAB-Map -->
+  <node pkg="rtabmap_ros" type="rtabmapviz" name="rtabmapviz" args="-d $(find rtabmap_ros)/launch/config/rgbd_gui.ini" output="screen">
+     <remap from="odom"              to="/stretch_diff_drive_controller/odom"/>
+  </node>
+</group>
+</launch>

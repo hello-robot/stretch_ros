@@ -1,0 +1,65 @@
+<launch>
+  <arg name="sim" />
+  <arg name="localization" default="false" />
+
+  <arg name="database_path"     default="rtabmap.db"/>
+  <arg name="args"              default="-d"/>  <!--Possible arg -d to delete database on startup-->
+
+  <arg name="wait_for_transform"  default="0.2"/>
+  <arg name="move_base_config"/>
+
+
+  <group if="$(arg sim)">
+    <arg name="pointcloud_topic" default="/realsense/depth/image_raw"/>
+    <arg name="cmd_vel_topic" value="/stretch_diff_drive_controller/cmd_vel"/>
+    <arg name="odom_topic" default="/stretch_diff_drive_controller/odom"/>
+    <arg name="scan_topic" default="/scan"/>
+    <arg name="rgb_topic" default="/realsense/color/image_raw"/>
+    <arg name="rgb_camera_info" default="/realsense/color/camera_info"/>
+
+    <include file="$(find stretch_rtabmap)/launch/move_base.launch">
+      <arg name="config" value="$(arg move_base_config)" />
+      <arg name="cmd_vel_topic" value="$(arg cmd_vel_topic)"/>
+      <arg name="odom_topic" value="$(arg odom_topic)"/>
+    </include>
+    <include file="$(find stretch_rtabmap)/launch/rtab.launch">
+      <arg name="localization" value="$(arg localization)"/>
+      <arg name="args" value="$(arg args)"/>
+      <arg name="database_path"     default="$(arg database_path)"/>
+      <arg name="wait_for_transform"  default="$(arg wait_for_transform)"/>
+      <arg name="pointcloud_topic" value="$(arg pointcloud_topic)"/>
+      <arg name="cmd_vel_topic" value="/stretch/cmd_vel"/>
+      <arg name="odom_topic" default="$(arg odom_topic)"/>
+      <arg name="scan" default="$(arg scan_topic)"/>
+      <arg name="rgb_topic" default="$(arg rgb_topic)"/>
+      <arg name="rgb_camera_info" default="$(arg rgb_camera_info)"/>
+    </include>
+  </group>
+  <group unless="$(arg sim)">
+    <arg name="pointcloud_topic" value="/camera/aligned_depth_to_color/image_raw"/>
+    <arg name="cmd_vel_topic" value="/stretch/cmd_vel"/>
+    <arg name="odom_topic" default="/stretch_diff_drive_controller/odom"/>
+    <arg name="scan_topic" default="/scan"/>
+    <arg name="rgb_topic" default="/camera/color/image_raw"/>
+    <arg name="rgb_camera_info" default="/camera/color/camera_info"/>
+
+    <include file="$(find stretch_rtabmap)/launch/robot.launch"/>
+    <include file="$(find stretch_rtabmap)/launch/move_base.launch">
+      <arg name="config" value="$(arg move_base_config)" />
+      <arg name="cmd_vel_topic" value="$(arg cmd_vel_topic)"/>
+      <arg name="odom_topic" value="$(arg odom_topic)"/>
+    </include>
+    <include file="$(find stretch_rtabmap)/launch/rtab.launch">
+      <arg name="localization" value="$(arg localization)"/>
+      <arg name="args" value="$(arg args)"/>
+      <arg name="database_path"     default="$(arg database_path)"/>
+      <arg name="wait_for_transform"  default="$(arg wait_for_transform)"/>
+      <arg name="pointcloud_topic" value="$(arg pointcloud_topic)"/>
+      <arg name="cmd_vel_topic" value="/stretch/cmd_vel"/>
+      <arg name="odom_topic" default="$(arg odom_topic)"/>
+      <arg name="scan" default="$(arg scan_topic)"/>
+      <arg name="rgb_topic" default="$(arg rgb_topic)"/>
+      <arg name="rgb_camera_info" default="$(arg rgb_camera_info)"/>
+    </include>
+  </group>
+</launch>

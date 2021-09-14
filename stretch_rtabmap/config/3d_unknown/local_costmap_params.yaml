@@ -1,0 +1,13 @@
+local_costmap:
+  plugins:
+  - {name: 3d_obstacles, type: "nav2_costmap_2d::VoxelLayer"}
+  - {name: 2d_obstacles, type: "costmap_2d::ObstacleLayer"}
+  - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
+  global_frame: odom
+  robot_base_frame: base_link
+  update_frequency: 10.0
+  publish_frequency: 5.0
+  rolling_window: true
+  width: 5.0
+  height: 5.0
+  resolution: 0.06

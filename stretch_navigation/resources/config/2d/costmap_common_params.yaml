@@ -1,0 +1,26 @@
+obstacle_range: 2.5
+raytrace_range: 3.0
+
+# robot_radius: 0.55
+#             FL            BL              BR              FR
+footprint: [[0.05,0.175],[-0.30,0.175],[-0.30,-0.175],[0.05,-0.175]]
+
+footprint_padding: 0.0
+
+transform_tolerance: 0.5
+map_type: costmap
+
+2d_obstacles:
+  observation_sources: laser
+  laser: {data_type: LaserScan,
+          topic: scan,
+          marking: true,
+          clearing: true,
+          expected_update_rate: 0.3,
+          track_unknown_space: true
+          }
+
+
+inflation_layer:
+  inflation_radius: 0.3
+  cost_scaling_factor: 2.5

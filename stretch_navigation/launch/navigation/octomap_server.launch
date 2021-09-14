@@ -1,0 +1,33 @@
+<launch>
+  <!-- Doc: http://wiki.ros.org/octomap_server?distro=kinetic -->
+
+  <arg name="map" default="map" />
+  <arg name="base_link" default="base_link" />
+
+  <!-- launch server for positive map-->
+  <node pkg="octomap_server" type="octomap_server_node" name="octomap_server" output="screen" args="$(arg map)" >
+    <remap from="cloud_in" to="pointcloud_static_octomap_ignore" />
+    <param name="base_frame_id" value="$(arg base_link)" />
+    <param name="frame_id" type="string" value="map" />
+    <param name="occupancy_min_z" value="0.23" />
+    <param name="occupancy_max_z" value="2" />
+  </node>
+
+  <!-- launch server for negative map-->
+  <node pkg="octomap_server" type="octomap_server_node" name="octomap_server_negative" output="screen" args="$(arg map)" >
+    <remap from="cloud_in" to="pointcloud_static_octomap_ignore" />
+    <param name="base_frame_id" value="$(arg base_link)" />
+    <param name="frame_id" type="string" value="map" />
+    <param name="occupancy_max_z" value="-0.23" />
+    <param name="occupancy_min_z" value="-10" />
+
+    <!-- rename all colliding topics and services-->
+    <remap from="octomap_binary" to="octomap_binary_negative" />
+    <remap from="octomap_full" to="octomap_full_negative" />
+    <remap from="occupied_cells_vis_array" to="occupied_cells_vis_array_negative" />
+    <remap from="octomap_point_cloud_centers" to="octomap_point_cloud_centers_negative" />
+    <remap from="projected_map" to="projected_map_negative" />
+    <remap from="clear_bbx" to="clear_bbx_negative" />
+    <remap from="reset" to="reset_negative" />
+  </node>
+</launch>

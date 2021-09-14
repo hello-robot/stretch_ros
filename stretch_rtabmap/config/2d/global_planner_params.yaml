@@ -1,0 +1,18 @@
+base_global_planner: global_planner/GlobalPlanner
+
+# Parameter documentation at http://wiki.ros.org/global_planner#Parameters
+GlobalPlanner:
+  allow_unknown: true
+  default_tolerance: 0.05
+  visualize_potential: false
+  use_dijkstra: true
+  use_quadratic: true
+  use_grid_path: false
+  old_navfn_behavior: false
+  lethal_cost: 253
+  neutral_cost: 66
+  cost_factor: 0.55
+  publish_potential: false
+  orientation_mode: 0
+  orientation_window_size: 1
+  outline_map: false

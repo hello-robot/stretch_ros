@@ -1,0 +1,61 @@
+<launch>
+
+  <arg name="database_path"     default="rtabmap.db"/>
+  <arg name="args"              default=""/>
+
+  <arg name="wait_for_transform"  default="0.2"/>
+
+  <arg name="move_base_config" value="2d" />
+  <arg name="pointcloud_topic" default="/camera/depth/color/points"/>
+  <arg name="cmd_vel_topic" default="/stretch_diff_drive_controller/cmd_vel"/>
+  <arg name="odom_topic" default="/stretch_diff_drive_controller/odom"/>
+
+  <!-- Navigation stuff (move_base) -->
+  <include file="$(find stretch_navigation)/launch/navigation/move_base.launch">
+      <arg name="config" value="$(arg move_base_config)" />
+      <arg name="cmd_vel_topic" value="$(arg cmd_vel_topic)" />
+      <arg name="odom_topic" value="$(arg odom_topic)" />
+  </include>
+
+  <!-- Mapping -->
+  <group ns="rtabmap">
+
+    <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen" args="$(arg args)">
+      <param name="database_path"       type="string" value="$(arg database_path)"/>
+      <param name="frame_id"            type="string" value="base_link"/>
+      <param name="odom_frame_id"       type="string" value="odom"/>
+      <param name="wait_for_transform_duration"  type="double"   value="$(arg wait_for_transform)"/>
+      <param name="subscribe_depth"     type="bool"   value="true"/>
+      <param name="subscribe_scan"      type="bool"   value="true"/>
+
+      <!-- inputs -->
+      <remap from="scan"            to="/scan"/>
+      <remap from="rgb/image"       to="/camera/color/image_raw"/>
+      <remap from="depth/image"     to="/camera/depth/image_raw"/>
+      <remap from="rgb/camera_info" to="/camera/color/camera_info"/>
+
+      <!-- output -->
+      <remap from="grid_map" to="/map"/>
+
+      <!-- RTAB-Map's parameters: do "rosrun rtabmap rtabmap (double-dash)params" to see the list of available parameters. -->
+      <param name="RGBD/ProximityBySpace"        type="string" value="true"/>
+      <param name="RGBD/OptimizeFromGraphEnd"    type="string" value="false"/>
+      <param name="Kp/MaxDepth"                  type="string" value="4.0"/>
+      <param name="Reg/Strategy"                 type="string" value="1"/>
+      <param name="Icp/CoprrespondenceRatio"     type="string" value="0.3"/>
+      <param name="Vis/MinInliers"               type="string" value="6"/>
+      <param name="Vis/InlierDistance"           type="string" value="0.1"/>
+      <param name="RGBD/AngularUpdate"           type="string" value="0.1"/>
+      <param name="RGBD/LinearUpdate"            type="string" value="0.1"/>
+      <param name="Rtabmap/TimeThr"              type="string" value="700"/>
+      <param name="Mem/RehearsalSimilarity"      type="string" value="0.30"/>
+      <param name="Optimizer/Slam2D"             type="string" value="true"/>
+      <param name="Reg/Force3DoF"                type="string" value="true"/>
+
+    </node>
+
+    <param     if="$(arg localization)" name="Mem/IncrementalMemory" type="string" value="false"/>
+    <param unless="$(arg localization)" name="Mem/IncrementalMemory" type="string" value="true"/>
+    <param name="Mem/InitWMWithAllNodes" type="string" value="$(arg localization)"/>
+  </group>
+</launch>

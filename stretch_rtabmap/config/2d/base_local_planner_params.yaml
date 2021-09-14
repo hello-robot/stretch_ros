@@ -1,0 +1,45 @@
+base_local_planner: "dwa_local_planner/DWAPlannerROS"
+
+# Parameter documentation at http://wiki.ros.org/dwa_local_planner#Parameters
+DWAPlannerROS:
+  # vel params
+  max_vel_trans: 0.3                # Stretch is conservatively set to max forward velocity of 0.3 m/s
+  min_vel_trans: 0.0
+  max_vel_x: 0.3                    # Stretch is conservatively set to max forward velocity of 0.3 m/s
+  min_vel_x: 0.0
+  max_vel_y: 0                      # diff drives do not have y velocity
+  min_vel_y: 0                      # diff drives do not have y velocity
+  max_vel_theta: 1.0                # replaces 'max_rot_vel' here: https://github.com/ros-planning/navigation/blob/noetic-devel/dwa_local_planner/src/dwa_planner_ros.cpp#L128-L129
+  min_vel_theta: 0.0                # replaces 'min_rot_vel' here: https://github.com/ros-planning/navigation/blob/noetic-devel/dwa_local_planner/src/dwa_planner_ros.cpp#L128-L129
+
+  # accel params
+  acc_lim_x: 0.7
+  acc_lim_y: 0                      # diff drives do not have y acceleration
+  acc_lim_trans: 0.7
+  acc_lim_theta: 3.2
+
+  # goal tolerance
+  yaw_goal_tolerance: 0.05
+  xy_goal_tolerance: 0.05
+  latch_xy_goal_tolerance: true
+
+  # forward sim params
+  sim_time: 3.0
+  sim_granularity: 0.025
+  vx_samples: 3
+  vy_samples: 0                     # diff drives do not have y velocity
+  vth_samples: 20
+
+  # scoring params
+  path_distance_bias: 32
+  goal_distance_bias: 20
+  occdist_scale: 0.02
+  forward_point_distance: 0.3
+  stop_time_buffer: 0.2
+  scaling_speed: 0.25
+  max_scaling_factor: 0.2
+  publish_cost_grid: true
+
+  # others
+  oscillation_reset_dist: 0.05
+  prune_plan: true

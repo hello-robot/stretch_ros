@@ -1,0 +1,6 @@
+cmd_vel_topic: "/stretch_diff_drive_controller/cmd_vel"
+odom_topic: "/stretch_diff_drive_controller/odom"
+scan_topic: "/scan"
+pointcloud_topic: "/camera/depth/image_raw"
+rgb_topic: "/camera/color/image_raw"
+rgb_camera_info: "/camera/color/camera_info"
