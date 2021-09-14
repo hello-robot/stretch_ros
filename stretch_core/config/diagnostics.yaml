@@ -1,0 +1,35 @@
+    type: diagnostic_aggregator/AnalyzerGroup
+    path: Stretch
+    analyzers:
+        hardware:
+          path: Hardware
+          type: diagnostic_aggregator/AnalyzerGroup
+          analyzers:
+            Lift:
+              type: diagnostic_aggregator/GenericAnalyzer
+              find_and_remove_prefix: ['stretch_driver: Lift']
+              path: Lift
+            Arm:
+              type: diagnostic_aggregator/GenericAnalyzer
+              find_and_remove_prefix: ['stretch_driver: Arm']
+              path: Arm
+            Base:
+              type: diagnostic_aggregator/GenericAnalyzer
+              find_and_remove_prefix: ['stretch_driver: Base']
+              path: Base
+            EndOfArm:
+              type: diagnostic_aggregator/GenericAnalyzer
+              find_and_remove_prefix: ['stretch_driver: EndOfArm']
+              path: EndOfArm
+            Head:
+              type: diagnostic_aggregator/GenericAnalyzer
+              find_and_remove_prefix: ['stretch_driver: Head']
+              path: Head
+            Pimu:
+              type: diagnostic_aggregator/GenericAnalyzer
+              find_and_remove_prefix: ['stretch_driver: Pimu']
+              path: Pimu
+            Wacc:
+              type: diagnostic_aggregator/GenericAnalyzer
+              find_and_remove_prefix: ['stretch_driver: Wacc']
+              path: Wacc

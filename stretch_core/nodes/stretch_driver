@@ -23,12 +23,13 @@ from std_srvs.srv import Trigger, TriggerResponse
 from std_srvs.srv import SetBool, SetBoolResponse
 
 from nav_msgs.msg import Odometry
-from sensor_msgs.msg import JointState, Imu, MagneticField
-from std_msgs.msg import Header
+from sensor_msgs.msg import BatteryState, JointState, Imu, MagneticField
+from std_msgs.msg import Bool, Header, String
 
 import hello_helpers.hello_misc as hm
 from hello_helpers.gripper_conversion import GripperConversion
 from joint_trajectory_server import JointTrajectoryAction
+from stretch_diagnostics import StretchDiagnostics
 
 GRIPPER_DEBUG = False
 BACKLASH_DEBUG = False
@@ -220,6 +221,28 @@ class StretchBodyNode:
         odom.twist.twist.angular.z = theta_vel
         self.odom_pub.publish(odom)
 
+        # TODO: Add way to determine if the robot is charging
+        # TODO: Calculate the percentage
+        battery_state = BatteryState()
+        invalid_reading = float('NaN')
+        battery_state.header.stamp = current_time
+        battery_state.voltage = float(robot_status['pimu']['voltage'])
+        battery_state.current = float(robot_status['pimu']['current'])
+        battery_state.charge = invalid_reading
+        battery_state.capacity = invalid_reading
+        battery_state.percentage = invalid_reading
+        battery_state.design_capacity = 18.0
+        battery_state.present = True
+        self.power_pub.publish(battery_state)
+
+        calibration_status = Bool()
+        calibration_status.data = self.robot.is_calibrated()
+        self.calibration_pub.publish(calibration_status)
+
+        mode_msg = String()
+        mode_msg.data = self.robot_mode
+        self.mode_pub.publish(mode_msg)
+
         # publish joint state for the arm
         joint_state = JointState()
         joint_state.header.stamp = current_time
@@ -363,8 +386,7 @@ class StretchBodyNode:
 
     def calibrate(self):
         def code_to_run():
-            self.robot.lift.home()
-            self.robot.arm.home()
+            self.robot.home()
         self.change_mode('calibration', code_to_run)
 
     ######## SERVICE CALLBACKS #######
@@ -390,6 +412,14 @@ class StretchBodyNode:
             success=True,
             message='Stopped the robot.'
             )
+
+    def calibrate_callback(self, request):
+        rospy.loginfo('Received calibrate_the_robot service call.')
+        self.calibrate()
+        return TriggerResponse(
+            success=True,
+            message='Calibrated.'
+        )
 
     def navigation_mode_service_callback(self, request):
         self.turn_on_navigation_mode()
@@ -506,6 +536,10 @@ class StretchBodyNode:
 
         self.odom_pub = rospy.Publisher('odom', Odometry, queue_size=1)
 
+        self.power_pub = rospy.Publisher('battery', BatteryState, queue_size=1)
+        self.calibration_pub = rospy.Publisher('is_calibrated', Bool, queue_size=1)
+        self.mode_pub = rospy.Publisher('mode', String, queue_size=1)
+
         self.imu_mobile_base_pub = rospy.Publisher('imu_mobile_base', Imu, queue_size=1)
         self.magnetometer_mobile_base_pub = rospy.Publisher('magnetometer_mobile_base', MagneticField, queue_size=1)
         self.imu_wrist_pub = rospy.Publisher('imu_wrist', Imu, queue_size=1)
@@ -535,6 +569,7 @@ class StretchBodyNode:
         self.fail_out_of_range_goal = rospy.get_param('~fail_out_of_range_goal', True)
         self.joint_trajectory_action = JointTrajectoryAction(self)
         self.joint_trajectory_action.server.start()
+        self.diagnostics = StretchDiagnostics(self, self.robot)
 
         self.switch_to_navigation_mode_service = rospy.Service('/switch_to_navigation_mode',
                                                                Trigger,
@@ -547,6 +582,10 @@ class StretchBodyNode:
         self.stop_the_robot_service = rospy.Service('/stop_the_robot',
                                                     Trigger,
                                                     self.stop_the_robot_callback)
+
+        self.calibrate_the_robot_service = rospy.Service('/calibrate_the_robot',
+                                                         Trigger,
+                                                         self.calibrate_callback)
 
         self.runstop_service = rospy.Service('/runstop',
                                               SetBool,
