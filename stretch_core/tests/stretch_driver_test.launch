@@ -1,0 +1,32 @@
+<launch>
+    <param name="robot_description" textfile="$(find stretch_description)/urdf/stretch.urdf" />
+    <arg name="calibrated_controller_yaml_file" value="$(find stretch_core)/config/controller_calibration_head.yaml"/>
+
+    <node
+        name="joint_state_publisher"
+        pkg="joint_state_publisher"
+        type="joint_state_publisher" >
+        <param name="rate" value="15.0"/>
+        <rosparam param="source_list">
+            [/stretch/joint_states]
+        </rosparam>
+    </node>
+
+    <node
+        name="robot_state_publisher"
+        pkg="robot_state_publisher"
+        type="robot_state_publisher" >
+        <param name="publish_frequency" value="15.0"/>
+    </node>
+
+    <node name="stretch_driver" pkg="stretch_core" type="stretch_driver" output="screen">
+        <param name="rate" type="double" value="25.0"/>
+        <param name="timeout" type="double" value="0.5"/>
+        <remap from="cmd_vel" to="/stretch/cmd_vel" />
+        <remap from="joint_states" to="/stretch/joint_states" />
+        <param name="controller_calibration_file" type="string" value="$(arg calibrated_controller_yaml_file)"/>
+    </node>
+
+    <param name="test_module" value="node_tests"/>
+    <test test-name="test_stretch_driver" pkg ="stretch_core" type ="pytest_runner.py"/>
+</launch>
