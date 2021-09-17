@@ -585,7 +585,7 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
     <joint name="joint_gripper_finger_left">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
   </transmission>
   <transmission name="trans_gripper_finger_right">
@@ -594,7 +594,7 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
     <joint name="joint_gripper_finger_right">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
 </transmission>
 
