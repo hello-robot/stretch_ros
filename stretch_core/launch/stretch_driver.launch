@@ -1,8 +1,10 @@
 <launch>
-  
+
   <param name="robot_description" textfile="$(find stretch_description)/urdf/stretch.urdf" />
   <arg name="calibrated_controller_yaml_file" value="$(find stretch_core)/config/controller_calibration_head.yaml"/>
-
+  <arg name="upright_camera" default="true"/>
+  <arg name="image_topic" default="/camera/color/image_raw"/>
+  
   <node
       name="joint_state_publisher"
       pkg="joint_state_publisher"
@@ -25,7 +27,7 @@
     </rosparam>
   </node>
   -->
-  
+
   <node
       name="robot_state_publisher"
       pkg="robot_state_publisher"
@@ -40,5 +42,10 @@
     <remap from="joint_states" to="/stretch/joint_states" />
     <param name="controller_calibration_file" type="string" value="$(arg calibrated_controller_yaml_file)"/>
   </node>
-  
+
+  <!--- Run upright_camera_view.launch file -->
+  <include file="$(find stretch_core)/launch/upright_camera_view.launch" if="$(arg upright_camera)">
+    <arg name="image_topic" value="$(arg image_topic)"/>
+  </include>
+
 </launch>
