@@ -57,22 +57,33 @@ Below are some optional plugins that help make test reports more readable and wi
  * Pytest Clarity: https://github.com/darrenburns/pytest-clarity
  * Pytest Randomly: https://github.com/pytest-dev/pytest-randomly
 
-Before running any tests we should run the *stretch_robot_home.py* script at least once after startup and launch test suites that require nodes to be running via the roslaunch command as follows (we should not launch any test suites if we are using the *catkin_tools* package to build and run tests):
+Before running any tests we should run the *stretch_robot_home.py* script at least once after startup and launch test suites that require nodes to be running via the roslaunch command as follows (Note: we should not launch any test suites if we are using the *catkin_tools* package to build and run tests. See below for details):
 
 ```bash
 >>$ stretch_robot_home.py
 ```
 
-```bash
->>$ roslaunch <package_name> <test_suite_name>
-```
-
 In order to run tests the following commands can be typed into the command line:
 
 ```bash
->>$ pytest -vv
+# terminal 1:
+>>$ roslaunch <package_name> <test_suite_name>
+# terminal 2:
+>>$ cd ~/catkin_ws
+>>$ pytest -vv # or pytest-3 -vv
 ```
+
 A test session will bootup that reports the root directory and all the plugins currently running. Within the test session pytest will search for all tests in the current directory and all subdirectories.
+
+For example, to run the `test_stretch_driver` test suite, we can use:
+
+```bash
+# terminal 1:
+>>$ roslaunch stretch_core test_stretch_driver.launch
+# terminal 2:
+>>$ cd ~/catkin_ws
+>>$ pytest-3 -vv
+```
 
 We can also run individual tests by specify the test name after the option -k as follows:
 

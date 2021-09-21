@@ -1,4 +1,0 @@
-<launch>
-    <param name = "test_module" value = "../nodes"/>
-    <test test-name = "test_command_groups" pkg = "stretch_core" type = "pytest_runner.py"/>
-</launch>

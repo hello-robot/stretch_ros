@@ -28,5 +28,5 @@
     </node>
 
     <param name="test_module" value="node_tests"/>
-    <test test-name="test_stretch_driver" pkg ="stretch_core" type ="pytest_runner.py"/>
+    <test test-name="test_stretch_driver" pkg="stretch_core" type="pytest_runner.py"/>
 </launch>
