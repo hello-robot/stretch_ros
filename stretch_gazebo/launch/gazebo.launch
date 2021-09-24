@@ -9,7 +9,7 @@
   <arg name="model" default="$(find stretch_gazebo)/urdf/stretch_gazebo.urdf.xacro"/>
   <arg name="gpu_lidar" default="false"/>
   <arg name="visualize_lidar" default="false"/>
-  <arg name="world" default="worlds/empty.world"/>
+  <arg name="realsense" default="false"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(arg world)" />
@@ -21,7 +21,7 @@
     <arg name="verbose" value="true"/>
   </include>
 
-  <param name="robot_description" command="$(find xacro)/xacro $(arg model) gpu_lidar:=$(arg gpu_lidar) visualize_lidar:=$(arg visualize_lidar)" />
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model) gpu_lidar:=$(arg gpu_lidar) visualize_lidar:=$(arg visualize_lidar) realsense:=$(arg realsense)" />
 
   <!-- push robot_description to factory and spawn robot in gazebo -->
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
