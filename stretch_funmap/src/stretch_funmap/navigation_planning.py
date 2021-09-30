@@ -580,7 +580,9 @@ def draw_robot_footprint_rectangle(x_pix, y_pix, ang_rad, m_per_pix, image, verb
         
     poly_points = np.array(corners)
     poly_points = np.round(poly_points).astype(np.int32)
-    cv2.fillConvexPoly(image, poly_points, value)
+    
+    if image is not None:
+        cv2.fillConvexPoly(image, poly_points, value)
 
 def halve_image(image):
     h, w = image.shape
