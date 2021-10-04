@@ -92,7 +92,7 @@ class StretchDiagnostics:
     def __init__(self, node, robot):
         self.node = node
         self.robot = robot
-        self.updater = diagnostic_updater.Updater(node)
+        self.updater = diagnostic_updater.Updater()
         self.updater.setHardwareID(hello_utils.get_fleet_id())
 
         # Configure the different update functions
