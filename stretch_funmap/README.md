@@ -29,8 +29,8 @@ At this point, you should see a 3D map resulting from the head scan in RViz. You
 If you have the robot untethered, you can now specify a navigation goal for the robot. If the robot finds a navigation plan to the goal, it will attempt to navigate to it. While navigating, it will look down with its 3D camera in an attempt to stop if it detects an obstacle.
 
 ```
-In RViz, press the "2D Nav Goal" button on the top bar with a green arrow icon.
-Specify a nearby navigation goal pose on the floor of the map by clicking and drawing a green arrow.
+In RViz, press the "2D Nav Goal" button on the top bar with a magenta arrow icon.
+Specify a nearby navigation goal pose on the floor of the map by clicking and drawing a magenta arrow.
 ```
 For this to work, the navigation goal must be in a place that the robot can reach and that the robot has scanned well. For example, the robot will only navigate across floor regions that it has in its map.
 
