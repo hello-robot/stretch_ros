@@ -40,6 +40,7 @@ class D435iConfigureNode:
             )
 
     def main(self):
+        rospy.sleep(3) # sleep for 3 seconds to wait for D435i to be ready
         rospy.init_node('configure_d435i')
         self.node_name = rospy.get_name()
         rospy.loginfo("{0} started".format(self.node_name))
