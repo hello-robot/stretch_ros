@@ -27,9 +27,10 @@ import hello_helpers.fit_plane as fp
 import threading
 from collections import deque
 
-
 class ArucoMarker:
-    def __init__(self, aruco_id, marker_info):
+    def __init__(self, aruco_id, marker_info, show_debug_images=False):
+        self.show_debug_images = show_debug_images
+        
         self.aruco_id = aruco_id
         colormap = cv2.COLORMAP_HSV
         offset = 0
@@ -83,7 +84,7 @@ class ArucoMarker:
         points = self.plane.get_points_on_plane(origin, side_length, sample_spacing)
         return points
 
-    def update_marker_point_cloud(self, aruco_depth_estimate, display_images=False):
+    def update_marker_point_cloud(self, aruco_depth_estimate):
         if (not self.ready) or (self.depth_image is None):
             self.points_array = None
 
@@ -165,11 +166,13 @@ class ArucoMarker:
             # depths.
             points_array = points_array[(mask_crop.flatten() > 0) & mask_z.flatten()]
 
-            if display_images: 
+            if self.show_debug_images:
+                norm_depth_image = cv2.normalize(self.depth_image, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+                cv2.imshow('depth_image', norm_depth_image)
                 display_depth_crop = cv2.normalize(depth_crop, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
-                cv2.imshow('Cropped Depth {0}'.format(id_num), display_depth_crop)
+                cv2.imshow('Cropped Depth', display_depth_crop)
                 display_mask_crop = cv2.normalize(mask_crop, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
-                cv2.imshow('Cropped Mask {0}'.format(id_num), display_mask_crop)
+                cv2.imshow('Cropped Mask', display_mask_crop)
         else:
             points_array = np.empty((0,3), dtype=np.float64)
 
@@ -198,7 +201,7 @@ class ArucoMarker:
         self.center = np.average(self.corners, axis=1).flatten()
         self.min_dists = np.min((self.corners - self.center), axis=1).flatten()
         self.max_dists = np.max((self.corners - self.center), axis=1).flatten()
-        
+
         if (self.depth_image is not None) and (aruco_depth_estimate > self.min_z_to_use_depth_image) and (not self.use_rgb_only):
             only_use_rgb = False
 
@@ -504,7 +507,9 @@ class ArucoMarker:
 
         
 class ArucoMarkerCollection:
-    def __init__(self, marker_info):
+    def __init__(self, marker_info, show_debug_images=False):
+        self.show_debug_images = show_debug_images
+        
         self.marker_info = marker_info
         self.aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
         self.aruco_detection_parameters =  aruco.DetectorParameters_create()
@@ -553,7 +558,7 @@ class ArucoMarkerCollection:
                 aruco_id = int(aruco_id)
                 marker = self.collection.get(aruco_id, None)
                 if marker is None:
-                    new_marker = ArucoMarker(aruco_id, self.marker_info)
+                    new_marker = ArucoMarker(aruco_id, self.marker_info, self.show_debug_images)
                     self.collection[aruco_id] = new_marker
 
                 self.collection[aruco_id].update(corners, self.timestamp, self.frame_number, self.camera_info, self.depth_image)
@@ -591,7 +596,7 @@ class DetectArucoNode:
         self.depth_image_timestamp = None        
         self.camera_info = None
         self.all_points = []
-        self.display_images = False
+        self.show_debug_images = False
         self.publish_marker_point_clouds = False
 
     def image_callback(self, ros_rgb_image, ros_depth_image, rgb_camera_info):
@@ -644,7 +649,7 @@ class DetectArucoNode:
             self.visualize_axes_pub.publish(axes_array)
 
         # save rotation for last
-        if self.display_images:
+        if self.show_debug_images:
             # WARNING: This code now causes this node to freeze after
             # a few frames.
             aruco_image = self.aruco_marker_collection.draw_markers(self.rgb_image)
@@ -683,7 +688,7 @@ class DetectArucoNode:
         rospy.loginfo("{0} started".format(self.node_name))
         
         self.marker_info = rospy.get_param('/aruco_marker_info')
-        self.aruco_marker_collection = ArucoMarkerCollection(self.marker_info)
+        self.aruco_marker_collection = ArucoMarkerCollection(self.marker_info, self.show_debug_images)
 
         self.rgb_topic_name = '/camera/color/image_raw' #'/camera/infra1/image_rect_raw'
         self.rgb_image_subscriber = message_filters.Subscriber(self.rgb_topic_name, Image)
