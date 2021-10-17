@@ -472,18 +472,16 @@ class HeadScan:
                 'map_to_image_mat' : self.map_to_image_mat.tolist(), 
                 'map_to_base_mat' : self.map_to_base_mat.tolist()}
         
-        fid = open(base_filename + '.yaml', 'w')
-        yaml.dump(data, fid)
-        fid.close()
+        with open(base_filename + '.yaml', 'w') as fid:
+            yaml.dump(data, fid)
         print('Finished saving.')
 
         
     @classmethod
     def from_file(self, base_filename):
         print('HeadScan.from_file: base_filename =', base_filename)
-        fid = open(base_filename + '.yaml', 'r')
-        data = yaml.load(fid)
-        fid.close()
+        with open(base_filename + '.yaml', 'r') as fid:
+            data = yaml.load(fid, Loader=yaml.FullLoader)
 
         print('data =', data)
         max_height_image_base_filename = data['max_height_image_base_filename']
