@@ -14,3 +14,6 @@ install(DIRECTORY launch
 install(DIRECTORY urdf
 DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
+
+catkin_install_python(PROGRAMS scripts/unpause_after_wait
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
