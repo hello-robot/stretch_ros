@@ -45,16 +45,10 @@
             ns="stretch_diff_drive_controller" />
 
   <rosparam command="load"
-            file="$(find stretch_gazebo)/config/arm.yaml"/>
-
-  <rosparam command="load"
-            file="$(find stretch_gazebo)/config/head.yaml" />
-
-  <rosparam command="load"
-            file="$(find stretch_gazebo)/config/gripper.yaml" />
+            file="$(find stretch_gazebo)/config/body.yaml" />
 
   <node name="stretch_controller_spawner" pkg="controller_manager" type="spawner"
-        args="stretch_joint_state_controller stretch_diff_drive_controller stretch_arm_controller stretch_head_controller stretch_gripper_controller"/>
+        args="stretch_joint_state_controller stretch_diff_drive_controller stretch_controller_raw"/>
 
   <node name="publish_ground_truth_odom" pkg="stretch_gazebo" type="publish_ground_truth_odom.py" output="screen"/>
 
