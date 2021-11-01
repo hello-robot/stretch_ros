@@ -1,0 +1,10 @@
+<library path="lib/libstretch_gazebo">
+    <class
+            name="stretch_gazebo/StretchHardwareGazebo"
+            type="stretch_gazebo::StretchHardwareGazebo"
+            base_class_type="gazebo_ros_control::RobotHWSim">
+        <description>
+            Stretch robot simulation interface.
+        </description>
+    </class>
+</library>

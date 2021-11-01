@@ -11,8 +11,11 @@
   <xacro:include filename="$(find stretch_description)/urdf/stretch_gripper.xacro" />
 
   <gazebo>
-    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+    <plugin name="gazebo_ros_control" filename="libstretch_gazebo_ros_control_plugin.so">
+      <robotSimType>stretch_gazebo/StretchHardwareGazebo</robotSimType>
       <robotNamespace>/</robotNamespace>
+      <eStopTopic>estop</eStopTopic>
+      <jointStatesTopic>stretch/joint_states</jointStatesTopic>
     </plugin>
   </gazebo>
 
