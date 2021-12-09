@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 def print_model_info(model, text_name):
-
+    return
     layer_names = model.getLayerNames()
     print('{0}.getLayerNames() ='.format(text_name), layer_names)
     output_layer_indices = model.getUnconnectedOutLayers()
