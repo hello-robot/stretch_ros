@@ -400,9 +400,8 @@ class MaxHeightImage:
                 'transform_corrected_to_original': transform_corrected_to_original
         }
 
-        fid = open(base_filename + '.yaml', 'w')
-        yaml.dump(data, fid)
-        fid.close()
+        with open(base_filename + '.yaml', 'w') as fid:
+            yaml.dump(data, fid)
 
         print('Finished saving.')
 
@@ -410,9 +409,8 @@ class MaxHeightImage:
     @classmethod
     def load_serialization( self, base_filename ):
         print('MaxHeightImage: Loading serialization data from base_filename =', base_filename)
-        fid = open(base_filename + '.yaml', 'r')
-        data = yaml.load(fid)
-        fid.close()
+        with open(base_filename + '.yaml', 'r') as fid:
+            data = yaml.load(fid, Loader=yaml.FullLoader)
         
         image_filename = data['image_filename']
         fid = gzip.GzipFile(image_filename, 'r')
