@@ -158,3 +158,18 @@ class SimpleCommandGroup:
             return (abs(self.error) < self.acceptable_joint_error)
 
         return True
+
+    def joint_state(self, robot_status, **kwargs):
+        """Returns state of the joint group
+
+        Parameters
+        ----------
+        robot_status: dict
+            whole robot's current status
+
+        Returns
+        -------
+        (float, float, float)
+            Current position, velocity, and effort
+        """
+        raise NotImplementedError

@@ -53,6 +53,8 @@ class JointTrajectoryAction:
                                                       self.node.controller_parameters['arm_retracted_offset'])
         self.lift_cg = LiftCommandGroup(tuple(r.lift.params['range_m']))
         self.mobile_base_cg = MobileBaseCommandGroup(virtual_range_m=(-0.5, 0.5))
+        self.command_groups = [self.telescoping_cg, self.lift_cg, self.mobile_base_cg, self.head_pan_cg,
+                               self.head_tilt_cg, self.wrist_yaw_cg, self.gripper_cg]
 
     def execute_cb(self, goal):
         with self.node.robot_stop_lock:
@@ -67,11 +69,9 @@ class JointTrajectoryAction:
 
         ###################################################
         # Decide what to do based on the commanded joints.
-        command_groups = [self.telescoping_cg, self.lift_cg, self.mobile_base_cg, self.head_pan_cg,
-                          self.head_tilt_cg, self.wrist_yaw_cg, self.gripper_cg]
         updates = [c.update(commanded_joint_names, self.invalid_joints_callback,
                    robot_mode=self.node.robot_mode)
-                   for c in command_groups]
+                   for c in self.command_groups]
         if not all(updates):
             # The joint names violated at least one of the command
             # group's requirements. The command group should have
@@ -79,7 +79,7 @@ class JointTrajectoryAction:
             self.node.robot_mode_rwlock.release_read()
             return
 
-        num_valid_points = sum([c.get_num_valid_commands() for c in command_groups])
+        num_valid_points = sum([c.get_num_valid_commands() for c in self.command_groups])
         if num_valid_points <= 0:
             err_str = ("Received a command without any valid joint names."
                        "Received joint names = {0}").format(commanded_joint_names)
@@ -100,13 +100,8 @@ class JointTrajectoryAction:
             rospy.logdebug(("{0} joint_traj action: "
                             "target point #{1} = <{2}>").format(self.node.node_name, pointi, point))
 
-            #valid_goals = [c.set_goal(point, self.invalid_goal_callback, self.node.fail_out_of_range_goal,
-            #                          manipulation_origin=self.node.mobile_base_manipulation_origin)
-            #               for c in command_groups]
-
             valid_goals = [c.set_goal(point, self.invalid_goal_callback, self.node.fail_out_of_range_goal)
-                           for c in command_groups]
-            
+                           for c in self.command_groups]
             if not all(valid_goals):
                 # At least one of the goals violated the requirements
                 # of a command group. Any violations should have been
@@ -115,11 +110,11 @@ class JointTrajectoryAction:
                 return
 
             robot_status = self.node.robot.get_status() # uses lock held by robot
-            for c in command_groups:
+            for c in self.command_groups:
                 c.init_execution(self.node.robot, robot_status)
             self.node.robot.push_command()
 
-            goals_reached = [c.goal_reached() for c in command_groups]
+            goals_reached = [c.goal_reached() for c in self.command_groups]
             update_rate = rospy.Rate(15.0)
             goal_start_time = rospy.Time.now()
 
@@ -144,7 +139,7 @@ class JointTrajectoryAction:
 
                 robot_status = self.node.robot.get_status()
                 named_errors = [c.update_execution(robot_status, success_callback=self.success_callback)
-                                for c in command_groups]
+                                for c in self.command_groups]
                 # It's not clear how this could ever happen. The
                 # groups in command_groups.py seem to return
                 # (self.name, self.error) or None, rather than True.
@@ -153,7 +148,7 @@ class JointTrajectoryAction:
                     return
 
                 self.feedback_callback(commanded_joint_names, point, named_errors)
-                goals_reached = [c.goal_reached() for c in command_groups]
+                goals_reached = [c.goal_reached() for c in self.command_groups]
                 update_rate.sleep()
 
             rospy.logdebug("{0} joint_traj action: Achieved target point.".format(self.node.node_name))

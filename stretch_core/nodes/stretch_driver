@@ -26,12 +26,8 @@ from nav_msgs.msg import Odometry
 from sensor_msgs.msg import BatteryState, JointState, Imu, MagneticField
 from std_msgs.msg import Bool, Header, String
 
-import hello_helpers.hello_misc as hm
-from hello_helpers.gripper_conversion import GripperConversion
 from joint_trajectory_server import JointTrajectoryAction
 from stretch_diagnostics import StretchDiagnostics
-
-GRIPPER_DEBUG = False
 
 
 class StretchBodyNode:
@@ -42,8 +38,6 @@ class StretchBodyNode:
 
         self.default_goal_timeout_s = 10.0
         self.default_goal_timeout_duration = rospy.Duration(self.default_goal_timeout_s)
-
-        self.gripper_conversion = GripperConversion()
 
         self.robot_stop_lock = threading.Lock()
         self.stop_the_robot = False
@@ -67,97 +61,37 @@ class StretchBodyNode:
     def command_mobile_base_velocity_and_publish_state(self):
         self.robot_mode_rwlock.acquire_read()
 
-        # set new mobile base velocities, if appropriate
-        # check on thread safety for this with callback that sets velocity command values
+        # set new mobile base velocities if available
         if self.robot_mode == 'navigation': 
             time_since_last_twist = rospy.get_time() - self.last_twist_time
             if time_since_last_twist < self.timeout:
                 self.robot.base.set_velocity(self.linear_velocity_mps, self.angular_velocity_radps)
                 self.robot.push_command()
             else:
-                # Too much information in general, although it could be blocked, since it's just INFO.
+                # Watchdog timer stops motion if no communication within timeout
                 self.robot.base.set_velocity(0.0, 0.0)
                 self.robot.push_command()
 
-        # get copy of the current robot status (uses lock held by the robot)
-        robot_status = self.robot.get_status()
-
-
-        # In the future, consider using time stamps from the robot's
+        # TODO: In the future, consider using time stamps from the robot's
         # motor control boards and other boards. These would need to
         # be synchronized with the rospy clock.
         #robot_time = robot_status['timestamp_pc']
-        #rospy.loginfo('robot_time =', robot_time)        
         #current_time = rospy.Time.from_sec(robot_time)
-
         current_time = rospy.Time.now()
+        robot_status = self.robot.get_status()
 
         # obtain odometry
-        # assign relevant base status to variables
         base_status = robot_status['base']
         x = base_status['x']
-        x_raw = x
         y = base_status['y']
         theta = base_status['theta']
+        q = tf_conversions.transformations.quaternion_from_euler(0, 0, theta)
         x_vel = base_status['x_vel']
-        x_vel_raw = x_vel
-        y_vel = base_status['y_vel']
         x_effort = base_status['effort'][0]
-        x_effort_raw = x_effort
         theta_vel = base_status['theta_vel']
         pose_time_s = base_status['pose_time_s']
 
-        # assign relevant arm status to variables
-        arm_status = robot_status['arm']
-        arm_backlash_correction = 0.0
-        pos_out = arm_status['pos'] + arm_backlash_correction
-        vel_out = arm_status['vel']
-        eff_out = arm_status['motor']['effort']
-
-        lift_status = robot_status['lift']
-        pos_up = lift_status['pos']
-        vel_up = lift_status['vel']
-        eff_up = lift_status['motor']['effort']
-
-        if self.use_robotis_end_of_arm:         
-            # assign relevant wrist status to variables
-            wrist_status = robot_status['end_of_arm']['wrist_yaw']
-            wrist_rad = wrist_status['pos']
-            wrist_vel = wrist_status['vel']
-            wrist_effort = wrist_status['effort']
-
-            # assign relevant gripper status to variables
-            gripper_status = robot_status['end_of_arm']['stretch_gripper']
-            if GRIPPER_DEBUG: 
-                print('-----------------------')
-                print('gripper_status[\'pos\'] =', gripper_status['pos'])
-                print('gripper_status[\'pos_pct\'] =', gripper_status['pos_pct'])
-            gripper_aperture_m, gripper_finger_rad, gripper_finger_effort, gripper_finger_vel = self.gripper_conversion.status_to_all(gripper_status)
-            if GRIPPER_DEBUG: 
-                print('gripper_aperture_m =', gripper_aperture_m)
-                print('gripper_finger_rad =', gripper_finger_rad)
-                print('-----------------------')
-
-        if self.use_robotis_head: 
-            # assign relevant head pan status to variables
-            head_pan_status = robot_status['head']['head_pan']
-            pan_backlash_correction = 0.0
-            head_pan_calibrated_offset_rad = 0.0
-            head_pan_rad = head_pan_status['pos'] + head_pan_calibrated_offset_rad + pan_backlash_correction
-            head_pan_vel = head_pan_status['vel']
-            head_pan_effort = head_pan_status['effort']
-
-            # assign relevant head tilt status to variables
-            head_tilt_status = robot_status['head']['head_tilt']
-            tilt_backlash_correction = 0.0
-            head_tilt_calibrated_offset_rad = 0.0
-            head_tilt_rad = head_tilt_status['pos'] + head_tilt_calibrated_offset_rad + tilt_backlash_correction
-            head_tilt_vel = head_tilt_status['vel']
-            head_tilt_effort = head_tilt_status['effort']
-
-        q = tf_conversions.transformations.quaternion_from_euler(0, 0, theta)
-
-        if self.broadcast_odom_tf: 
+        if self.broadcast_odom_tf:
             # publish odometry via TF
             t = TransformStamped()
             t.header.stamp = current_time
@@ -172,7 +106,7 @@ class StretchBodyNode:
             t.transform.rotation.w = q[3]
             self.tf_broadcaster.sendTransform(t)
 
-        # publish odometry via the odom topic
+        # publish odometry
         odom = Odometry()
         odom.header.stamp = current_time
         odom.header.frame_id = self.odom_frame_id
@@ -209,68 +143,36 @@ class StretchBodyNode:
         mode_msg.data = self.robot_mode
         self.mode_pub.publish(mode_msg)
 
-        # publish joint state for the arm
+        # publish joint state
         joint_state = JointState()
         joint_state.header.stamp = current_time
-        # joint_arm_l3 is the most proximal and joint_arm_l0 is the
-        # most distal joint of the telescoping arm model. The joints
-        # are connected in series such that moving the most proximal
-        # joint moves all the other joints in the global frame.
-        joint_state.name = ['wrist_extension', 'joint_lift', 'joint_arm_l3', 'joint_arm_l2', 'joint_arm_l1', 'joint_arm_l0']
+        cgs = list(set(self.joint_trajectory_action.command_groups) - set([self.joint_trajectory_action.mobile_base_cg]))
+        for cg in cgs:
+            pos, vel, effort = cg.joint_state(robot_status, robot_mode=self.robot_mode)
+            joint_state.name.append(cg.name)
+            joint_state.position.append(pos)
+            joint_state.velocity.append(vel)
+            joint_state.effort.append(effort)
 
-        # set positions of the telescoping joints
-        positions = [pos_out/4.0 for i in range(4)]
-        # set lift position
-        positions.insert(0, pos_up)
-        # set wrist_extension position
-        positions.insert(0, pos_out)
+        # add telescoping joints to joint state
+        telescoping_cg = self.joint_trajectory_action.telescoping_cg
+        joint_state.name.extend(telescoping_cg.telescoping_joints)
+        pos, vel, effort = telescoping_cg.joint_state(robot_status)
+        for _ in range(len(telescoping_cg.telescoping_joints)):
+            joint_state.position.append(pos / len(cg.telescoping_joints))
+            joint_state.velocity.append(vel / len(cg.telescoping_joints))
+            joint_state.effort.append(effort)
 
-        # set velocities of the telescoping joints
-        velocities = [vel_out/4.0 for i in range(4)]
-        # set lift velocity
-        velocities.insert(0, vel_up)
-        # set wrist_extension velocity
-        velocities.insert(0, vel_out)
+        # add gripper joints to joint state
+        gripper_cg = self.joint_trajectory_action.gripper_cg
+        missing_gripper_joint_names = list(set([gripper_cg.gripper_joint_names]) - set(joint_state.name))
+        for j in missing_gripper_joint_names:
+            pos, vel, effort = gripper_cg.joint_state(robot_status, joint_name=j)
+            joint_state.name.append(j)
+            joint_state.position.append(pos)
+            joint_state.velocity.append(vel)
+            joint_state.effort.append(effort)
 
-        # set efforts of the telescoping joints
-        efforts = [eff_out for i in range(4)]
-        # set lift effort
-        efforts.insert(0, eff_up)
-        # set wrist_extension effort
-        efforts.insert(0, eff_out)
-
-        if self.use_robotis_head:
-            head_joint_names = ['joint_head_pan', 'joint_head_tilt']
-            joint_state.name.extend(head_joint_names)
-
-            positions.append(head_pan_rad)
-            velocities.append(head_pan_vel)
-            efforts.append(head_pan_effort)
-
-            positions.append(head_tilt_rad)
-            velocities.append(head_tilt_vel)
-            efforts.append(head_tilt_effort)
-
-        if self.use_robotis_end_of_arm: 
-            end_of_arm_joint_names = ['joint_wrist_yaw', 'joint_gripper_finger_left', 'joint_gripper_finger_right']
-            joint_state.name.extend(end_of_arm_joint_names)
-
-            positions.append(wrist_rad)
-            velocities.append(wrist_vel)
-            efforts.append(wrist_effort)
-
-            positions.append(gripper_finger_rad)
-            velocities.append(gripper_finger_vel)
-            efforts.append(gripper_finger_effort)
-
-            positions.append(gripper_finger_rad)
-            velocities.append(gripper_finger_vel)
-            efforts.append(gripper_finger_effort)
-
-        # set joint_state
-        joint_state.position = positions
-        joint_state.velocity = velocities
-        joint_state.effort = efforts
         self.joint_state_pub.publish(joint_state)
 
         ##################################################
@@ -292,7 +194,6 @@ class StretchBodyNode:
         i.angular_velocity.x = gx
         i.angular_velocity.y = gy
         i.angular_velocity.z = gz
-
         i.linear_acceleration.x = ax
         i.linear_acceleration.y = ay
         i.linear_acceleration.z = az
