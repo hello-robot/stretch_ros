@@ -42,16 +42,16 @@ class JointTrajectoryAction:
                                  r.end_of_arm.motors['stretch_gripper'].world_rad_to_pct(gripper_range_rad[1]))
 
         self.head_pan_cg = HeadPanCommandGroup(head_pan_range_rad,
-                                               self.node.head_pan_calibrated_offset_rad,
-                                               self.node.head_pan_calibrated_looked_left_offset_rad)
+                                               self.node.controller_parameters['pan_angle_offset'],
+                                               self.node.controller_parameters['pan_looked_left_offset'])
         self.head_tilt_cg = HeadTiltCommandGroup(head_tilt_range_rad,
-                                                 self.node.head_tilt_calibrated_offset_rad,
-                                                 self.node.head_tilt_calibrated_looking_up_offset_rad,
-                                                 self.node.head_tilt_backlash_transition_angle_rad)
+                                                 self.node.controller_parameters['tilt_angle_offset'],
+                                                 self.node.controller_parameters['tilt_looking_up_offset'],
+                                                 self.node.controller_parameters['tilt_angle_backlash_transition'])
         self.wrist_yaw_cg = WristYawCommandGroup(wrist_yaw_range_rad)
         self.gripper_cg = GripperCommandGroup(gripper_range_robotis)
         self.telescoping_cg = TelescopingCommandGroup(tuple(r.arm.params['range_m']),
-                                                      self.node.wrist_extension_calibrated_retracted_offset_m)
+                                                      self.node.controller_parameters['arm_retracted_offset'])
         self.lift_cg = LiftCommandGroup(tuple(r.lift.params['range_m']))
         self.mobile_base_cg = MobileBaseCommandGroup(virtual_range_m=(-0.5, 0.5))
 
