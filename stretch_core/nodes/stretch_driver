@@ -32,7 +32,6 @@ from joint_trajectory_server import JointTrajectoryAction
 from stretch_diagnostics import StretchDiagnostics
 
 GRIPPER_DEBUG = False
-BACKLASH_DEBUG = False
 
 
 class StretchBodyNode:
@@ -47,11 +46,6 @@ class StretchBodyNode:
         # Initialize calibration offsets
         self.head_tilt_calibrated_offset_rad = 0.0
         self.head_pan_calibrated_offset_rad = 0.0
-
-        # Initialize backlash state
-        self.backlash_state = {'head_tilt_looking_up' : False,
-                               'head_pan_looked_left' : False,
-                               'wrist_extension_retracted' : False}
 
         # Initialize backlash offsets
         self.head_pan_calibrated_looked_left_offset_rad = 0.0
@@ -82,10 +76,6 @@ class StretchBodyNode:
 
     def command_mobile_base_velocity_and_publish_state(self):
         self.robot_mode_rwlock.acquire_read()
-
-        if BACKLASH_DEBUG:
-            print('***')
-            print('self.backlash_state =', self.backlash_state)
 
         # set new mobile base velocities, if appropriate
         # check on thread safety for this with callback that sets velocity command values
@@ -129,13 +119,7 @@ class StretchBodyNode:
 
         # assign relevant arm status to variables
         arm_status = robot_status['arm']
-        if self.backlash_state['wrist_extension_retracted']:
-            arm_backlash_correction = self.wrist_extension_calibrated_retracted_offset_m
-        else: 
-            arm_backlash_correction = 0.0
-
-        if BACKLASH_DEBUG: 
-            print('arm_backlash_correction =', arm_backlash_correction)
+        arm_backlash_correction = 0.0
         pos_out = arm_status['pos'] + arm_backlash_correction
         vel_out = arm_status['vel']
         eff_out = arm_status['motor']['effort']
@@ -167,24 +151,14 @@ class StretchBodyNode:
         if self.use_robotis_head: 
             # assign relevant head pan status to variables
             head_pan_status = robot_status['head']['head_pan']
-            if self.backlash_state['head_pan_looked_left']:
-                pan_backlash_correction = self.head_pan_calibrated_looked_left_offset_rad 
-            else:
-                pan_backlash_correction = 0.0
-            if BACKLASH_DEBUG: 
-                print('pan_backlash_correction =', pan_backlash_correction)
+            pan_backlash_correction = 0.0
             head_pan_rad = head_pan_status['pos'] + self.head_pan_calibrated_offset_rad + pan_backlash_correction
             head_pan_vel = head_pan_status['vel']
             head_pan_effort = head_pan_status['effort']
 
             # assign relevant head tilt status to variables
             head_tilt_status = robot_status['head']['head_tilt']
-            if self.backlash_state['head_tilt_looking_up']:
-                tilt_backlash_correction = self.head_tilt_calibrated_looking_up_offset_rad
-            else:
-                tilt_backlash_correction = 0.0
-            if BACKLASH_DEBUG: 
-                print('tilt_backlash_correction =', tilt_backlash_correction)
+            tilt_backlash_correction = 0.0
             head_tilt_rad = head_tilt_status['pos'] + self.head_tilt_calibrated_offset_rad + tilt_backlash_correction
             head_tilt_vel = head_tilt_status['vel']
             head_tilt_effort = head_tilt_status['effort']

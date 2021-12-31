@@ -115,8 +115,8 @@ class JointTrajectoryAction:
                 return
 
             robot_status = self.node.robot.get_status() # uses lock held by robot
-            [c.init_execution(self.node.robot, robot_status, backlash_state=self.node.backlash_state)
-             for c in command_groups]
+            for c in command_groups:
+                c.init_execution(self.node.robot, robot_status)
             self.node.robot.push_command()
 
             goals_reached = [c.goal_reached() for c in command_groups]
@@ -143,8 +143,7 @@ class JointTrajectoryAction:
                         return
 
                 robot_status = self.node.robot.get_status()
-                named_errors = [c.update_execution(robot_status, success_callback=self.success_callback,
-                                                   backlash_state=self.node.backlash_state)
+                named_errors = [c.update_execution(robot_status, success_callback=self.success_callback)
                                 for c in command_groups]
                 # It's not clear how this could ever happen. The
                 # groups in command_groups.py seem to return

@@ -7,30 +7,23 @@ from hello_helpers.gripper_conversion import GripperConversion
 
 
 class HeadPanCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_rad, head_pan_calibrated_offset, head_pan_calibrated_looked_left_offset):
+    def __init__(self, range_rad, calibrated_offset_rad=0.0, calibrated_looked_left_offset_rad=0.0):
         SimpleCommandGroup.__init__(self, 'joint_head_pan', range_rad, acceptable_joint_error=0.15)
-        self.head_pan_calibrated_offset = head_pan_calibrated_offset
-        self.head_pan_calibrated_looked_left_offset = head_pan_calibrated_looked_left_offset
+        self.calibrated_offset_rad = calibrated_offset_rad
+        self.looked_left_offset_rad = calibrated_looked_left_offset_rad
+        self.looked_left = False
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            _, pan_error = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
+            _, pan_error = self.update_execution(robot_status)
             robot.head.move_by('head_pan', pan_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
-            if pan_error > 0.0:
-                kwargs['backlash_state']['head_pan_looked_left'] = True
-            else:
-                kwargs['backlash_state']['head_pan_looked_left'] = False
+            self.looked_left = pan_error > 0.0
 
     def update_execution(self, robot_status, **kwargs):
         self.error = None
-        backlash_state = kwargs['backlash_state']
         if self.active:
-            if backlash_state['head_pan_looked_left']:
-                pan_backlash_correction = self.head_pan_calibrated_looked_left_offset
-            else:
-                pan_backlash_correction = 0.0
-            pan_current = robot_status['head']['head_pan']['pos'] + \
-                          self.head_pan_calibrated_offset + pan_backlash_correction
+            pan_backlash_correction = self.looked_left_offset_rad if self.looked_left else 0.0
+            pan_current = robot_status['head']['head_pan']['pos'] + self.calibrated_offset_rad + pan_backlash_correction
             self.error = self.goal['position'] - pan_current
             return self.name, self.error
 
@@ -38,33 +31,24 @@ class HeadPanCommandGroup(SimpleCommandGroup):
 
 
 class HeadTiltCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_rad, head_tilt_calibrated_offset,
-                 head_tilt_calibrated_looking_up_offset,
-                 head_tilt_backlash_transition_angle):
+    def __init__(self, range_rad, calibrated_offset_rad=0.0, calibrated_looking_up_offset_rad=0.0, backlash_transition_angle_rad=-0.4):
         SimpleCommandGroup.__init__(self, 'joint_head_tilt', range_rad, acceptable_joint_error=0.52)
-        self.head_tilt_calibrated_offset = head_tilt_calibrated_offset
-        self.head_tilt_calibrated_looking_up_offset = head_tilt_calibrated_looking_up_offset
-        self.head_tilt_backlash_transition_angle = head_tilt_backlash_transition_angle
+        self.calibrated_offset_rad = calibrated_offset_rad
+        self.looking_up_offset_rad = calibrated_looking_up_offset_rad
+        self.backlash_transition_angle_rad = backlash_transition_angle_rad
+        self.looking_up = False
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            _, tilt_error = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
+            _, tilt_error = self.update_execution(robot_status)
             robot.head.move_by('head_tilt', tilt_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
-            if self.goal['position'] > (self.head_tilt_backlash_transition_angle + self.head_tilt_calibrated_offset):
-                kwargs['backlash_state']['head_tilt_looking_up'] = True
-            else:
-                kwargs['backlash_state']['head_tilt_looking_up'] = False
+            self.looking_up = self.goal['position'] > (self.backlash_transition_angle_rad + self.calibrated_offset_rad)
 
     def update_execution(self, robot_status, **kwargs):
         self.error = None
-        backlash_state = kwargs['backlash_state']
         if self.active:
-            if backlash_state['head_tilt_looking_up']:
-                tilt_backlash_correction = self.head_tilt_calibrated_looking_up_offset
-            else:
-                tilt_backlash_correction = 0.0
-            tilt_current = robot_status['head']['head_tilt']['pos'] + \
-                           self.head_tilt_calibrated_offset + tilt_backlash_correction
+            tilt_backlash_correction = self.looking_up_offset_rad if self.looking_up else 0.0
+            tilt_current = robot_status['head']['head_tilt']['pos'] + self.calibrated_offset_rad + tilt_backlash_correction
             self.error = self.goal['position'] - tilt_current
             return self.name, self.error
 
@@ -172,11 +156,13 @@ class GripperCommandGroup(SimpleCommandGroup):
 
 
 class TelescopingCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_m, wrist_extension_calibrated_retracted_offset):
+    def __init__(self, range_m, calibrated_retracted_offset_m=0.0):
+        #SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.005)
         SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.008)
-        self.wrist_extension_calibrated_retracted_offset = wrist_extension_calibrated_retracted_offset
         self.telescoping_joints = ['joint_arm_l3', 'joint_arm_l2', 'joint_arm_l1', 'joint_arm_l0']
         self.is_telescoping = False
+        self.retracted_offset_m = calibrated_retracted_offset_m
+        self.retracted = False
 
     def get_num_valid_commands(self):
         if self.active and self.is_telescoping:
@@ -256,30 +242,23 @@ class TelescopingCommandGroup(SimpleCommandGroup):
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            _, extension_error_m = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
+            _, extension_error_m = self.update_execution(robot_status)
             robot.arm.move_by(extension_error_m,
                               v_m=self.goal['velocity'],
                               a_m=self.goal['acceleration'],
                               contact_thresh_pos_N=self.goal['contact_threshold'],
                               contact_thresh_neg_N=-self.goal['contact_threshold'] \
                                                    if self.goal['contact_threshold'] is not None else None)
-            if extension_error_m < 0.0:
-                kwargs['backlash_state']['wrist_extension_retracted'] = True
-            else:
-                kwargs['backlash_state']['wrist_extension_retracted'] = False
+            self.retracted = extension_error_m < 0.0
 
     def update_execution(self, robot_status, **kwargs):
-        backlash_state = kwargs['backlash_state']
         success_callback = kwargs['success_callback'] if 'success_callback' in kwargs.keys() else None
         self.error = None
         if self.active:
             if success_callback and robot_status['arm']['motor']['in_guarded_event']:
                 success_callback("{0} contact detected.".format(self.name))
                 return True
-            if backlash_state['wrist_extension_retracted']:
-                arm_backlash_correction = self.wrist_extension_calibrated_retracted_offset
-            else:
-                arm_backlash_correction = 0.0
+            arm_backlash_correction = self.retracted_offset_m if self.retracted else 0.0
             extension_current = robot_status['arm']['pos'] + arm_backlash_correction
             self.error = self.goal['position'] - extension_current
             return (self.telescoping_joints, self.error) if self.is_telescoping else (self.name, self.error)
