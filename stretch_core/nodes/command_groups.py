@@ -30,6 +30,12 @@ class HeadPanCommandGroup(SimpleCommandGroup):
 
         return None
 
+    def joint_state(self, robot_status, **kwargs):
+        pan_status = robot_status['head']['head_pan']
+        pan_backlash_correction = self.looked_left_offset_rad if self.looked_left else 0.0
+        pos = pan_status['pos'] + self.calibrated_offset_rad + pan_backlash_correction
+        return (pos, pan_status['vel'], pan_status['effort'])
+
 
 class HeadTiltCommandGroup(SimpleCommandGroup):
     def __init__(self, range_rad, calibrated_offset_rad=0.0, calibrated_looking_up_offset_rad=0.0, backlash_transition_angle_rad=-0.4):
@@ -55,6 +61,12 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
 
         return None
 
+    def joint_state(self, robot_status, **kwargs):
+        tilt_status = robot_status['head']['head_tilt']
+        tilt_backlash_correction = self.looking_up_offset_rad if self.looking_up else 0.0
+        pos = tilt_status['pos'] + self.calibrated_offset_rad + tilt_backlash_correction
+        return (pos, tilt_status['vel'], tilt_status['effort'])
+
 
 class WristYawCommandGroup(SimpleCommandGroup):
     def __init__(self, range_rad):
@@ -75,10 +87,14 @@ class WristYawCommandGroup(SimpleCommandGroup):
 
         return None
 
+    def joint_state(self, robot_status, **kwargs):
+        yaw_status = robot_status['end_of_arm']['wrist_yaw']
+        return (yaw_status['pos'], yaw_status['vel'], yaw_status['effort'])
+
 
 class GripperCommandGroup(SimpleCommandGroup):
     def __init__(self, range_robotis):
-        SimpleCommandGroup.__init__(self, None, None, acceptable_joint_error=1.0)
+        SimpleCommandGroup.__init__(self, 'joint_gripper_finger_left', None, acceptable_joint_error=1.0)
         self.gripper_joint_names = ['joint_gripper_finger_left', 'joint_gripper_finger_right', 'gripper_aperture']
         self.gripper_conversion = GripperConversion()
         self.range_aperture_m = (self.gripper_conversion.robotis_to_aperture(range_robotis[0]),
@@ -154,6 +170,15 @@ class GripperCommandGroup(SimpleCommandGroup):
             return self.name, self.error
 
         return None
+
+    def joint_state(self, robot_status, **kwargs):
+        joint_name = kwargs['joint_name'] if 'joint_name' in kwargs.keys() else self.name
+        gripper_status = robot_status['end_of_arm']['stretch_gripper']
+        pos_aperture_m, pos_rad, effort, vel = self.gripper_conversion.status_to_all(gripper_status)
+        if (joint_name == 'gripper_aperture'):
+            return (pos_aperture_m, vel, effort)
+        elif (joint_name == 'joint_gripper_finger_left') or (joint_name == 'joint_gripper_finger_right'):
+            return (pos_rad, vel, effort)
 
 
 class TelescopingCommandGroup(SimpleCommandGroup):
@@ -266,6 +291,12 @@ class TelescopingCommandGroup(SimpleCommandGroup):
 
         return None
 
+    def joint_state(self, robot_status, **kwargs):
+        arm_status = robot_status['arm']
+        arm_backlash_correction = self.retracted_offset_m if self.retracted else 0.0
+        pos = arm_status['pos'] + arm_backlash_correction
+        return (pos, arm_status['vel'], arm_status['motor']['effort'])
+
 
 class LiftCommandGroup(SimpleCommandGroup):
     def __init__(self, range_m):
@@ -291,6 +322,10 @@ class LiftCommandGroup(SimpleCommandGroup):
             return self.name, self.error
 
         return None
+
+    def joint_state(self, robot_status, **kwargs):
+        lift_status = robot_status['lift']
+        return (lift_status['pos'], lift_status['vel'], lift_status['motor']['effort'])
 
 
 class MobileBaseCommandGroup(SimpleCommandGroup):
@@ -508,3 +543,12 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
                 return (abs(self.error) < self.acceptable_joint_error)
 
         return True
+
+    def joint_state(self, robot_status, **kwargs):
+        robot_mode = kwargs['robot_mode']
+        manipulation_origin = kwargs['manipulation_origin']
+        base_status = robot_status['base']
+        if robot_mode == "manipulation":
+            pos = base_status['x'] - manipulation_origin['x']
+            return (pos, base_status['x_vel'], base_status['effort'][0])
+        return (0.0, 0.0, 0.0)
