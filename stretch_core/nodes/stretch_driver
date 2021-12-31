@@ -140,12 +140,12 @@ class StretchBodyNode:
             joint_state.effort.append(effort)
 
         # add telescoping joints to joint state
-        telescoping_cg = self.joint_trajectory_action.telescoping_cg
-        joint_state.name.extend(telescoping_cg.telescoping_joints)
-        pos, vel, effort = telescoping_cg.joint_state(robot_status)
-        for _ in range(len(telescoping_cg.telescoping_joints)):
-            joint_state.position.append(pos / len(cg.telescoping_joints))
-            joint_state.velocity.append(vel / len(cg.telescoping_joints))
+        arm_cg = self.joint_trajectory_action.arm_cg
+        joint_state.name.extend(arm_cg.telescoping_joints)
+        pos, vel, effort = arm_cg.joint_state(robot_status)
+        for _ in range(len(arm_cg.telescoping_joints)):
+            joint_state.position.append(pos / len(arm_cg.telescoping_joints))
+            joint_state.velocity.append(vel / len(arm_cg.telescoping_joints))
             joint_state.effort.append(effort)
 
         # add gripper joints to joint state

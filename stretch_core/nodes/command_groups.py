@@ -181,9 +181,8 @@ class GripperCommandGroup(SimpleCommandGroup):
             return (pos_rad, vel, effort)
 
 
-class TelescopingCommandGroup(SimpleCommandGroup):
+class ArmCommandGroup(SimpleCommandGroup):
     def __init__(self, range_m, calibrated_retracted_offset_m=0.0):
-        #SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.005)
         SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.008)
         self.telescoping_joints = ['joint_arm_l3', 'joint_arm_l2', 'joint_arm_l1', 'joint_arm_l0']
         self.is_telescoping = False
