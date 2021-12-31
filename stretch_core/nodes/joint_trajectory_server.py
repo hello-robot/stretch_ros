@@ -9,7 +9,7 @@ from trajectory_msgs.msg import JointTrajectoryPoint
 
 from command_groups import HeadPanCommandGroup, HeadTiltCommandGroup, \
                            WristYawCommandGroup, GripperCommandGroup, \
-                           TelescopingCommandGroup, LiftCommandGroup, \
+                           ArmCommandGroup, LiftCommandGroup, \
                            MobileBaseCommandGroup
 
 
@@ -49,11 +49,11 @@ class JointTrajectoryAction:
                                                  self.node.controller_parameters['tilt_angle_backlash_transition'])
         self.wrist_yaw_cg = WristYawCommandGroup(wrist_yaw_range_rad)
         self.gripper_cg = GripperCommandGroup(gripper_range_robotis)
-        self.telescoping_cg = TelescopingCommandGroup(tuple(r.arm.params['range_m']),
+        self.arm_cg = ArmCommandGroup(tuple(r.arm.params['range_m']),
                                                       self.node.controller_parameters['arm_retracted_offset'])
         self.lift_cg = LiftCommandGroup(tuple(r.lift.params['range_m']))
         self.mobile_base_cg = MobileBaseCommandGroup(virtual_range_m=(-0.5, 0.5))
-        self.command_groups = [self.telescoping_cg, self.lift_cg, self.mobile_base_cg, self.head_pan_cg,
+        self.command_groups = [self.arm_cg, self.lift_cg, self.mobile_base_cg, self.head_pan_cg,
                                self.head_tilt_cg, self.wrist_yaw_cg, self.gripper_cg]
 
     def execute_cb(self, goal):
