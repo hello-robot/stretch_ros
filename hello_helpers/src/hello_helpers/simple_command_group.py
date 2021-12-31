@@ -2,7 +2,7 @@ import hello_helpers.hello_misc as hm
 
 
 class SimpleCommandGroup:
-    def __init__(self, joint_name, joint_range, acceptable_joint_error=0.015):
+    def __init__(self, joint_name, joint_range, acceptable_joint_error=0.015, node=None):
         """Simple command group to extend
 
         Attributes
@@ -24,6 +24,8 @@ class SimpleCommandGroup:
         """
         self.name = joint_name
         self.range = joint_range
+        if self.range is None:
+            self.update_joint_range(None, node=node)
         self.active = False
         self.index = None
         self.goal = {"position": None}
@@ -42,6 +44,18 @@ class SimpleCommandGroup:
             return 1
 
         return 0
+
+    def update_joint_range(self, joint_range, node=None):
+        """Updates the commandable joint range
+
+        Parameters
+        ----------
+        joint_range: tuple(float, float) or None
+            updates range if provided, else calculates it automatically
+        node: StretchBodyNode or None
+            required to calculate range automatically
+        """
+        raise NotImplementedError
 
     def update(self, commanded_joint_names, invalid_joints_callback, **kwargs):
         """Activates joints in the group

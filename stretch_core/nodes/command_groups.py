@@ -8,11 +8,27 @@ from hello_helpers.gripper_conversion import GripperConversion
 
 
 class HeadPanCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_rad, calibrated_offset_rad=0.0, calibrated_looked_left_offset_rad=0.0):
-        SimpleCommandGroup.__init__(self, 'joint_head_pan', range_rad, acceptable_joint_error=0.15)
+    def __init__(self, range_rad=None, calibrated_offset_rad=None, calibrated_looked_left_offset_rad=None, node=None):
+        SimpleCommandGroup.__init__(self, 'joint_head_pan', range_rad, acceptable_joint_error=0.15, node=node)
+        if calibrated_offset_rad is None:
+            calibrated_offset_rad = node.controller_parameters['pan_angle_offset']
         self.calibrated_offset_rad = calibrated_offset_rad
+        if calibrated_looked_left_offset_rad is None:
+            calibrated_looked_left_offset_rad = node.controller_parameters['pan_looked_left_offset']
         self.looked_left_offset_rad = calibrated_looked_left_offset_rad
         self.looked_left = False
+
+    def update_joint_range(self, joint_range, node=None):
+        if joint_range is not None:
+            self.range = joint_range
+            return
+
+        if node is None:
+            return # cannot calculate range without Stretch Body handle
+        range_ticks = node.robot.head.motors['head_pan'].params['range_t']
+        range_rad = (node.robot.head.motors['head_pan'].ticks_to_world_rad(range_ticks[1]),
+                     node.robot.head.motors['head_pan'].ticks_to_world_rad(range_ticks[0]))
+        self.range = range_rad
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
@@ -38,12 +54,30 @@ class HeadPanCommandGroup(SimpleCommandGroup):
 
 
 class HeadTiltCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_rad, calibrated_offset_rad=0.0, calibrated_looking_up_offset_rad=0.0, backlash_transition_angle_rad=-0.4):
-        SimpleCommandGroup.__init__(self, 'joint_head_tilt', range_rad, acceptable_joint_error=0.52)
+    def __init__(self, range_rad=None, calibrated_offset_rad=None, calibrated_looking_up_offset_rad=None, backlash_transition_angle_rad=None, node=None):
+        SimpleCommandGroup.__init__(self, 'joint_head_tilt', range_rad, acceptable_joint_error=0.52, node=node)
+        if calibrated_offset_rad is None:
+            calibrated_offset_rad = node.controller_parameters['tilt_angle_offset']
         self.calibrated_offset_rad = calibrated_offset_rad
+        if calibrated_looking_up_offset_rad is None:
+            calibrated_looking_up_offset_rad = node.controller_parameters['tilt_looking_up_offset']
         self.looking_up_offset_rad = calibrated_looking_up_offset_rad
+        if backlash_transition_angle_rad is None:
+            backlash_transition_angle_rad = node.controller_parameters['tilt_angle_backlash_transition']
         self.backlash_transition_angle_rad = backlash_transition_angle_rad
         self.looking_up = False
+
+    def update_joint_range(self, joint_range, node=None):
+        if joint_range is not None:
+            self.range = joint_range
+            return
+
+        if node is None:
+            return # cannot calculate range without Stretch Body handle
+        range_ticks = node.robot.head.motors['head_tilt'].params['range_t']
+        range_rad = (node.robot.head.motors['head_tilt'].ticks_to_world_rad(range_ticks[1]),
+                     node.robot.head.motors['head_tilt'].ticks_to_world_rad(range_ticks[0]))
+        self.range = range_rad
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
@@ -69,8 +103,20 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
 
 
 class WristYawCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_rad):
-        SimpleCommandGroup.__init__(self, 'joint_wrist_yaw', range_rad)
+    def __init__(self, range_rad=None, node=None):
+        SimpleCommandGroup.__init__(self, 'joint_wrist_yaw', range_rad, node=node)
+
+    def update_joint_range(self, joint_range, node=None):
+        if joint_range is not None:
+            self.range = joint_range
+            return
+
+        if node is None:
+            return # cannot calculate range without Stretch Body handle
+        range_ticks = node.robot.end_of_arm.motors['wrist_yaw'].params['range_t']
+        range_rad = (node.robot.end_of_arm.motors['wrist_yaw'].ticks_to_world_rad(range_ticks[1]),
+                     node.robot.end_of_arm.motors['wrist_yaw'].ticks_to_world_rad(range_ticks[0]))
+        self.range = range_rad
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
@@ -93,10 +139,29 @@ class WristYawCommandGroup(SimpleCommandGroup):
 
 
 class GripperCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_robotis):
-        SimpleCommandGroup.__init__(self, 'joint_gripper_finger_left', None, acceptable_joint_error=1.0)
+    def __init__(self, range_robotis=None, node=None):
+        SimpleCommandGroup.__init__(self, 'joint_gripper_finger_left', range_robotis, acceptable_joint_error=1.0, node=node)
         self.gripper_joint_names = ['joint_gripper_finger_left', 'joint_gripper_finger_right', 'gripper_aperture']
         self.gripper_conversion = GripperConversion()
+        self.update_joint_range(range_robotis)
+
+    def update_joint_range(self, joint_range, node=None):
+        if joint_range is not None:
+            self.range = joint_range
+            self.range_aperture_m = (self.gripper_conversion.robotis_to_aperture(joint_range[0]),
+                                    self.gripper_conversion.robotis_to_aperture(joint_range[1]))
+            self.range_finger_rad = (self.gripper_conversion.robotis_to_finger(joint_range[0]),
+                                    self.gripper_conversion.robotis_to_finger(joint_range[1]))
+            return
+
+        if node is None:
+            return # cannot calculate range without Stretch Body handle
+        range_ticks = node.robot.end_of_arm.motors['stretch_gripper'].params['range_t']
+        range_rad = (node.robot.end_of_arm.motors['stretch_gripper'].ticks_to_world_rad(range_ticks[0]),
+                     node.robot.end_of_arm.motors['stretch_gripper'].ticks_to_world_rad(range_ticks[1]))
+        range_robotis = (node.robot.end_of_arm.motors['stretch_gripper'].world_rad_to_pct(range_rad[0]),
+                         node.robot.end_of_arm.motors['stretch_gripper'].world_rad_to_pct(range_rad[1]))
+        self.range = range_robotis
         self.range_aperture_m = (self.gripper_conversion.robotis_to_aperture(range_robotis[0]),
                                  self.gripper_conversion.robotis_to_aperture(range_robotis[1]))
         self.range_finger_rad = (self.gripper_conversion.robotis_to_finger(range_robotis[0]),
@@ -182,12 +247,24 @@ class GripperCommandGroup(SimpleCommandGroup):
 
 
 class ArmCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_m, calibrated_retracted_offset_m=0.0):
-        SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.008)
+    def __init__(self, range_m=None, calibrated_retracted_offset_m=None, node=None):
+        SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.008, node=node)
         self.telescoping_joints = ['joint_arm_l3', 'joint_arm_l2', 'joint_arm_l1', 'joint_arm_l0']
         self.is_telescoping = False
+        if calibrated_retracted_offset_m is None:
+            calibrated_retracted_offset_m = node.controller_parameters['arm_retracted_offset']
         self.retracted_offset_m = calibrated_retracted_offset_m
         self.retracted = False
+
+    def update_joint_range(self, joint_range, node=None):
+        if joint_range is not None:
+            self.range = joint_range
+            return
+
+        if node is None:
+            return # cannot calculate range without Stretch Body handle
+        range_m = tuple(node.robot.arm.params['range_m'])
+        self.range = range_m
 
     def get_num_valid_commands(self):
         if self.active and self.is_telescoping:
@@ -298,8 +375,18 @@ class ArmCommandGroup(SimpleCommandGroup):
 
 
 class LiftCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_m):
-        SimpleCommandGroup.__init__(self, 'joint_lift', range_m)
+    def __init__(self, range_m=None, node=None):
+        SimpleCommandGroup.__init__(self, 'joint_lift', range_m, node=node)
+
+    def update_joint_range(self, joint_range, node=None):
+        if joint_range is not None:
+            self.range = joint_range
+            return
+
+        if node is None:
+            return # cannot calculate range without Stretch Body handle
+        range_m = tuple(node.robot.lift.params['range_m'])
+        self.range = range_m
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
@@ -328,9 +415,9 @@ class LiftCommandGroup(SimpleCommandGroup):
 
 
 class MobileBaseCommandGroup(SimpleCommandGroup):
-    def __init__(self, virtual_range_m=(-0.5, 0.5)):
+    def __init__(self, virtual_range_m=(-0.5, 0.5), node=None):
         SimpleCommandGroup.__init__(self, 'joint_mobile_base_translation', virtual_range_m,
-                                    acceptable_joint_error=0.005)
+                                    acceptable_joint_error=0.005, node=node)
         self.incrementing_joint_names = ['translate_mobile_base', 'rotate_mobile_base']
         self.active_translate_mobile_base = False
         self.active_rotate_mobile_base = False
@@ -340,6 +427,14 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
         self.excellent_mobile_base_error_rad = (np.pi/180.0) * 0.6
         self.min_m_per_s = 0.002
         self.min_rad_per_s = np.radians(1.0)
+
+    def update_joint_range(self, virtual_joint_range, node=None):
+        if virtual_joint_range is not None:
+            self.range = virtual_joint_range
+            return
+
+        virtual_range_m = (-0.5, 0.5)
+        self.range = virtual_range_m
 
     def get_num_valid_commands(self):
         if self.active:

@@ -25,37 +25,27 @@ class JointTrajectoryAction:
         self.feedback = FollowJointTrajectoryFeedback()
         self.result = FollowJointTrajectoryResult()
 
-        r = self.node.robot
-        head_pan_range_ticks = r.head.motors['head_pan'].params['range_t']
-        head_pan_range_rad = (r.head.motors['head_pan'].ticks_to_world_rad(head_pan_range_ticks[1]),
-                              r.head.motors['head_pan'].ticks_to_world_rad(head_pan_range_ticks[0]))
-        head_tilt_range_ticks = r.head.motors['head_tilt'].params['range_t']
-        head_tilt_range_rad = (r.head.motors['head_tilt'].ticks_to_world_rad(head_tilt_range_ticks[1]),
-                               r.head.motors['head_tilt'].ticks_to_world_rad(head_tilt_range_ticks[0]))
-        wrist_yaw_range_ticks = r.end_of_arm.motors['wrist_yaw'].params['range_t']
-        wrist_yaw_range_rad = (r.end_of_arm.motors['wrist_yaw'].ticks_to_world_rad(wrist_yaw_range_ticks[1]),
-                               r.end_of_arm.motors['wrist_yaw'].ticks_to_world_rad(wrist_yaw_range_ticks[0]))
-        gripper_range_ticks = r.end_of_arm.motors['stretch_gripper'].params['range_t']
-        gripper_range_rad = (r.end_of_arm.motors['stretch_gripper'].ticks_to_world_rad(gripper_range_ticks[0]),
-                             r.end_of_arm.motors['stretch_gripper'].ticks_to_world_rad(gripper_range_ticks[1]))
-        gripper_range_robotis = (r.end_of_arm.motors['stretch_gripper'].world_rad_to_pct(gripper_range_rad[0]),
-                                 r.end_of_arm.motors['stretch_gripper'].world_rad_to_pct(gripper_range_rad[1]))
-
-        self.head_pan_cg = HeadPanCommandGroup(head_pan_range_rad,
-                                               self.node.controller_parameters['pan_angle_offset'],
-                                               self.node.controller_parameters['pan_looked_left_offset'])
-        self.head_tilt_cg = HeadTiltCommandGroup(head_tilt_range_rad,
-                                                 self.node.controller_parameters['tilt_angle_offset'],
-                                                 self.node.controller_parameters['tilt_looking_up_offset'],
-                                                 self.node.controller_parameters['tilt_angle_backlash_transition'])
-        self.wrist_yaw_cg = WristYawCommandGroup(wrist_yaw_range_rad)
-        self.gripper_cg = GripperCommandGroup(gripper_range_robotis)
-        self.arm_cg = ArmCommandGroup(tuple(r.arm.params['range_m']),
-                                                      self.node.controller_parameters['arm_retracted_offset'])
-        self.lift_cg = LiftCommandGroup(tuple(r.lift.params['range_m']))
-        self.mobile_base_cg = MobileBaseCommandGroup(virtual_range_m=(-0.5, 0.5))
+        self.head_pan_cg = HeadPanCommandGroup(node=self.node) \
+            if 'head_pan' in self.node.robot.head.joints else None
+        self.head_tilt_cg = HeadTiltCommandGroup(node=self.node) \
+            if 'head_tilt' in self.node.robot.head.joints else None
+        self.wrist_yaw_cg = WristYawCommandGroup(node=self.node) \
+            if 'wrist_yaw' in self.node.robot.end_of_arm.joints else None
+        self.gripper_cg = GripperCommandGroup(node=self.node) \
+            if 'stretch_gripper' in self.node.robot.end_of_arm.joints else None
+        self.arm_cg = ArmCommandGroup(node=self.node)
+        self.lift_cg = LiftCommandGroup(node=self.node)
+        self.mobile_base_cg = MobileBaseCommandGroup(node=self.node)
         self.command_groups = [self.arm_cg, self.lift_cg, self.mobile_base_cg, self.head_pan_cg,
                                self.head_tilt_cg, self.wrist_yaw_cg, self.gripper_cg]
+        self.command_groups = [cg for cg in self.command_groups if cg is not None]
+
+        for joint in self.node.robot.end_of_arm.joints:
+            module_name = self.node.robot.end_of_arm.params['devices'][joint].get('ros_py_module_name')
+            class_name = self.node.robot.end_of_arm.params['devices'][joint].get('ros_py_class_name')
+            if module_name and class_name:
+                endofarm_cg = getattr(importlib.import_module(module_name), class_name)(node=self.node)
+                self.command_groups.append(endofarm_cg)
 
     def execute_cb(self, goal):
         with self.node.robot_stop_lock:
