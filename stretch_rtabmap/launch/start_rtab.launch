@@ -10,12 +10,12 @@
 
 
   <group if="$(arg sim)">
-    <arg name="pointcloud_topic" default="/realsense/depth/image_raw"/>
+    <arg name="pointcloud_topic" default="/camera/depth/image_raw"/>
     <arg name="cmd_vel_topic" value="/stretch_diff_drive_controller/cmd_vel"/>
     <arg name="odom_topic" default="/stretch_diff_drive_controller/odom"/>
     <arg name="scan_topic" default="/scan"/>
-    <arg name="rgb_topic" default="/realsense/color/image_raw"/>
-    <arg name="rgb_camera_info" default="/realsense/color/camera_info"/>
+    <arg name="rgb_topic" default="/camera/color/image_raw"/>
+    <arg name="rgb_camera_info" default="/camera/color/camera_info"/>
 
     <include file="$(find stretch_rtabmap)/launch/move_base.launch">
       <arg name="config" value="$(arg move_base_config)" />
