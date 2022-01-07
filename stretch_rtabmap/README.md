@@ -12,7 +12,7 @@ Use `rosdep` to install the required packages.
 
 ```bash
     cd ~/catkin_ws/src
-    git clone https://github.com/NateWright/stretch_ros.git
+    git clone https://github.com/hello-robot/stretch_ros -b dev/noetic
     git clone https://github.com/pal-robotics/realsense_gazebo_plugin
     cd ~/catkin_ws
     rosdep install --from-paths src --ignore-src -r -y
