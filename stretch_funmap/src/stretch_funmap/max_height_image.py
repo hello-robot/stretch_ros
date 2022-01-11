@@ -520,8 +520,8 @@ class MaxHeightImage:
             self.rgb_image = np.zeros(s[:2] + (3,), np.uint8)
 
         if self.camera_depth_image is None: 
-            nh.numba_max_height_and_rgb_images(points_to_image_mat, rgb_points, self.image, self.rgb_image, self.m_per_pix, self.m_per_height_unit, self.voi.x_in_m, self.voi.y_in_m, self.voi.z_in_m, verbose=False)
+            nh.numba_max_height_and_rgb_images(points_to_image_mat, rgb_points.ravel(), self.image, self.rgb_image, self.m_per_pix, self.m_per_height_unit, self.voi.x_in_m, self.voi.y_in_m, self.voi.z_in_m, verbose=False)
         else:
-            nh.numba_max_height_and_rgb_and_camera_depth_images(points_to_image_mat, rgb_points, self.image, self.rgb_image, self.camera_depth_image, self.m_per_pix, self.m_per_height_unit, self.voi.x_in_m, self.voi.y_in_m, self.voi.z_in_m, verbose=False)
+            nh.numba_max_height_and_rgb_and_camera_depth_images(points_to_image_mat, rgb_points.ravel(), self.image, self.rgb_image, self.camera_depth_image, self.m_per_pix, self.m_per_height_unit, self.voi.x_in_m, self.voi.y_in_m, self.voi.z_in_m, verbose=False)
 
 
