@@ -165,7 +165,7 @@ class StretchBodyNode:
 
         # add gripper joints to joint state
         gripper_cg = self.joint_trajectory_action.gripper_cg
-        missing_gripper_joint_names = list(set([gripper_cg.gripper_joint_names]) - set(joint_state.name))
+        missing_gripper_joint_names = list(set(gripper_cg.gripper_joint_names) - set(joint_state.name))
         for j in missing_gripper_joint_names:
             pos, vel, effort = gripper_cg.joint_state(robot_status, joint_name=j)
             joint_state.name.append(j)
