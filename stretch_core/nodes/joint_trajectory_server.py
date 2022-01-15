@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 from __future__ import print_function
 
+import importlib
+
 import rospy
 import actionlib
 from control_msgs.msg import FollowJointTrajectoryAction
