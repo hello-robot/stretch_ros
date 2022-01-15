@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
+import time
 import math
+import curses
 import keyboard as kb
 import argparse as ap
 
 import rospy
+import rosnode
+from roscpp.srv import SetLoggerLevel, SetLoggerLevelRequest
 from std_srvs.srv import Trigger, TriggerRequest
 from sensor_msgs.msg import JointState
 from control_msgs.msg import FollowJointTrajectoryGoal
@@ -50,39 +54,154 @@ class GetKeyboardCommands:
             deltas = {'rad': self.big_rad, 'translate': self.big_translate} 
         return deltas
 
-    def print_commands(self):
-        print('---------- KEYBOARD TELEOP MENU -----------')
-        print('                                           ')
-        print('              i HEAD UP                    ')
-        print(' j HEAD LEFT            l HEAD RIGHT       ')
-        print('              , HEAD DOWN                  ')
-        print('                                           ')
-        print('                                           ')
-        print(' 7 BASE ROTATE LEFT     9 BASE ROTATE RIGHT')
-        print(' home                   page-up            ')
-        print('                                           ')
-        print('                                           ')
-        print('              8 LIFT UP                    ')
-        print('              up-arrow                     ')
-        print(' 4 BASE FORWARD         6 BASE BACK        ')
-        print(' left-arrow             right-arrow        ')
-        print('              2 LIFT DOWN                  ')
-        print('              down-arrow                   ')
-        print('                                           ')
-        print('                                           ')
-        print('              w ARM OUT                    ')
-        print(' a WRIST FORWARD        d WRIST BACK       ')
-        print('              x ARM IN                     ')
-        print('                                           ')
-        print('                                           ')
-        print('              5 GRIPPER CLOSE              ')
-        print('              0 GRIPPER OPEN               ')
-        print('                                           ')
-        print('  step size:  b BIG, m MEDIUM, s SMALL     ')
-        print('                                           ')
-        print('              q QUIT                       ')
-        print('                                           ')
-        print('-------------------------------------------')
+    def setup_screen(self, screen):
+        if screen is not None:
+            maxy, maxx = screen.getmaxyx()
+            self.menu_window = screen.subwin(maxy, maxx - int(maxx / 2), 0, int(maxx / 2))
+            self.log_window = screen.subwin(maxy, int(maxx / 2), 0, 0)
+
+    def print_commands(self, screen, joints=['joint_head_tilt', 'joint_head_pan', 'translate_mobile_base', 'joint_lift', 'wrist_extension', 'joint_wrist_yaw', 'gripper_aperture']):
+        def in_joints(i):
+            return len(list(set(i) & set(joints))) > 0
+
+        if screen is None:
+            print('---------- KEYBOARD TELEOP MENU -----------')
+            print('                                           ')
+            print('              i HEAD UP                    ')
+            print(' j HEAD LEFT            l HEAD RIGHT       ')
+            print('              , HEAD DOWN                  ')
+            print('                                           ')
+            print('                                           ')
+            print(' 7 BASE ROTATE LEFT     9 BASE ROTATE RIGHT')
+            print(' home                   page-up            ')
+            print('                                           ')
+            print('                                           ')
+            print('              8 LIFT UP                    ')
+            print('              up-arrow                     ')
+            print(' 4 BASE FORWARD         6 BASE BACK        ')
+            print(' left-arrow             right-arrow        ')
+            print('              2 LIFT DOWN                  ')
+            print('              down-arrow                   ')
+            print('                                           ')
+            print('                                           ')
+            print('              w ARM OUT                    ')
+            print(' a WRIST FORWARD        d WRIST BACK       ')
+            print('              x ARM IN                     ')
+            print('                                           ')
+            print('                                           ')
+            print('              5 GRIPPER CLOSE              ')
+            print('              0 GRIPPER OPEN               ')
+            print('                                           ')
+            print('  step size:  b BIG, m MEDIUM, s SMALL     ')
+            print('                                           ')
+            print('              q QUIT                       ')
+            print('                                           ')
+            print('-------------------------------------------')
+        else:
+            screen.erase()
+            self.menu_window.erase()
+            self.log_window.erase()
+
+            self.menu_window.border(0)
+            self.log_window.border(0)
+
+            maxy, maxx = self.menu_window.getmaxyx()
+            def centerx(msg):
+                return int((maxx - len(msg)) / 2)
+
+            msg = ' KEYBOARD TELEOP MENU '
+            self.menu_window.addstr(0, centerx(msg), msg)
+
+            # other
+            msg = 'step size:  b BIG, m MEDIUM, s SMALL'
+            self.menu_window.addstr(2, centerx(msg), msg)
+            msg = 'q QUIT'
+            self.menu_window.addstr(3, centerx(msg), msg)
+
+            # head joints
+            if in_joints(['joint_head_tilt']):
+                msg = 'i HEAD UP'
+                self.menu_window.addstr(5, centerx(msg), msg)
+            if in_joints(['joint_head_pan']):
+                msg = 'j HEAD LEFT                   l HEAD RIGHT'
+                self.menu_window.addstr(6, centerx(msg), msg)
+            if in_joints(['joint_head_tilt']):
+                msg = ', HEAD DOWN'
+                self.menu_window.addstr(7, centerx(msg), msg)
+
+            # base rotate
+            bjoints = ['translate_mobile_base', 'rotate_mobile_base']
+            if in_joints(bjoints):
+                msg = '7 BASE ROTATE LEFT     9 BASE ROTATE RIGHT'
+                self.menu_window.addstr(10, centerx(msg), msg)
+                msg = 'home                               page-up'
+                self.menu_window.addstr(11, centerx(msg), msg)
+
+            # base translate and lift
+            if in_joints(['joint_lift']):
+                msg = '8 LIFT UP'
+                self.menu_window.addstr(14, centerx(msg), msg)
+                msg = 'up-arrow'
+                self.menu_window.addstr(15, centerx(msg), msg)
+            if in_joints(bjoints):
+                msg = '4 BASE FORWARD                 6 BASE BACK'
+                self.menu_window.addstr(16, centerx(msg), msg)
+                msg = 'left-arrow                     right-arrow'
+                self.menu_window.addstr(17, centerx(msg), msg)
+            if in_joints(['joint_lift']):
+                msg = '2 LIFT DOWN'
+                self.menu_window.addstr(18, centerx(msg), msg)
+                msg = 'down-arrow'
+                self.menu_window.addstr(19, centerx(msg), msg)
+
+            # arm and wrist yaw joints
+            ajoints = ['joint_arm_l3', 'joint_arm_l2', 'joint_arm_l1', 'joint_arm_l0', 'wrist_extension']
+            if in_joints(ajoints):
+                msg = 'w ARM OUT'
+                self.menu_window.addstr(22, centerx(msg), msg)
+            if in_joints(['joint_wrist_yaw']):
+                msg = 'a WRIST FORWARD               d WRIST BACK'
+                self.menu_window.addstr(23, centerx(msg), msg)
+            if in_joints(ajoints):
+                msg = 'x ARM IN'
+                self.menu_window.addstr(24, centerx(msg), msg)
+
+            # gripper joint
+            gjoints = ['joint_gripper_finger_left', 'joint_gripper_finger_right', 'gripper_aperture']
+            if in_joints(gjoints):
+                msg = '5 GRIPPER CLOSE'
+                self.menu_window.addstr(27, centerx(msg), msg)
+                msg = '0 GRIPPER OPEN'
+                self.menu_window.addstr(28, centerx(msg), msg)
+
+            # services
+            msg = '---------------- SERVICES ----------------'
+            self.menu_window.addstr(30, centerx(msg), msg)
+
+            # TODO: change space into stop the robot, and give service p instead
+            msg = 'space STOP THE ROBOT'
+            first_service_x = centerx(msg)
+            self.menu_window.addstr(32, first_service_x - len('spac'), msg)
+
+            self.mapping_on = True # TODO remove
+            if self.mapping_on:
+                msg = 'p PERFORM 360 3D SCAN'
+                self.menu_window.addstr(33, first_service_x, msg)
+                msg = '\ DRIVE TO NEXT BEST PLACE TO SCAN'
+                self.menu_window.addstr(34, first_service_x, msg)
+                msg = '- LOCAL LOCALIZATION'
+                self.menu_window.addstr(35, first_service_x, msg)
+                msg = '+ GLOBAL LOCALIZATION'
+                self.menu_window.addstr(36, first_service_x, msg)
+                msg = '{ ROTATE TO ALIGN W/ NEAREST 3D CLIFF'
+                self.menu_window.addstr(37, first_service_x, msg)
+                msg = '} EXTEND ARM UNTIL CONTACT'
+                self.menu_window.addstr(38, first_service_x, msg)
+
+
+            self.menu_window.refresh()
+            self.log_window.refresh()
+            screen.refresh()
 
     def get_command(self, node):
         command = None
@@ -268,11 +387,12 @@ class GetKeyboardCommands:
 
 class KeyboardTeleopNode(hm.HelloNode):
 
-    def __init__(self, mapping_on=False, hello_world_on=False, open_drawer_on=False, clean_surface_on=False, grasp_object_on=False, deliver_object_on=False):
+    def __init__(self, screen=None, mapping_on=False, hello_world_on=False, open_drawer_on=False, clean_surface_on=False, grasp_object_on=False, deliver_object_on=False):
         hm.HelloNode.__init__(self)
         self.keys = GetKeyboardCommands(mapping_on, hello_world_on, open_drawer_on, clean_surface_on, grasp_object_on, deliver_object_on)
         self.rate = 10.0
         self.joint_state = None
+        self.screen = screen
         self.mapping_on = mapping_on
         self.hello_world_on = hello_world_on
         self.open_drawer_on = open_drawer_on
@@ -311,7 +431,7 @@ class KeyboardTeleopNode(hm.HelloNode):
             rospy.loginfo('Done sending pose.')
 
     def main(self):
-        hm.HelloNode.main(self, 'keyboard_teleop', 'keyboard_teleop', wait_for_first_pointcloud=False)
+        hm.HelloNode.main(self, 'keyboard_teleop', 'keyboard_teleop', wait_for_first_pointcloud=False, quiet=self.screen is not None)
 
         if self.mapping_on: 
             rospy.loginfo('Node ' + self.node_name + ' waiting to connect to /funmap/trigger_head_scan.')
@@ -358,7 +478,6 @@ class KeyboardTeleopNode(hm.HelloNode):
             rospy.loginfo('Node ' + self.node_name + ' connected to /open_drawer/trigger_open_drawer_up.')
             self.trigger_open_drawer_up_service = rospy.ServiceProxy('/open_drawer/trigger_open_drawer_up', Trigger)
 
-            
         if self.clean_surface_on:
             rospy.wait_for_service('/clean_surface/trigger_clean_surface')
             rospy.loginfo('Node ' + self.node_name + ' connected to /clean_surface/trigger_clean_surface.')
@@ -378,33 +497,54 @@ class KeyboardTeleopNode(hm.HelloNode):
 
         rate = rospy.Rate(self.rate)
 
+        self.keys.setup_screen(self.screen)
         while not rospy.is_shutdown():
-            self.keys.print_commands()
-            command = self.keys.get_command(self)
-            rospy.loginfo(command)
-            self.send_command(command)
+            self.keys.print_commands(self.screen)
+            if self.screen is None:
+                command = self.keys.get_command(self)
+                rospy.loginfo(command)
+                self.send_command(command)
             rate.sleep()
 
-
-if __name__ == '__main__':
+def main(screen, args):
     try:
-        parser = ap.ArgumentParser(description='Keyboard teleoperation for stretch.')
-        parser.add_argument('--mapping_on', action='store_true', help='Turn on mapping control. For example, the space bar will trigger a head scan. This requires that the mapping node be run (funmap).')
-        parser.add_argument('--hello_world_on', action='store_true', help='Enable Hello World writing trigger, which requires connection to the appropriate hello_world service.')
-        parser.add_argument('--open_drawer_on', action='store_true', help='Enable Open Drawer trigger, which requires connection to the appropriate open_drawer service.')
-        parser.add_argument('--clean_surface_on', action='store_true', help='Enable Clean Surface trigger, which requires connection to the appropriate clean_surface service.')
-        parser.add_argument('--grasp_object_on', action='store_true', help='Enable Grasp Object trigger, which requires connection to the appropriate grasp_object service.')
-        parser.add_argument('--deliver_object_on', action='store_true', help='Enable Deliver Object trigger, which requires connection to the appropriate deliver_object service.')
+        # initial curses settings
+        if screen is not None:
+            curses.use_default_colors()
+            curses.curs_set(0)
+            screen.nodelay(1) # getch non-blocking
 
-        args, unknown = parser.parse_known_args()
-        mapping_on = args.mapping_on
-        hello_world_on = args.hello_world_on
-        open_drawer_on = args.open_drawer_on
-        clean_surface_on = args.clean_surface_on
-        grasp_object_on = args.grasp_object_on
-        deliver_object_on = args.deliver_object_on
-
-        node = KeyboardTeleopNode(mapping_on, hello_world_on, open_drawer_on, clean_surface_on, grasp_object_on, deliver_object_on)
+        node = KeyboardTeleopNode(screen,
+            args.mapping_on, args.hello_world_on,
+            args.open_drawer_on, args.clean_surface_on,
+            args.grasp_object_on, args.deliver_object_on)
         node.main()
     except KeyboardInterrupt:
         rospy.loginfo('interrupt received, so shutting down')
+
+if __name__ == '__main__':
+    # collect command line arguments
+    parser = ap.ArgumentParser(description='Keyboard teleoperation for stretch.')
+    parser.add_argument('--legacy', action='store_true', help='Run this node in legacy appending behavior. Functionally equivalent to before pretty printing was introduced to this node.')
+    parser.add_argument('--mapping_on', action='store_true', help='Turn on mapping control. For example, the space bar will trigger a head scan. This requires that the mapping node be run (funmap).')
+    parser.add_argument('--hello_world_on', action='store_true', help='Enable Hello World writing trigger, which requires connection to the appropriate hello_world service.')
+    parser.add_argument('--open_drawer_on', action='store_true', help='Enable Open Drawer trigger, which requires connection to the appropriate open_drawer service.')
+    parser.add_argument('--clean_surface_on', action='store_true', help='Enable Clean Surface trigger, which requires connection to the appropriate clean_surface service.')
+    parser.add_argument('--grasp_object_on', action='store_true', help='Enable Grasp Object trigger, which requires connection to the appropriate grasp_object service.')
+    parser.add_argument('--deliver_object_on', action='store_true', help='Enable Deliver Object trigger, which requires connection to the appropriate deliver_object service.')
+    args, unknown = parser.parse_known_args()
+
+    if args.legacy:
+        # launch keyboard teleop without a curses screen
+        main(None, args)
+    else:
+        # disable logging from all other nodes as it interferes with pretty teleop
+        time.sleep(1)
+        for node in rosnode.get_node_names():
+            topic = '{0}/set_logger_level'.format(node)
+            rospy.wait_for_service(topic)
+            trigger = rospy.ServiceProxy(topic, SetLoggerLevel)
+            trigger(SetLoggerLevelRequest(logger='rosout', level='fatal'))
+
+        # launch keyboard teleop
+        curses.wrapper(main, args)

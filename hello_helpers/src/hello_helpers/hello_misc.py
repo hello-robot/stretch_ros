@@ -21,6 +21,7 @@ from trajectory_msgs.msg import JointTrajectoryPoint
 import tf2_ros
 from sensor_msgs.msg import PointCloud2
 from std_srvs.srv import Trigger, TriggerRequest
+from roscpp.srv import SetLoggerLevel, SetLoggerLevelRequest
 
 
 #######################
@@ -136,9 +137,14 @@ class HelloNode:
         return [r0[0], r0[1], r_ang], timestamp
 
 
-    def main(self, node_name, node_topic_namespace, wait_for_first_pointcloud=True):
+    def main(self, node_name, node_topic_namespace, wait_for_first_pointcloud=True, quiet=False):
         rospy.init_node(node_name)
         self.node_name = rospy.get_name()
+        if quiet:
+            topic = '{0}/set_logger_level'.format(self.node_name)
+            rospy.wait_for_service(topic)
+            trigger = rospy.ServiceProxy(topic, SetLoggerLevel)
+            trigger(SetLoggerLevelRequest(logger='rosout', level='fatal'))
         rospy.loginfo("{0} started".format(self.node_name))
 
         self.trajectory_client = actionlib.SimpleActionClient('/stretch_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
