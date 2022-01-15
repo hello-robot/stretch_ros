@@ -150,13 +150,14 @@ class StretchBodyNode:
 
         # add gripper joints to joint state
         gripper_cg = self.joint_trajectory_action.gripper_cg
-        missing_gripper_joint_names = list(set(gripper_cg.gripper_joint_names) - set(joint_state.name))
-        for j in missing_gripper_joint_names:
-            pos, vel, effort = gripper_cg.joint_state(robot_status, joint_name=j)
-            joint_state.name.append(j)
-            joint_state.position.append(pos)
-            joint_state.velocity.append(vel)
-            joint_state.effort.append(effort)
+        if gripper_cg is not None:
+            missing_gripper_joint_names = list(set(gripper_cg.gripper_joint_names) - set(joint_state.name))
+            for j in missing_gripper_joint_names:
+                pos, vel, effort = gripper_cg.joint_state(robot_status, joint_name=j)
+                joint_state.name.append(j)
+                joint_state.position.append(pos)
+                joint_state.velocity.append(vel)
+                joint_state.effort.append(effort)
 
         self.joint_state_pub.publish(joint_state)
 
@@ -276,11 +277,10 @@ class StretchBodyNode:
             self.robot.lift.move_by(0.0)
             self.robot.push_command()
 
-            self.robot.head.move_by('head_pan', 0.0)
-            self.robot.head.move_by('head_tilt', 0.0)
-            self.robot.end_of_arm.move_by('wrist_yaw', 0.0)
-            self.robot.end_of_arm.move_by('stretch_gripper', 0.0)
-            self.robot.push_command()
+            for joint in self.robot.head.joints:
+                self.robot.head.move_by(joint, 0.0)
+            for joint in self.robot.end_of_arm.joints:
+                self.robot.end_of_arm.move_by(joint, 0.0)
 
         rospy.loginfo('Received stop_the_robot service call, so commanded all actuators to stop.')
         return TriggerResponse(
@@ -320,11 +320,10 @@ class StretchBodyNode:
                 self.robot.lift.move_by(0.0)
                 self.robot.push_command()
 
-                self.robot.head.move_by('head_pan', 0.0)
-                self.robot.head.move_by('head_tilt', 0.0)
-                self.robot.end_of_arm.move_by('wrist_yaw', 0.0)
-                self.robot.end_of_arm.move_by('stretch_gripper', 0.0)
-                self.robot.push_command()
+                for joint in self.robot.head.joints:
+                    self.robot.head.move_by(joint, 0.0)
+                for joint in self.robot.end_of_arm.joints:
+                    self.robot.end_of_arm.move_by(joint, 0.0)
 
             self.robot.pimu.runstop_event_trigger()
         else:
