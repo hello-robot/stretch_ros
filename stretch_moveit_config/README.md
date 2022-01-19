@@ -14,13 +14,9 @@ This will allow you to move the robot around using interactive markers and creat
 
 ### Hardware Integration
 
-To run MoveIt with the actual hardware, (assuming `stretch_driver` is already running) simply run
+There is no planned support to run MoveIt on Stretch hardware. Instead, support for running MoveIt 2 (the successor to MoveIt) on Stretch hardware is being developed in [Stretch's ROS2 packages](https://github.com/hello-robot/stretch_ros2/). The primary reason to support MoveIt 2 instead of MoveIt 1 is because MoveIt 2 introduces planning for differential drive bases, whereas MoveIt 1 does not have this ability. Manipulation with Stretch is more capable when the mobile base is included.
 
-    roslaunch stretch_moveit_config move_group.launch
-
-This will runs all of the planning capabilities, but without the setup, simulation and interface that the above demo provides. In order to create plans for the robot with the same interface as the offline demo, you can run
-
-    roslaunch stretch_moveit_config moveit_rviz.launch
+Please keep an eye on [Stretch's ROS2 packages](https://github.com/hello-robot/stretch_ros2/) and our [forum](https://forum.hello-robot.com/) to track the state of Stretch + MoveIt 2 support.
 
 ## License
 
