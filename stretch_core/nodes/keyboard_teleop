@@ -45,33 +45,56 @@ class GetKeyboardCommands:
             deltas = {'rad': self.big_rad, 'translate': self.big_translate} 
         return deltas
 
-    def print_commands(self):
+    def print_commands(self, joint_state, command):
+        if command is None:
+            return
+
+        joints = joint_state.name
+        def in_joints(i):
+            return len(list(set(i) & set(joints))) > 0
+
         print('---------- KEYBOARD TELEOP MENU -----------')
         print('                                           ')
-        print('              i HEAD UP                    ')
-        print(' j HEAD LEFT            l HEAD RIGHT       ')
-        print('              , HEAD DOWN                  ')
+        if in_joints(['joint_head_tilt']):
+            print('              i HEAD UP                    ')
+        if in_joints(['joint_head_pan']):
+            print(' j HEAD LEFT            l HEAD RIGHT       ')
+        if in_joints(['joint_head_tilt']):
+            print('              , HEAD DOWN                  ')
         print('                                           ')
         print('                                           ')
         print(' 7 BASE ROTATE LEFT     9 BASE ROTATE RIGHT')
         print(' home                   page-up            ')
         print('                                           ')
         print('                                           ')
-        print('              8 LIFT UP                    ')
-        print('              up-arrow                     ')
+        if in_joints(['joint_lift']):
+            print('              8 LIFT UP                    ')
+            print('              up-arrow                     ')
         print(' 4 BASE FORWARD         6 BASE BACK        ')
         print(' left-arrow             right-arrow        ')
-        print('              2 LIFT DOWN                  ')
-        print('              down-arrow                   ')
+        if in_joints(['joint_lift']):
+            print('              2 LIFT DOWN                  ')
+            print('              down-arrow                   ')
         print('                                           ')
         print('                                           ')
-        print('              w ARM OUT                    ')
-        print(' a WRIST FORWARD        d WRIST BACK       ')
-        print('              x ARM IN                     ')
+        if in_joints(['joint_arm_l0', 'joint_arm_l1', 'joint_arm_l2', 'joint_arm_l3']):
+            print('              w ARM OUT                    ')
+        if in_joints(['joint_wrist_yaw']):
+            print(' a WRIST FORWARD        d WRIST BACK       ')
+        if in_joints(['joint_arm_l0', 'joint_arm_l1', 'joint_arm_l2', 'joint_arm_l3']):
+            print('              x ARM IN                     ')
+        if in_joints(['joint_wrist_pitch', 'joint_wrist_roll']):
+            print('                                           ')
+            print('                                           ')
+        if in_joints(['joint_wrist_pitch']):
+            print(' c PITCH FORWARD        v PITCH BACK       ')
+        if in_joints(['joint_wrist_roll']):
+            print(' o ROLL FORWARD         p ROLL BACK        ')
         print('                                           ')
         print('                                           ')
-        print('              5 GRIPPER CLOSE              ')
-        print('              0 GRIPPER OPEN               ')
+        if in_joints(['joint_gripper_finger_left', 'joint_gripper_finger_right', 'gripper_aperture']):
+            print('              5 GRIPPER CLOSE              ')
+            print('              0 GRIPPER OPEN               ')
         print('                                           ')
         print('  step size:  b BIG, m MEDIUM, s SMALL     ')
         print('                                           ')
@@ -229,6 +252,14 @@ class GetKeyboardCommands:
             command = {'joint': 'joint_wrist_yaw', 'delta': -self.get_deltas()['rad']}
         if c == 'a' or c == 'A':
             command = {'joint': 'joint_wrist_yaw', 'delta': self.get_deltas()['rad']}
+        if c == 'v' or c == 'V':
+            command = {'joint': 'joint_wrist_pitch', 'delta': -self.get_deltas()['rad']}
+        if c == 'c' or c == 'C':
+            command = {'joint': 'joint_wrist_pitch', 'delta': self.get_deltas()['rad']}
+        if c == 'p' or c == 'P':
+            command = {'joint': 'joint_wrist_roll', 'delta': -self.get_deltas()['rad']}
+        if c == 'o' or c == 'O':
+            command = {'joint': 'joint_wrist_roll', 'delta': self.get_deltas()['rad']}
         if c == '5' or c == '\x1b[E' or c == 'g' or c == 'G':
             # grasp
             command = {'joint': 'joint_gripper_finger_left', 'delta': -self.get_deltas()['rad']}
@@ -290,20 +321,16 @@ class KeyboardTeleopNode(hm.HelloNode):
             trajectory_goal.trajectory.joint_names = [joint_name]
             if 'inc' in command:
                 inc = command['inc']
-                rospy.loginfo('inc = {0}'.format(inc))
                 new_value = inc
             elif 'delta' in command:
                 joint_index = joint_state.name.index(joint_name)
                 joint_value = joint_state.position[joint_index]
                 delta = command['delta']
-                rospy.loginfo('delta = {0}, joint_index = {1}, joint_value = {2}'.format(delta, joint_index, joint_value))
                 new_value = joint_value + delta
             point.positions = [new_value]
             trajectory_goal.trajectory.points = [point]
             trajectory_goal.trajectory.header.stamp = rospy.Time.now()
-            rospy.loginfo('joint_name = {0}, trajectory_goal = {1}'.format(joint_name, trajectory_goal))
             self.trajectory_client.send_goal(trajectory_goal)
-            rospy.loginfo('Done sending pose.')
 
     def main(self):
         hm.HelloNode.main(self, 'keyboard_teleop', 'keyboard_teleop', wait_for_first_pointcloud=False)
@@ -373,11 +400,12 @@ class KeyboardTeleopNode(hm.HelloNode):
 
         rate = rospy.Rate(self.rate)
 
+        command = 1 # set equal to not None, so menu is printed out on first loop
         while not rospy.is_shutdown():
-            self.keys.print_commands()
-            command = self.keys.get_command(self)
-            rospy.loginfo(command)
-            self.send_command(command)
+            if self.joint_state is not None:
+                self.keys.print_commands(self.joint_state, command)
+                command = self.keys.get_command(self)
+                self.send_command(command)
             rate.sleep()
 
 
