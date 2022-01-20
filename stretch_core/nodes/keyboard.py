@@ -13,9 +13,13 @@ def getch():
   # fd, as follows: [iflag, oflag, cflag, lflag, ispeed, ospeed, cc]"
   # from https://docs.python.org/2/library/termios.html
   original_tty_attributes = termios.tcgetattr(stdin_fd)
-  new_tty_attributes = original_tty_attributes[:]
+  new_tty_attributes = termios.tcgetattr(stdin_fd)
   # Change the lflag (local modes) to turn off canonical mode
   new_tty_attributes[3] &= ~termios.ICANON
+  # Set VMIN = 0 and VTIME > 0 for a timed read, as explained in:
+  # http://unixwiz.net/techtips/termios-vmin-vtime.html
+  new_tty_attributes[6][termios.VMIN] = b'\x00'
+  new_tty_attributes[6][termios.VTIME] = b'\x01'
   try:
     termios.tcsetattr(stdin_fd, termios.TCSAFLUSH, new_tty_attributes)
     ch1 = sys.stdin.read(1)
