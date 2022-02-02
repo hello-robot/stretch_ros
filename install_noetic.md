@@ -25,6 +25,7 @@ These instructions will guide you through the process of installing the Noetic v
 4. Copy the folder of the form "stretch-re1-xxxx" found in the `hello-robot` directory into the home folder (i.e. `/home/$USER/`).
     1. For example, you can run a command similar to `cp -r /media/$USER/USBKEY/hello-robot/stretch-re1-xxxx /home/$USER/`
     2. Or, you can use the visual file explorer. 
+5. Make a symlink of this folder into the `~/stretch_user` folder: `ln -s ~/stretch-re1-xxxx ~/stretch_user/stretch-re1-xxxx`
 
 ### Run the setup script with the robot's new Ubuntu 20.04 installation
 1. Using a terminal, go to the home directory of the new Ubuntu 20.04 installation with `cd`. Then run the following commands.
