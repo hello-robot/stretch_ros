@@ -1,6 +1,5 @@
 <launch>
 
-  <arg name="rviz"                default="false"         doc="whether to show Rviz" />
   <arg name="resolution"          default="high"          doc="resolution of the color/depth images ('low' or 'high')" />
   <arg name="preset"              default="High Accuracy" doc="depth image visual preset ('Default', 'High Accuracy', and more at https://dev.intelrealsense.com/docs/d400-series-visual-presets#section-preset-table)" />
   <arg name="publish_frustum_viz" default="false"         doc="whether to pub viz of cameras' frustums" />
@@ -24,11 +23,5 @@
     <param name="target_frame_id" type="str" value="" />
     <param name="target_x" type="double" value="-1.5708" />
   </node>
-
-  <!-- VISUALIZE -->
-  <group if="$(arg rviz)">
-    <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_core)/rviz/realsense.rviz" />
-    <node name="fake_base_link_tf_publisher" pkg="tf" type="static_transform_publisher" args="0.019 -0.007 1.262 0.601 0.399 -0.364 0.589 /fake_base_link /camera_link 100" />
-  </group>
 
 </launch>
