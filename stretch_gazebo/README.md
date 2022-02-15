@@ -16,13 +16,13 @@ The *config* directory contains rviz files and [ros_control](http://wiki.ros.org
 * Head: [position_controllers/JointTrajectoryController](http://wiki.ros.org/joint_trajectory_controller)
 * Joints: [joint_state_controller/JointStateController](http://wiki.ros.org/joint_state_controller)
 
-The *launch* directory includes two files:
+The *launch* directory includes:
 
-* gazebo.launch: Opens up an empty Gazebo world and spawns the robot loading all the controllers, including all the sensors except Cliff sensors and respeaker.
-* teleop_keyboard.launch: Allows keyboard teleop in the terminal and remaps *cmd_vel* topics to */stretch_diff_drive_controller/cmd_vel*, which the robot is taking velocity commands from.
-* teleop_joy.launch: Spawns a joy and teleop_twist_joy instance and remaps *cmd_vel* topics to */stretch_diff_drive_controller/cmd_vel*, which the robot is taking velocity commands from. Note that the *teleop_twist_joy* package has a deadman switch by default which disables the drive commands to be published unless it is being pressed. For an Logitech F310 joystick this button is A.
+* `gazebo.launch`: Opens up an empty Gazebo world and spawns the robot loading all the controllers, including all the sensors except Cliff sensors and respeaker.
 
 The *script* directory contains a single python file that publishes ground truth odometry of the robot from Gazebo.
+
+The *worlds* directory contains a sample [Gazebo world](http://gazebosim.org/tutorials?tut=ros_roslaunch#WorldFiles) file(s) that can be used to configure the environment in which Stretch is spawned.
 
 ## Setup
 
@@ -38,7 +38,9 @@ rosdep install --from-paths src --ignore-src -r -y
 catkin_make
 ```
 
-## Running Demo
+## Running Stretch Gazebo
+
+![](../images/gazebo.png)
 
 ```bash
 # Terminal 1:
@@ -49,9 +51,14 @@ roslaunch stretch_core teleop_twist.launch twist_topic:=/stretch_diff_drive_cont
 
 This will launch an Rviz instance that visualizes the sensors and an empty world in Gazebo with Stretch and load all the controllers. Although, the base will be able to move with the joystick commands, the joystick won't give joint commands to arm, head or gripper. To move these joints see the next section about *Running Gazebo with MoveIt! and Stretch*.
 
-![](../images/gazebo.png)
+By default, Gazebo initializes Stretch in an empty environment. To initialize Gazebo with a different environment, use the "world" ROS argument to point to a [world file](http://gazebosim.org/tutorials?tut=ros_roslaunch#WorldFiles). The *worlds* directory within Stretch Gazebo, contains a sample world called "random_objects.world" and can be launched like this:
 
-## Running Gazebo with MoveIt! and Stretch
+```bash
+roslaunch stretch_gazebo gazebo.launch rviz:=true world:=`rospack find stretch_gazebo`/worlds/random_objects.world
+```
+
+
+### Running Stretch Gazebo with MoveIt! and Twist Teleop
 
 ```bash
 # Terminal 1:
@@ -70,6 +77,10 @@ This will launch an Rviz instance that visualizes the joints with markers and an
 * When planning with *stretch_head* group make sure you select *Approx IK Solutions* in Planning tab of Motion Planning Rviz plugin.
 
 ![](../images/gazebo_moveit.gif)
+
+### Running Stretch Gazebo with Stretch Navigation
+
+See the Stretch Navigation [README](../stretch_navigation/README.md#running-in-simulation) for an explanation of the `mapping_gazebo.launch` and `navigation_gazebo.launch` launch files, which allow for mapping and navigation within the Gazebo simulated world.
 
 ## Differences in Gazebo vs Stretch
 
@@ -95,6 +106,14 @@ Actuators are defined as *ros_control* transmission objects in Gazebo using [Pos
 ### Uncalibrated XACRO vs Calibrated URDF
 
 We provide [stretch_calibration](../stretch_calibration/README.md) to generate a calibrated URDF that is unique to each robot. The calibrated URDF is generated from the nominal description of Stretch RE1, the xacro files that live in [stretch_description](../stretch_description/README.md). The simulated Stretch RE1 is generated from the gazebo xacro description in the *urdf directory* and is not calibrated.
+
+### Topic Names
+
+|        Stretch        |                 Gazebo                 |
+|:---------------------:|:--------------------------------------:|
+|   /stretch/cmd_vel    | /stretch_diff_drive_controller/cmd_vel |
+|         /odom         |  /stretch_diff_drive_controller/odom   |
+| /stretch/joint_states |             /joint_states              |
 
 ## License
 
