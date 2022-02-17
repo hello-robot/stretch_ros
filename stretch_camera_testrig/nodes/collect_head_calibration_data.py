@@ -694,9 +694,7 @@ class CollectHeadCalibrationDataNode:
         
         t = time.localtime()
         capture_date = str(t.tm_year) + str(t.tm_mon).zfill(2) + str(t.tm_mday).zfill(2) + str(t.tm_hour).zfill(2) + str(t.tm_min).zfill(2)
-
-        temp_loc = '/home/hello-robot/catkin_ws/src/stretch_ros/stretch_camera_testrig/data/' #Change it
-        filename = temp_loc + 'testrig_collected_data_' + capture_date + '.yaml'
+        filename = self.testrig_data_path + 'testrig_collected_data_' + capture_date + '.yaml'
 
         rospy.loginfo('Saving calibration_data to a YAML file named {0}'.format(filename))
         fid = open(filename, 'w')
@@ -801,9 +799,10 @@ class CollectHeadCalibrationDataNode:
 
 
             rate = rospy.Rate(self.rate)
-
+            self.testrig_data_path = '/home/hello-robot/catkin_ws/src/stretch_ros/stretch_camera_testrig/data/' #Change it
             self.testrig_data_collect(number_of_samples=self.number_of_testrig_samples)
-
+    def get_testrig_metrics(self):
+        return None
         
 if __name__ == '__main__':    
     parser = ap.ArgumentParser(description='Collect head calibration data.')

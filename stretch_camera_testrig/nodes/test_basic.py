@@ -32,7 +32,7 @@ if __name__ == '__main__':
      
     try:
         node = CollectHeadCalibrationDataNode(test_rig=True)
-        node.number_of_testrig_samples = 200
+        node.number_of_testrig_samples = 500
         node.main(collect_check_data)
     except rospy.ROSInterruptException:
         pass
