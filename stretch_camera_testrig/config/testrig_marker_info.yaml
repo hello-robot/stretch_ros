@@ -1,0 +1,59 @@
+# This file contains the nominal poses of the each Aruco markers
+# that is to be used in the test rig in Millimeters. Each aruco marker's 
+# pose(mm)/orientation(rad) are to be measured and inserted carefully.
+
+'testrig_aruco_marker_info':
+  'base_left':
+    'pose':
+      'x': 0
+      'y': 0
+      'z': 0
+    'orientation':
+      'x': 0
+      'y': 0
+      'z': 0
+      'w': 0
+
+  'base_right':
+    'pose':
+      'x': 0
+      'y': 0
+      'z': 0
+    'orientation':
+      'x': 0
+      'y': 0
+      'z': 0
+      'w': 0
+
+  'shoulder_top':
+    'pose':
+      'x': 0
+      'y': 0
+      'z': 0
+    'orientation':
+      'x': 0
+      'y': 0
+      'z': 0
+      'w': 0
+
+  'wrist_top':
+    'pose':
+      'x': 0
+      'y': 0
+      'z': 0
+    'orientation':
+      'x': 0
+      'y': 0
+      'z': 0
+      'w': 0
+
+  'wrist_inside':
+    'pose':
+      'x': 0
+      'y': 0
+      'z': 0
+    'orientation':
+      'x': 0
+      'y': 0
+      'z': 0
+      'w': 0
