@@ -25,6 +25,7 @@ import math
 import time
 import threading
 import sys
+import os
 
 import argparse as ap
 
@@ -270,15 +271,13 @@ class CollectHeadCalibrationDataNode:
         return samples
 
     def get_samples_testrig(self, number_of_samples):
-        # Collect N observations (samples) centered around the
-        # provided head and wrist extension pose. If first_move is
-        # true, it indicates that this is the first movement to a new
-        # region for calibration, which can induce more vibrations and
-        # thus benefit from more time to settle prior to collecting a
-        # sample.
+        # Collect N observations (samples) within the
+        # testrig rigid setup. This function allows to
+        # collect samples in the same data dictionary format 
+        # used for calibration without any robot motion.
         
         samples = []
-        wait_before_each_sample_s = 0.2
+        wait_before_each_sample_s = 0.1
         for sample_number in range(number_of_samples):
             rospy.sleep(wait_before_each_sample_s)
             observation = {'joints': {'joint_head_pan': None,
@@ -297,37 +296,6 @@ class CollectHeadCalibrationDataNode:
                                                     'base_right_marker_pose': None,
                                                     'shoulder_marker_pose': None}
                             }
-
-            # wait for a sample taken after the robot has
-            # settled
-            # timeout_duration = rospy.Duration(secs=10)
-            # start_wait = rospy.Time.now()
-            # timeout = False
-            # data_ready = False
-            # while (not data_ready) and (not timeout):
-            #     # check the timing of the current sample
-            #     with self.data_lock:
-            #         if (self.data_time is not None) and (self.data_time > settled_time):
-            #             if (self.marker_time is None):
-            #                 # joint_states and acceleration
-            #                 # were taken after the robot
-            #                 # settled and there are no aruco
-            #                 # marker poses
-            #                 data_ready = True
-            #             elif (self.marker_time > settled_time):
-            #                 # joint_states, acceleration,
-            #                 # and aruco marker poses were
-            #                 # taken after the robot
-            #                 # settled
-            #                 data_ready = True
-            #     if not data_ready:
-            #         #rospy.sleep(0.2) #0.1
-            #         rospy.sleep(1.0)
-            #     timeout = (rospy.Time.now() - start_wait) > timeout_duration
-
-            # if timeout:
-            #     rospy.logerr('collect_head_calibration_data get_samples: timeout while waiting for sample.')
-            #     raise Exception('Timed out waiting for joint_states/accelerations/markers messages after 10 seconds')
 
             with self.data_lock:
 
@@ -671,8 +639,10 @@ class CollectHeadCalibrationDataNode:
         rospy.loginfo('COLLECT DATA FROM TEST RIG')
         rospy.loginfo('*************************************')
         rospy.loginfo('')
+        rospy.loginfo('Target Number of Frames :{0}'.format(number_of_samples))
+        rospy.loginfo('')
 
-        while len(calibration_data)<=number_of_samples:
+        while len(calibration_data)<number_of_samples:
             observation = self.get_samples_testrig(1)
             first_pan_tilt = False
             calibration_data.extend(observation)
@@ -728,8 +698,13 @@ class CollectHeadCalibrationDataNode:
         rospy.loginfo('Move to the calibration start pose.')
         self.move_to_pose(initial_pose)
 
-    def main(self, collect_check_data):
-        rospy.init_node('collect_head_calibration_data')
+    def main(self, collect_check_data=None):
+        if not self.test_rig:
+            rospy.init_node('collect_head_calibration_data')
+            print('yep!')
+        else:
+            rospy.init_node('collect_testrig_data')
+
         self.node_name = rospy.get_name()        
         rospy.loginfo("{0} started".format(self.node_name))
 
@@ -797,23 +772,11 @@ class CollectHeadCalibrationDataNode:
             self.synchronizer = message_filters.ApproximateTimeSynchronizer([accel_subscriber, aruco_subscriber], 10, slop_time, allow_headerless=True)
             self.synchronizer.registerCallback(self.calibration_data_callback)
 
-
             rate = rospy.Rate(self.rate)
-            self.testrig_data_path = '/home/hello-robot/catkin_ws/src/stretch_ros/stretch_camera_testrig/data/' #Change it
+            self.testrig_data_path = rospy.get_param('~testrig_data_directory')
+            self.number_of_testrig_samples = rospy.get_param('~samples')
             self.testrig_data_collect(number_of_samples=self.number_of_testrig_samples)
-    def get_testrig_metrics(self):
-        return None
+
         
-if __name__ == '__main__':    
-    parser = ap.ArgumentParser(description='Collect head calibration data.')
-    parser.add_argument('--check', action='store_true', help='Collect data to check the current calibration, instead of data to perform a new calibration.')
-    
-    args, unknown = parser.parse_known_args()
-    collect_check_data = args.check
-     
-    try:
-        node = CollectHeadCalibrationDataNode()
-        node.main(collect_check_data)
-    except rospy.ROSInterruptException:
-        pass
+
 

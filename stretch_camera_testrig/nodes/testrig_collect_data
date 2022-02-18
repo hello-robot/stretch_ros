@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+
+from collect_head_calibration_data import CollectHeadCalibrationDataNode
+import rospy
+
+
+if __name__ == '__main__':
+    rospy.sleep(15) # Wait until Aruco Detector stabilizes
+    try:
+        node = CollectHeadCalibrationDataNode(test_rig=True)
+        node.main()
+    except rospy.ROSInterruptException:
+        pass
