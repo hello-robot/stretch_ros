@@ -1,6 +1,6 @@
 # This file contains the nominal poses of the each Aruco markers
-# that is to be used in the test rig in Millimeters. Each aruco marker's 
-# pose(mm)/orientation(rad) are to be measured and inserted as a 4x4 Homogeneous matrix
+# that is to be used in the test rig. Each aruco marker's pose
+# are to be measured and inserted as a 4x4 Homogeneous matrix
 
 # 'testrig_data_directory': "/catkin_ws/src/stretch_ros/stretch_camera_testrig/data/"
 'testrig_aruco_marker_info':
