@@ -1,0 +1,2116 @@
+<sdf version='1.7'>
+  <world name='default'>
+    <model name='ground_plane'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>50</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <cast_shadows>0</cast_shadows>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Grey</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+    </model>
+    <light name='sun' type='directional'>
+      <cast_shadows>1</cast_shadows>
+      <pose>0 0 10 0 -0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+    <model name='willowgarage'>
+      <static>1</static>
+      <pose>-20 -20 0 0 -0 0</pose>
+      <link name='walls'>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>model://willowgarage/meshes/willowgarage_collision.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://willowgarage/meshes/willowgarage_visual.dae</uri>
+            </mesh>
+          </geometry>
+          <cast_shadows>0</cast_shadows>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+    </model>
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type='adiabatic'/>
+    <physics type='ode'>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+    <scene>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+      <shadows>1</shadows>
+    </scene>
+    <wind/>
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <latitude_deg>0</latitude_deg>
+      <longitude_deg>0</longitude_deg>
+      <elevation>0</elevation>
+      <heading_deg>0</heading_deg>
+    </spherical_coordinates>
+    <model name='robot'>
+      <link name='base_link'>
+        <inertial>
+          <pose>-0.083283 0.053477 0.442373 0 -0 0</pose>
+          <mass>2.04567</mass>
+          <inertia>
+            <ixx>0.444732</ixx>
+            <ixy>-0.00260849</ixy>
+            <ixz>-0.0256718</ixz>
+            <iyy>0.440465</iyy>
+            <iyz>-0.0451879</iyz>
+            <izz>0.0163836</izz>
+          </inertia>
+        </inertial>
+        <collision name='base_link_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/base_link.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <collision name='base_link_fixed_joint_lump__caster_link_collision_1'>
+          <pose>-0.245 0 0.032 -1.5708 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.032</radius>
+            </sphere>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>0</mu>
+                <mu2>0</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <collision name='base_link_fixed_joint_lump__link_aruco_left_base_collision_2'>
+          <pose>-0.005 0.130497 0.159748 0 0 -1.5708</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_aruco_left_base.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <collision name='base_link_fixed_joint_lump__link_aruco_right_base_collision_3'>
+          <pose>-0.005 -0.130497 0.159748 0 0 -1.5708</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_aruco_right_base.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <collision name='base_link_fixed_joint_lump__laser_collision_4'>
+          <pose>0.000503 0 0.1664 0 0 -3.14159</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/laser.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <collision name='base_link_fixed_joint_lump__link_mast_collision_5'>
+          <pose>-0.07 0.135 0.0284 1.5708 -0 0.009253</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_mast.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <collision name='base_link_fixed_joint_lump__link_head_collision_6'>
+          <pose>-0.07 0.135 1.3584 1.1e-05 0 -1.57084</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_head.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>200</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <collision name='base_link_fixed_joint_lump__respeaker_base_collision_7'>
+          <pose>-0.069961 0.131965 1.39832 0 -0 -3.13234</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_respeaker.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='base_link_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/base_link.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Gray</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <visual name='base_link_fixed_joint_lump__caster_link_visual_1'>
+          <pose>-0.245 0 0.032 -1.5708 0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/omni_wheel_m.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Blue</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <visual name='base_link_fixed_joint_lump__link_aruco_left_base_visual_2'>
+          <pose>-0.005 0.130497 0.159748 0 0 -1.5708</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_aruco_left_base.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Black</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <visual name='base_link_fixed_joint_lump__link_aruco_right_base_visual_3'>
+          <pose>-0.005 -0.130497 0.159748 0 0 -1.5708</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_aruco_right_base.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Black</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <visual name='base_link_fixed_joint_lump__laser_visual_4'>
+          <pose>0.000503 0 0.1664 0 0 -3.14159</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/laser.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Black</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <visual name='base_link_fixed_joint_lump__link_mast_visual_5'>
+          <pose>-0.07 0.135 0.0284 1.5708 -0 0.009253</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_mast.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Gray</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <visual name='base_link_fixed_joint_lump__link_head_visual_6'>
+          <pose>-0.07 0.135 1.3584 1.1e-05 0 -1.57084</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_head.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Gray</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <visual name='base_link_fixed_joint_lump__respeaker_base_visual_7'>
+          <pose>-0.069961 0.131965 1.39832 0 -0 -3.13234</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_respeaker.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Green</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <sensor name='base_imu' type='imu'>
+          <always_on>1</always_on>
+          <visualize>0</visualize>
+          <plugin name='imu_plugin' filename='libgazebo_ros_imu_sensor.so'>
+            <topicName>imu/data</topicName>
+            <bodyName>base_link</bodyName>
+            <updateRateHZ>25.0</updateRateHZ>
+            <gaussianNoise>0.001</gaussianNoise>
+            <xyzOffset>0 0 0</xyzOffset>
+            <rpyOffset>0 0 0</rpyOffset>
+            <frameName>base_link</frameName>
+            <initialOrientationAsReference>0</initialOrientationAsReference>
+            <robotNamespace>/</robotNamespace>
+          </plugin>
+          <pose>0 0 0 0 -0 0</pose>
+          <imu/>
+        </sensor>
+        <gravity>1</gravity>
+        <sensor name='laser_sensor' type='ray'>
+          <visualize>0</visualize>
+          <update_rate>5.5</update_rate>
+          <ray>
+            <scan>
+              <horizontal>
+                <samples>2000</samples>
+                <resolution>1</resolution>
+                <min_angle>-0.9</min_angle>
+                <max_angle>5</max_angle>
+              </horizontal>
+              <vertical>
+                <samples>1</samples>
+                <min_angle>0</min_angle>
+                <max_angle>0</max_angle>
+              </vertical>
+            </scan>
+            <range>
+              <min>0.15</min>
+              <max>12</max>
+              <resolution>0.01</resolution>
+            </range>
+            <noise>
+              <type>gaussian</type>
+              <mean>0</mean>
+              <stddev>0.001</stddev>
+            </noise>
+          </ray>
+          <plugin name='gazebo_ros_lidar_controller' filename='libgazebo_ros_laser.so'>
+            <topicName>scan</topicName>
+            <frameName>laser</frameName>
+            <robotNamespace>/</robotNamespace>
+          </plugin>
+          <pose>0.000503 0 0.1664 0 0 -3.14159</pose>
+        </sensor>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint_left_wheel' type='revolute'>
+        <pose relative_to='base_link'>-0.003 0.15765 0.0508 -1.5708 0 0</pose>
+        <parent>base_link</parent>
+        <child>link_left_wheel</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <damping>21.75</damping>
+            <friction>10.48</friction>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link_left_wheel'>
+        <pose relative_to='joint_left_wheel'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 -0 -0.023958 0 -0 0</pose>
+          <mass>0.01</mass>
+          <inertia>
+            <ixx>0.001</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.001</iyy>
+            <iyz>0</iyz>
+            <izz>0.001</izz>
+          </inertia>
+        </inertial>
+        <collision name='link_left_wheel_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_left_wheel.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+07</kp>
+                <kd>100</kd>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>200</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='link_left_wheel_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_left_wheel.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Blue</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint_head_pan' type='revolute'>
+        <pose relative_to='base_link'>0.003094 -3e-06 1.3554 0 -1.1e-05 -3.9e-05</pose>
+        <parent>base_link</parent>
+        <child>link_head_pan</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-3.9</lower>
+            <upper>1.5</upper>
+            <effort>100</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link_head_pan'>
+        <pose relative_to='joint_head_pan'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>-0.001162 0.013037 0.001376 0 -0 0</pose>
+          <mass>0.0358583</mass>
+          <inertia>
+            <ixx>0.001</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.001</iyy>
+            <iyz>0</iyz>
+            <izz>0.001</izz>
+          </inertia>
+        </inertial>
+        <collision name='link_head_pan_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_head_pan.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+07</kp>
+                <kd>100</kd>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>200</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='link_head_pan_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_head_pan.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Gray</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint_head_tilt' type='revolute'>
+        <pose relative_to='link_head_pan'>-0.0013 0.027507 -0.053311 1.5708 -0 0</pose>
+        <parent>link_head_pan</parent>
+        <child>link_head_tilt</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1.53</lower>
+            <upper>0.79</upper>
+            <effort>100</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link_head_tilt'>
+        <pose relative_to='joint_head_tilt'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0.025108 -0.011117 0.030679 0 -0 0</pose>
+          <mass>0.142124</mass>
+          <inertia>
+            <ixx>0.00492057</ixx>
+            <ixy>-3.71123e-05</ixy>
+            <ixz>-4.67984e-08</ixz>
+            <iyy>0.00153396</iyy>
+            <iyz>-4.95925e-08</iyz>
+            <izz>0.00495361</izz>
+          </inertia>
+        </inertial>
+        <collision name='link_head_tilt_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_head_tilt.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+07</kp>
+                <kd>100</kd>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>200</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <collision name='link_head_tilt_fixed_joint_lump__camera_link_collision_1'>
+          <pose>0.0406 -0.0122 0.0307 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.02505 0.09 0.025</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='link_head_tilt_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_head_tilt.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Gray</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <visual name='link_head_tilt_fixed_joint_lump__camera_link_visual_1'>
+          <pose>0.0449 -0.0122 0.0307 1.5708 -0 1.5708</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/opt/ros/noetic/share/realsense2_description/meshes/d435.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <sensor name='color' type='camera'>
+          <camera name='__default__'>
+            <horizontal_fov>1.50098</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+              <format>RGB_INT8</format>
+            </image>
+            <clip>
+              <near>0.1</near>
+              <far>100</far>
+            </clip>
+            <noise>
+              <type>gaussian</type>
+              <mean>0</mean>
+              <stddev>0.007</stddev>
+            </noise>
+          </camera>
+          <always_on>1</always_on>
+          <update_rate>30</update_rate>
+          <visualize>0</visualize>
+          <pose>0.0406 0.0203 0.0307 0 -0 0</pose>
+        </sensor>
+        <sensor name='depth' type='depth'>
+          <camera name='__default__'>
+            <horizontal_fov>1.50098</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+            </image>
+            <clip>
+              <near>0.1</near>
+              <far>100</far>
+            </clip>
+            <noise>
+              <type>gaussian</type>
+              <mean>0</mean>
+              <stddev>0.007</stddev>
+            </noise>
+          </camera>
+          <always_on>1</always_on>
+          <update_rate>30</update_rate>
+          <visualize>0</visualize>
+          <pose>0.0406 0.0053 0.0307 0 -0 0</pose>
+        </sensor>
+        <gravity>1</gravity>
+        <sensor name='imu_sensor' type='imu'>
+          <always_on>1</always_on>
+          <visualize>0</visualize>
+          <plugin name='imu_plugin' filename='libgazebo_ros_imu_sensor.so'>
+            <topicName>camera/imu/data</topicName>
+            <bodyName>camera_gyro_frame</bodyName>
+            <updateRateHZ>50.0</updateRateHZ>
+            <gaussianNoise>0.001</gaussianNoise>
+            <xyzOffset>0 0 0</xyzOffset>
+            <rpyOffset>0 0 0</rpyOffset>
+            <frameName>camera_gyro_frame</frameName>
+            <initialOrientationAsReference>0</initialOrientationAsReference>
+            <robotNamespace>/</robotNamespace>
+          </plugin>
+          <pose>0.02886 -0.00022 0.0358 0 -0 0</pose>
+          <imu/>
+        </sensor>
+        <sensor name='ired1' type='camera'>
+          <camera name='__default__'>
+            <horizontal_fov>1.50098</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+              <format>L_INT8</format>
+            </image>
+            <clip>
+              <near>0.1</near>
+              <far>100</far>
+            </clip>
+            <noise>
+              <type>gaussian</type>
+              <mean>0</mean>
+              <stddev>0.007</stddev>
+            </noise>
+          </camera>
+          <always_on>1</always_on>
+          <update_rate>30</update_rate>
+          <visualize>0</visualize>
+          <pose>0.0406 0.0053 0.0307 0 -0 0</pose>
+        </sensor>
+        <sensor name='ired2' type='camera'>
+          <camera name='__default__'>
+            <horizontal_fov>1.50098</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+              <format>L_INT8</format>
+            </image>
+            <clip>
+              <near>0.1</near>
+              <far>100</far>
+            </clip>
+            <noise>
+              <type>gaussian</type>
+              <mean>0</mean>
+              <stddev>0.007</stddev>
+            </noise>
+          </camera>
+          <always_on>1</always_on>
+          <update_rate>30</update_rate>
+          <visualize>0</visualize>
+          <pose>0.0406 -0.0447 0.0307 0 -0 0</pose>
+        </sensor>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint_lift' type='prismatic'>
+        <pose relative_to='base_link'>-0.106923 0.135 0.193871 0 -0 1.5708</pose>
+        <parent>base_link</parent>
+        <child>link_lift</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>1.1</upper>
+            <effort>100</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link_lift'>
+        <pose relative_to='joint_lift'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>-0.068575 0.033065 0.0081 0 -0 0</pose>
+          <mass>0.512473</mass>
+          <inertia>
+            <ixx>0.000657513</ixx>
+            <ixy>-0.000480089</ixy>
+            <ixz>-0.000185417</ixz>
+            <iyy>0.00204094</iyy>
+            <iyz>-1.32501e-05</iyz>
+            <izz>0.00222292</izz>
+          </inertia>
+        </inertial>
+        <collision name='link_lift_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_lift.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+07</kp>
+                <kd>100</kd>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>10000</mu>
+                <mu2>10000</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <collision name='link_lift_fixed_joint_lump__link_arm_l4_collision_1'>
+          <pose>-0.25471 0 0 1.5708 0 -1.5708</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_arm_l4.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+07</kp>
+                <kd>100</kd>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>200</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <collision name='link_lift_fixed_joint_lump__link_aruco_shoulder_collision_2'>
+          <pose>-0.013377 0.055854 0.086137 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_aruco_shoulder.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='link_lift_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_lift.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Black</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <visual name='link_lift_fixed_joint_lump__link_arm_l4_visual_1'>
+          <pose>-0.25471 0 0 1.5708 0 -1.5708</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_arm_l4.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Gray</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <visual name='link_lift_fixed_joint_lump__link_aruco_shoulder_visual_2'>
+          <pose>-0.013377 0.055854 0.086137 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_aruco_shoulder.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Black</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint_arm_l3' type='prismatic'>
+        <pose relative_to='link_lift'>-0.26771 0 -0 1.5708 0 -1.5708</pose>
+        <parent>link_lift</parent>
+        <child>link_arm_l3</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0.13</upper>
+            <effort>100</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link_arm_l3'>
+        <pose relative_to='joint_arm_l3'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>-0 0 -0.097407 0 -0 0</pose>
+          <mass>0.0626921</mass>
+          <inertia>
+            <ixx>0.001</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.001</iyy>
+            <iyz>0</iyz>
+            <izz>0.001</izz>
+          </inertia>
+        </inertial>
+        <collision name='link_arm_l3_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_arm_l3.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+07</kp>
+                <kd>100</kd>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>200</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='link_arm_l3_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_arm_l3.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Gray</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint_arm_l2' type='prismatic'>
+        <pose relative_to='link_arm_l3'>0 0 0.013 0 -0 0</pose>
+        <parent>link_arm_l3</parent>
+        <child>link_arm_l2</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0.13</upper>
+            <effort>100</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link_arm_l2'>
+        <pose relative_to='joint_arm_l2'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>-0 0 -0.097256 0 -0 0</pose>
+          <mass>0.0569074</mass>
+          <inertia>
+            <ixx>0.001</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.001</iyy>
+            <iyz>0</iyz>
+            <izz>0.001</izz>
+          </inertia>
+        </inertial>
+        <collision name='link_arm_l2_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_arm_l2.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+07</kp>
+                <kd>100</kd>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>200</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='link_arm_l2_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_arm_l2.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Gray</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint_arm_l1' type='prismatic'>
+        <pose relative_to='link_arm_l2'>0 0 0.013 0 -0 0</pose>
+        <parent>link_arm_l2</parent>
+        <child>link_arm_l1</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0.13</upper>
+            <effort>100</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link_arm_l1'>
+        <pose relative_to='joint_arm_l1'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>-0 0 -0.096912 0 -0 0</pose>
+          <mass>0.0511764</mass>
+          <inertia>
+            <ixx>0.001</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.001</iyy>
+            <iyz>0</iyz>
+            <izz>0.001</izz>
+          </inertia>
+        </inertial>
+        <collision name='link_arm_l1_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_arm_l1.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+07</kp>
+                <kd>100</kd>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>200</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='link_arm_l1_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_arm_l1.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Gray</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint_arm_l0' type='prismatic'>
+        <pose relative_to='link_arm_l1'>0 0 -0.01375 -0 -0 -0</pose>
+        <parent>link_arm_l1</parent>
+        <child>link_arm_l0</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0.13</upper>
+            <effort>100</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link_arm_l0'>
+        <pose relative_to='joint_arm_l0'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0.023072 -0.001951 -0.036065 0 -0 0</pose>
+          <mass>0.101241</mass>
+          <inertia>
+            <ixx>0.001</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.001</iyy>
+            <iyz>-8.47033e-22</iyz>
+            <izz>0.001</izz>
+          </inertia>
+        </inertial>
+        <collision name='link_arm_l0_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_arm_l0.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+07</kp>
+                <kd>100</kd>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>200</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <collision name='link_arm_l0_fixed_joint_lump__link_aruco_inner_wrist_collision_1'>
+          <pose>0.04725 -0.0119 -0.02725 3.14159 -0 3.14159</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_aruco_inner_wrist.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <collision name='link_arm_l0_fixed_joint_lump__link_aruco_top_wrist_collision_2'>
+          <pose>0.04725 0.029285 0 1.5708 -0 3.14159</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_aruco_top_wrist.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='link_arm_l0_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_arm_l0.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Gray</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <visual name='link_arm_l0_fixed_joint_lump__link_aruco_inner_wrist_visual_1'>
+          <pose>0.04725 -0.0119 -0.02725 3.14159 -0 3.14159</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_aruco_inner_wrist.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Black</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <visual name='link_arm_l0_fixed_joint_lump__link_aruco_top_wrist_visual_2'>
+          <pose>0.04725 0.029285 0 1.5708 -0 3.14159</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_aruco_top_wrist.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Black</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint_wrist_yaw' type='revolute'>
+        <pose relative_to='link_arm_l0'>0.083 -0.03075 0 1.5708 -0 0</pose>
+        <parent>link_arm_l0</parent>
+        <child>link_wrist_yaw</child>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>-1.75</lower>
+            <upper>4</upper>
+            <effort>100</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link_wrist_yaw'>
+        <pose relative_to='joint_wrist_yaw'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>-0.009403 0.012184 0.031977 0 -0 0</pose>
+          <mass>0.142443</mass>
+          <inertia>
+            <ixx>0.00201801</ixx>
+            <ixy>6.47631e-06</ixy>
+            <ixz>6.93764e-06</ixz>
+            <iyy>0.00201462</iyy>
+            <iyz>-8.98242e-06</iyz>
+            <izz>0.00201339</izz>
+          </inertia>
+        </inertial>
+        <collision name='link_wrist_yaw_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_wrist_yaw.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+07</kp>
+                <kd>100</kd>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>200</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <collision name='link_wrist_yaw_fixed_joint_lump__link_gripper_collision_1'>
+          <pose>0 0 0 3.14159 -0 -1.5708</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_gripper.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+07</kp>
+                <kd>100</kd>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>200</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='link_wrist_yaw_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_wrist_yaw.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Black</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <visual name='link_wrist_yaw_fixed_joint_lump__link_gripper_visual_1'>
+          <pose>0 0 0 3.14159 -0 -1.5708</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_gripper.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Gray</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <gravity>1</gravity>
+        <sensor name='wrist_imu' type='imu'>
+          <always_on>1</always_on>
+          <visualize>0</visualize>
+          <plugin name='imu_plugin' filename='libgazebo_ros_imu_sensor.so'>
+            <topicName>wrist_imu/data</topicName>
+            <bodyName>link_wrist_yaw</bodyName>
+            <updateRateHZ>25.0</updateRateHZ>
+            <gaussianNoise>0.001</gaussianNoise>
+            <xyzOffset>0 0 0</xyzOffset>
+            <rpyOffset>0 0 0</rpyOffset>
+            <frameName>link_wrist_yaw</frameName>
+            <initialOrientationAsReference>0</initialOrientationAsReference>
+            <robotNamespace>/</robotNamespace>
+          </plugin>
+          <pose>0 0 0 0 -0 0</pose>
+          <imu/>
+        </sensor>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint_gripper_finger_left' type='revolute'>
+        <pose relative_to='link_wrist_yaw'>0.010151 0.047231 0.04679 -3.14159 -0.5236 1.57078</pose>
+        <parent>link_wrist_yaw</parent>
+        <child>link_gripper_finger_left</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-0.6</lower>
+            <upper>0.6</upper>
+            <effort>100</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link_gripper_finger_left'>
+        <pose relative_to='joint_gripper_finger_left'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0.100529 0.012112 -0 0 -0 0</pose>
+          <mass>0.0514424</mass>
+          <inertia>
+            <ixx>0.00200006</ixx>
+            <ixy>1.22883e-06</ixy>
+            <ixz>7.72702e-12</ixz>
+            <iyy>0.00202327</iyy>
+            <iyz>-4.08122e-13</iyz>
+            <izz>0.00202333</izz>
+          </inertia>
+        </inertial>
+        <collision name='link_gripper_finger_left_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.9 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_gripper_finger_left.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+07</kp>
+                <kd>100</kd>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>200</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <collision name='link_gripper_finger_left_fixed_joint_lump__link_gripper_fingertip_left_collision_1'>
+          <pose>0.171099 0.014912 0 -1.5708 -0 -2.5545</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_gripper_fingertip_left.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+07</kp>
+                <kd>100</kd>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>200</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='link_gripper_finger_left_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.9 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_gripper_finger_left.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Gray</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <visual name='link_gripper_finger_left_fixed_joint_lump__link_gripper_fingertip_left_visual_1'>
+          <pose>0.171099 0.014912 0 -1.5708 -0 -2.5545</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_gripper_fingertip_left.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Black</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint_gripper_finger_right' type='revolute'>
+        <pose relative_to='link_wrist_yaw'>-0.010049 0.047231 0.04679 4e-06 0.5236 -1.5708</pose>
+        <parent>link_wrist_yaw</parent>
+        <child>link_gripper_finger_right</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-0.6</lower>
+            <upper>0.6</upper>
+            <effort>100</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link_gripper_finger_right'>
+        <pose relative_to='joint_gripper_finger_right'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>-0.100529 -0.012112 -0 0 -0 0</pose>
+          <mass>0.0514424</mass>
+          <inertia>
+            <ixx>0.00200006</ixx>
+            <ixy>1.22889e-06</ixy>
+            <ixz>-1.04879e-11</ixz>
+            <iyy>0.00202327</iyy>
+            <iyz>5.53976e-13</iyz>
+            <izz>0.00202333</izz>
+          </inertia>
+        </inertial>
+        <collision name='link_gripper_finger_right_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.9 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_gripper_finger_right.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+07</kp>
+                <kd>100</kd>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>200</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <collision name='link_gripper_finger_right_fixed_joint_lump__link_gripper_fingertip_right_collision_1'>
+          <pose>-0.171099 -0.014912 0 -1.5708 -0 0.58705</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_gripper_fingertip_right.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+07</kp>
+                <kd>100</kd>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>200</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='link_gripper_finger_right_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.9 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_gripper_finger_right.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Gray</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <visual name='link_gripper_finger_right_fixed_joint_lump__link_gripper_fingertip_right_visual_1'>
+          <pose>-0.171099 -0.014912 0 -1.5708 -0 0.58705</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_gripper_fingertip_right.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Black</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint_right_wheel' type='revolute'>
+        <pose relative_to='base_link'>-0.003 -0.15765 0.0508 -1.5708 -0 0</pose>
+        <parent>base_link</parent>
+        <child>link_right_wheel</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <damping>21.75</damping>
+            <friction>10.48</friction>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='link_right_wheel'>
+        <pose relative_to='joint_right_wheel'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0.023958 0 -0 0</pose>
+          <mass>0.01</mass>
+          <inertia>
+            <ixx>0.001</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.001</iyy>
+            <iyz>0</iyz>
+            <izz>0.001</izz>
+          </inertia>
+        </inertial>
+        <collision name='link_right_wheel_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_right_wheel.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>1e+07</kp>
+                <kd>100</kd>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>200</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='link_right_wheel_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/ananya/Code/VZ_Project/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/stretch_description/meshes/link_right_wheel.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Blue</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='gazebo_ros_control' filename='libgazebo_ros_control.so'>
+        <robotNamespace>/</robotNamespace>
+      </plugin>
+      <static>0</static>
+      <plugin name='camera' filename='librealsense_gazebo_plugin.so'>
+        <depthUpdateRate>30</depthUpdateRate>
+        <colorUpdateRate>30</colorUpdateRate>
+        <infraredUpdateRate>30</infraredUpdateRate>
+        <depthTopicName>depth/image_raw</depthTopicName>
+        <depthCameraInfoTopicName>depth/camera_info</depthCameraInfoTopicName>
+        <colorTopicName>color/image_raw</colorTopicName>
+        <colorCameraInfoTopicName>color/camera_info</colorCameraInfoTopicName>
+        <infrared1TopicName>infrared/image_raw</infrared1TopicName>
+        <infrared1CameraInfoTopicName>infrared/camera_info</infrared1CameraInfoTopicName>
+        <infrared2TopicName>infrared2/image_raw</infrared2TopicName>
+        <infrared2CameraInfoTopicName>infrared2/camera_info</infrared2CameraInfoTopicName>
+        <colorOpticalframeName>camera_color_optical_frame</colorOpticalframeName>
+        <depthOpticalframeName>camera_depth_optical_frame</depthOpticalframeName>
+        <infrared1OpticalframeName>camera_left_ir_optical_frame</infrared1OpticalframeName>
+        <infrared2OpticalframeName>camera_right_ir_optical_frame</infrared2OpticalframeName>
+        <rangeMinDepth>0.1</rangeMinDepth>
+        <rangeMaxDepth>10</rangeMaxDepth>
+        <pointCloud>1</pointCloud>
+        <pointCloudTopicName>depth/color/points</pointCloudTopicName>
+        <pointCloudCutoff>0.15</pointCloudCutoff>
+        <pointCloudCutoffMax>10</pointCloudCutoffMax>
+        <robotNamespace>/</robotNamespace>
+      </plugin>
+      <pose>0 0 0 0 -0 0</pose>
+    </model>
+    <model name='unit_box'>
+      <pose>-9.51235 -1.45764 0.5 0 -0 0</pose>
+      <link name='link'>
+        <inertial>
+          <mass>1</mass>
+          <inertia>
+            <ixx>0.166667</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.166667</iyy>
+            <iyz>0</iyz>
+            <izz>0.166667</izz>
+          </inertia>
+          <pose>0 0 0 0 -0 0</pose>
+        </inertial>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Grey</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+    </model>
+    <state world_name='default'>
+      <sim_time>28 79000000</sim_time>
+      <real_time>56 166105344</real_time>
+      <wall_time>1644192837 396777736</wall_time>
+      <iterations>28079</iterations>
+      <model name='ground_plane'>
+        <pose>0 0 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>0 0 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='robot'>
+        <pose>0.008368 0.012181 -9.3e-05 -0.000168 0.000381 0.019917</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>0.008368 0.012181 -9.3e-05 -0.000168 0.000381 0.019917</pose>
+          <velocity>0.001018 0.001564 0.000412 0.002186 -0.001716 0.001672</velocity>
+          <acceleration>0.089167 -0.23349 0.331176 3.0491 -0.800331 -1.92763</acceleration>
+          <wrench>0.182407 -0.477643 0.677478 0 -0 0</wrench>
+        </link>
+        <link name='link_arm_l0'>
+          <pose>-0.095493 -0.134813 0.393833 1.57072 0.000397 0.019987</pose>
+          <velocity>0.000666 0.001354 -0.000233 0.002189 -0.00038 0.002825</velocity>
+          <acceleration>-0.382042 0.038555 -0.115376 -3.0385 -0.360932 2.30691</acceleration>
+          <wrench>-0.038678 0.003903 -0.011681 0 -0 0</wrench>
+        </link>
+        <link name='link_arm_l1'>
+          <pose>-0.095218 -0.14856 0.393834 1.57071 0.000392 0.019977</pose>
+          <velocity>0.000713 0.001379 -0.000274 0.002255 -0.000535 0.002723</velocity>
+          <acceleration>-0.191262 0.125444 0.00242 2.99453 -0.647991 2.30379</acceleration>
+          <wrench>-0.009788 0.00642 0.000124 0 -0 0</wrench>
+        </link>
+        <link name='link_arm_l2'>
+          <pose>-0.095478 -0.135563 0.393834 1.57069 0.000386 0.019963</pose>
+          <velocity>0.00066 0.001071 -0.000241 0.002309 -0.000731 0.002538</velocity>
+          <acceleration>-0.164005 0.082366 0.082092 2.55857 -1.06424 2.14869</acceleration>
+          <wrench>-0.009333 0.004687 0.004672 0 -0 0</wrench>
+        </link>
+        <link name='link_arm_l3'>
+          <pose>-0.095739 -0.122566 0.393835 1.57068 0.000379 0.019948</pose>
+          <velocity>0.000608 0.000769 -0.00021 0.002379 -0.000953 0.002336</velocity>
+          <acceleration>-0.136829 0.039339 0.151514 2.06457 -1.53093 1.98811</acceleration>
+          <wrench>-0.008578 0.002466 0.009499 0 -0 0</wrench>
+        </link>
+        <link name='link_gripper_finger_left'>
+          <pose>-0.023559 -0.086126 0.316261 0.000461 0.523678 1.58944</pose>
+          <velocity>0.000555 0.001717 -9e-05 0.002193 -0.000524 0.002552</velocity>
+          <acceleration>0.06865 0.291324 0.27006 -3.1345 -0.387875 2.30866</acceleration>
+          <wrench>0.003532 0.014986 0.013893 0 -0 0</wrench>
+        </link>
+        <link name='link_gripper_finger_right'>
+          <pose>-0.003362 -0.085755 0.316253 3.14114 -0.52368 -1.55217</pose>
+          <velocity>0.000556 0.001772 -7.8e-05 0.002242 -0.000849 0.002054</velocity>
+          <acceleration>0.069788 0.106124 0.288182 3.09878 -0.476417 2.35105</acceleration>
+          <wrench>0.00359 0.005459 0.014825 0 -0 0</wrench>
+        </link>
+        <link name='link_head_pan'>
+          <pose>0.011975 0.012478 1.3553 -0.000168 0.00037 0.019879</pose>
+          <velocity>-0.001162 -0.001348 0.000398 0.002277 -0.00179 0.002722</velocity>
+          <acceleration>-1.97863 -0.633305 0.557722 3.10552 -0.607963 -1.45316</acceleration>
+          <wrench>-0.07095 -0.022709 0.019999 0 -0 0</wrench>
+        </link>
+        <link name='link_head_tilt'>
+          <pose>0.010109 0.039944 1.30199 1.57063 0.000369 0.019878</pose>
+          <velocity>-0.00117 -0.001238 0.000465 0.002251 -0.00199 0.002595</velocity>
+          <acceleration>-1.94993 -0.729629 0.640256 -0.246668 -0.808279 -2.97974</acceleration>
+          <wrench>-0.277132 -0.103698 0.090996 0 -0 0</wrench>
+        </link>
+        <link name='link_left_wheel'>
+          <pose>0.002241 0.169735 0.050786 -1.57094 0.02481 0.019917</pose>
+          <velocity>1.1e-05 -8.5e-05 0.005561 0.002868 -0.000306 0.001944</velocity>
+          <acceleration>-0.164642 -0.014082 0.107073 0.064429 -1.56507 1.87122</acceleration>
+          <wrench>-0.001646 -0.000141 0.001071 0 -0 0</wrench>
+        </link>
+        <link name='link_lift'>
+          <pose>-0.101074 0.145091 0.393797 0.000381 0.000148 1.59073</pose>
+          <velocity>5.8e-05 0.000489 0.000385 0.002161 -0.000969 0.002004</velocity>
+          <acceleration>0.280528 0.137252 0.233556 0.320069 0.019115 -2.36309</acceleration>
+          <wrench>0.143763 0.070338 0.119691 0 -0 0</wrench>
+        </link>
+        <link name='link_right_wheel'>
+          <pose>0.008521 -0.145492 0.050784 -1.57099 0.019005 0.01991</pose>
+          <velocity>9e-06 -3e-06 0.002767 0.00058 -0.000464 0.001262</velocity>
+          <acceleration>-2.34592 -2.42844 14.9187 0.756087 -1.21575 0.328079</acceleration>
+          <wrench>-0.023459 -0.024284 0.149187 0 -0 0</wrench>
+        </link>
+        <link name='link_wrist_yaw'>
+          <pose>-0.012522 -0.133159 0.363051 -3.14152 -0.000397 -3.1232</pose>
+          <velocity>0.000671 0.001648 -0.000188 0.002173 -0.000381 0.00277</velocity>
+          <acceleration>-0.435473 -0.047654 -0.110121 -3.07604 -0.311114 2.30378</acceleration>
+          <wrench>-0.06203 -0.006788 -0.015686 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='unit_box'>
+        <pose>-9.51235 -1.45764 0.5 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-9.51235 -1.45764 0.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>-0.004709 -9.78112 9.78158 0.712677 -0.009414 -4.3e-05</acceleration>
+          <wrench>-0.004709 -9.78112 9.78158 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='willowgarage'>
+        <pose>-20 -20 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='walls'>
+          <pose>-20 -20 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <light name='sun'>
+        <pose>0 0 10 0 -0 0</pose>
+      </light>
+    </state>
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose>1.52022 -0.181287 40.1108 0 1.5698 3.1362</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
+  </world>
+</sdf>
