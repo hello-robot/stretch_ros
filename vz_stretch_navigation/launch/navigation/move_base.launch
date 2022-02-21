@@ -1,0 +1,30 @@
+<launch>
+  <!-- Doc: http://wiki.ros.org/move_base?distro=kinetic -->
+
+  <arg name="config"/>
+
+  <arg name="cmd_vel_topic"/>
+  <arg name="odom_topic"/>
+
+  <!-- Use global costmap-->
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <!-- Include robot specific parameters from the robot config folder -->
+    <rosparam file="$(find stretch_navigation)/resources/config/$(arg config)/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find stretch_navigation)/resources/config/costmap_height.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find stretch_navigation)/resources/config/$(arg config)/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find stretch_navigation)/resources/config/$(arg config)/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find stretch_navigation)/resources/config/costmap_height.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find stretch_navigation)/resources/config/$(arg config)/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find stretch_navigation)/resources/config/$(arg config)/base_local_planner_params.yaml" command="load" />
+    <rosparam file="$(find stretch_navigation)/resources/config/$(arg config)/global_planner_params.yaml" command="load" />
+
+    <param name="conservative_reset_dist" type="double" value="3.0" />
+    <param name="controller_frequency" type="double" value="7.0" /> <!-- 20 -->
+    <param name="planner_patience" value="10.0" />
+    <param name="max_planning_retries" value="20" />
+
+    <remap from="cmd_vel" to="$(arg cmd_vel_topic)" />
+    <remap from="odom" to="$(arg odom_topic)" />
+  </node>
+
+</launch>

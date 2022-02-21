@@ -1,0 +1,4 @@
+<launch>
+    <arg name="rviz" default="true" doc="whether to show Rviz" />
+    <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find vz_stretch_navigation)/rviz/mapping.rviz" if="$(arg rviz)" />
+</launch>
