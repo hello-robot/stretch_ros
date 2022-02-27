@@ -27,7 +27,12 @@
     
     <rosparam file="$(find vz_stretch_navigation)/config/local_costmap_params.yaml" command="load" />
     <rosparam file="$(find vz_stretch_navigation)/config/global_costmap_params_withmap.yaml" command="load" />
-    <rosparam file="$(find vz_stretch_navigation)/config/base_local_planner_params.yaml" command="load" />
+    
+    <!-- Only in this file we are loading teb_local_planner_params.yaml instead of base_local_planner_params.yaml -->
+    <!-- Eventually we should load teb params from the base_local_planner_params.yaml file -->
+    <!-- <rosparam file="$(find vz_stretch_navigation)/config/base_local_planner_params.yaml" command="load" /> -->
+    <rosparam file="$(find vz_stretch_navigation)/config/teb_local_planner_params_gazebo.yaml" command="load" />
+    
     <remap from="/cmd_vel" to="/stretch_diff_drive_controller/cmd_vel" />
 
     <!-- Switch base local planners-->
@@ -37,7 +42,9 @@
 
          
     <!-- <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" /> -->
-    <!-- <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" /> -->
+    <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
+    <param name="controller_frequency" value="10.0" />
+
 
   </node>
 

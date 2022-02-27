@@ -1,8 +1,9 @@
 obstacle_range: 2.5
 raytrace_range: 3.0
-robot_radius: 0.1
+#robot is square ~13.5*13.5 inchfootprint. This 0.2 is a circle with the same area
+robot_radius: 0.20 #robot is square ~13.5*13.5 inchfootprint. This 0.2 is a circle with the same area
 inflation_radius: 0.25
 
 observation_sources: laser_scan_sensor
-
+# the change in this and hardware file is the scan topic used here as opposed to scan_filtered
 laser_scan_sensor: {sensor_frame: laser, data_type: LaserScan, topic: scan, marking: true, clearing: true}
