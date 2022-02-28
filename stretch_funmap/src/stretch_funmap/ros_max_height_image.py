@@ -106,14 +106,13 @@ class ROSVolumeOfInterest(VolumeOfInterest):
 
         return marker
 
-    
-        
+
 class ROSMaxHeightImage(MaxHeightImage):
-    
+
     @classmethod
     def from_file( self, base_filename ):
         data, image, rgb_image, camera_depth_image = MaxHeightImage.load_serialization(base_filename)
-                        
+
         m_per_pix = data['m_per_pix']
         m_per_height_unit = data['m_per_height_unit']
         image_origin = np.array(data['image_origin'])
@@ -129,7 +128,6 @@ class ROSMaxHeightImage(MaxHeightImage):
         self.last_update_time = None
 
         return max_height_image
-
 
     def get_points_to_image_mat(self, ros_frame_id, tf2_buffer, lookup_time=None, timeout_s=None):
         # This returns a matrix that transforms a point in the
@@ -160,7 +158,6 @@ class ROSMaxHeightImage(MaxHeightImage):
         else:
             return None, None
 
-        
     def get_image_to_points_mat(self, ros_frame_id, tf2_buffer, lookup_time=None, timeout_s=None):
         # This returns a matrix that transforms a point in the image
         # to a point in the provided ROS frame. However, it does not
@@ -190,7 +187,6 @@ class ROSMaxHeightImage(MaxHeightImage):
         else:
             return None, None
 
-        
     def get_robot_pose_in_image(self, tf2_buffer):
         robot_to_image_mat, timestamp = self.get_points_to_image_mat('base_link', tf2_buffer)
         r0 = np.array([0.0, 0.0, 0.0, 1.0])
@@ -211,7 +207,7 @@ class ROSMaxHeightImage(MaxHeightImage):
         image_to_point_mat, timestamp = self.get_image_to_points_mat(xyz_frame_id, tf2_buffer)
         p = np.matmul(image_to_point_mat, np.array([xyz_pix[0], xyz_pix[1], xyz_pix[2], 1.0]))[:3]
         return p
-    
+
     def make_robot_footprint_unobserved(self, robot_x_pix, robot_y_pix, robot_ang_rad):
         # replace robot points with unobserved points
         na.draw_robot_footprint_rectangle(robot_x_pix, robot_y_pix, robot_ang_rad, self.m_per_pix, self.image, value=0)
@@ -220,7 +216,6 @@ class ROSMaxHeightImage(MaxHeightImage):
         if self.rgb_image is not None: 
             na.draw_robot_footprint_rectangle(robot_x_pix, robot_y_pix, robot_ang_rad, self.m_per_pix, self.rgb_image, value=0)
 
-
     def make_robot_mast_blind_spot_unobserved(self, robot_x_pix, robot_y_pix, robot_ang_rad):
         # replace mast blind spot wedge points with unobserved points
         na.draw_robot_mast_blind_spot_wedge(robot_x_pix, robot_y_pix, robot_ang_rad, self.m_per_pix, self.image, value=0)
@@ -228,7 +223,7 @@ class ROSMaxHeightImage(MaxHeightImage):
             na.draw_robot_mast_blind_spot_wedge(robot_x_pix, robot_y_pix, robot_ang_rad, self.m_per_pix, self.camera_depth_image, value=0)
         if self.rgb_image is not None: 
             na.draw_robot_mast_blind_spot_wedge(robot_x_pix, robot_y_pix, robot_ang_rad, self.m_per_pix, self.rgb_image, value=0)
-    
+
     def from_points_with_tf2(self, points, points_frame_id, tf2_buffer, points_timestamp=None, timeout_s=None):
         # points should be a numpy array with shape = (N, 3) where N
         # is the number of points. So it has the following structure:
@@ -273,7 +268,6 @@ class ROSMaxHeightImage(MaxHeightImage):
         else:
             rospy.logwarn('ROSMaxHeightImage.from_rgb_points_with_tf2: failed to update the image likely due to a failure to lookup the transform using TF2. points_frame_id = {0}, points_timestamp = {1}, timeout_s = {2}'.format(points_frame_id, points_timestamp, timeout_s))
 
-            
     def to_point_cloud(self, color_map=None):
         points = self.to_points(color_map)
         point_cloud = ros_numpy.msgify(PointCloud2, points, stamp=self.last_update_time, frame_id=self.voi.frame_id)

@@ -335,11 +335,11 @@ class MaxHeightImage:
         self.transform_original_to_corrected = transform_to_corrected
         self.transform_corrected_to_original = np.linalg.inv(transform_to_corrected)
             
-    def save( self, base_filename, save_visualization=True ):
+    def save(self, base_filename, save_visualization=True):
         print('MaxHeightImage saving to base_filename =', base_filename)
 
         max_pix = None
-        if save_visualization: 
+        if save_visualization:
             # Save uint8 png image for visualization purposes. This would
             # be sufficient for uint8 pixel_dtypes, but does not work for
             # uint16.

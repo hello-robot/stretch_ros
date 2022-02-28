@@ -6,7 +6,6 @@ import stretch_funmap.ros_max_height_image as rm
 from actionlib_msgs.msg import GoalStatus
 import rospy
 import hello_helpers.hello_misc as hm
-import stretch_funmap.ros_max_height_image as rm
 import ros_numpy
 import yaml
 import stretch_funmap.navigation_planning as na
@@ -262,9 +261,9 @@ class HeadScan:
             # manipulable surfaces. Also, when the top of the viewing frustum
             # is parallel to the ground it will be at or close to the top of
             # the volume of interest.
-            
+
             robot_head_above_ground = 1.13
-            
+
             # How far below the expected floor height the volume of interest
             # should extend is less clear. Sunken living rooms and staircases
             # can go well below the floor and a standard stair step should be
@@ -283,9 +282,9 @@ class HeadScan:
             # will be classified as traversable floor. This risk is mitigated
             # by separate point cloud based obstacle detection while moving
             # and cliff sensors.
-            
+
             lowest_distance_below_ground = 0.05 #5cm
-            
+
             total_height = robot_head_above_ground + lowest_distance_below_ground
             # 8m x 8m region 
             voi_side_m = voi_side_m
@@ -296,13 +295,12 @@ class HeadScan:
 
             m_per_pix = 0.006
             pixel_dtype = np.uint8
-            
+
             self.max_height_im = rm.ROSMaxHeightImage(voi, m_per_pix, pixel_dtype, use_camera_depth_image=True)
             self.max_height_im.create_blank_rgb_image()
-            
+
         self.max_height_im.print_info()
 
-        
     def make_robot_footprint_unobserved(self):
         # replace robot points with unobserved points
         self.max_height_im.make_robot_footprint_unobserved(self.robot_xy_pix[0], self.robot_xy_pix[1], self.robot_ang_rad)
@@ -310,7 +308,7 @@ class HeadScan:
     def make_robot_mast_blind_spot_unobserved(self):
         # replace robot points with unobserved points
         self.max_height_im.make_robot_mast_blind_spot_unobserved(self.robot_xy_pix[0], self.robot_xy_pix[1], self.robot_ang_rad)
-        
+
     def capture_point_clouds(self, node, pose, capture_params):
         head_settle_time = capture_params['head_settle_time']
         num_point_clouds_per_pan_ang = capture_params['num_point_clouds_per_pan_ang']
@@ -321,7 +319,7 @@ class HeadScan:
             head_settle_time = head_settle_time
             num_point_clouds_per_pan_ang = 1
             time_between_point_clouds = time_between_point_clouds
-        
+
         node.move_to_pose(pose)
         rospy.sleep(head_settle_time)
         settle_time = rospy.Time.now()
@@ -351,22 +349,20 @@ class HeadScan:
             if not_finished: 
                 rospy.sleep(time_between_point_clouds)
 
-
     def execute(self, head_tilt, far_left_pan, far_right_pan, num_pan_steps, capture_params, node, look_at_self=True):
         scan_start_time = time.time()
 
         pose = {'joint_head_pan': far_right_pan, 'joint_head_tilt': head_tilt}
         node.move_to_pose(pose)
-        
+
         pan_left = np.linspace(far_right_pan, far_left_pan, num_pan_steps)
 
         for pan_ang in pan_left:
             pose = {'joint_head_pan': pan_ang}
             self.capture_point_clouds(node, pose, capture_params)
-            
+
         # look at the ground right around the robot to detect any
         # nearby obstacles
-
         if look_at_self:
             # Attempt to pick a head pose that sees around the robot,
             # but doesn't see the mast, which can introduce noise.
@@ -378,7 +374,7 @@ class HeadScan:
         scan_end_time = time.time()
         scan_duration = scan_end_time - scan_start_time
         rospy.loginfo('The head scan took {0} seconds.'.format(scan_duration))
-            
+
         #####################################
         # record robot pose information and potentially useful transformations
         self.robot_xy_pix, self.robot_ang_rad, self.timestamp = self.max_height_im.get_robot_pose_in_image(node.tf2_buffer)
@@ -396,8 +392,7 @@ class HeadScan:
 
         self.make_robot_mast_blind_spot_unobserved()
         self.make_robot_footprint_unobserved()
-                
-        
+
     def execute_full(self, node, fast_scan=False):
         far_right_pan = -3.6 
         far_left_pan = 1.45 
@@ -416,13 +411,12 @@ class HeadScan:
 
         self.execute(head_tilt, far_left_pan, far_right_pan, num_pan_steps, capture_params, node)
 
-
     def execute_front(self, node, fast_scan=False):
         far_right_pan = -1.2 
         far_left_pan = 1.2 
         head_tilt = -0.8
         num_pan_steps = 3
-        
+
         capture_params = {
             'fast_scan': fast_scan,
             'head_settle_time': 0.5,
@@ -432,15 +426,12 @@ class HeadScan:
 
         self.execute(head_tilt, far_left_pan, far_right_pan, num_pan_steps, capture_params, node)
 
-    
     def execute_minimal(self, node, fast_scan=False):
         far_right_pan = 0.1
         far_left_pan = 0.1
         head_tilt = -0.8
         num_pan_steps = 1
 
-        look_at_self = True
-        
         capture_params = {
             'fast_scan': fast_scan,
             'head_settle_time': 0.5,
@@ -448,10 +439,9 @@ class HeadScan:
             'time_between_point_clouds': 1.0/15.0 # point clouds at 15 Hz, so this should help obtain distinct clouds
         }
 
-        self.execute(head_tilt, far_left_pan, far_right_pan, num_pan_steps, capture_params, node, look_at_self)
-        
-        
-    def save( self, base_filename, save_visualization=True ):
+        self.execute(head_tilt, far_left_pan, far_right_pan, num_pan_steps, capture_params, node)
+
+    def save(self, base_filename, save_visualization=True):
         print('HeadScan: Saving to base_filename =', base_filename)
         # save scan to disk
         max_height_image_base_filename = base_filename + '_mhi'
@@ -471,12 +461,11 @@ class HeadScan:
                 'image_to_base_link_mat' : self.image_to_base_link_mat.tolist(), 
                 'map_to_image_mat' : self.map_to_image_mat.tolist(), 
                 'map_to_base_mat' : self.map_to_base_mat.tolist()}
-        
+
         with open(base_filename + '.yaml', 'w') as fid:
             yaml.dump(data, fid)
         print('Finished saving.')
 
-        
     @classmethod
     def from_file(self, base_filename):
         print('HeadScan.from_file: base_filename =', base_filename)
