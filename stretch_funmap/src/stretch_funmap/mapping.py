@@ -261,8 +261,7 @@ class HeadScan:
             # manipulable surfaces. Also, when the top of the viewing frustum
             # is parallel to the ground it will be at or close to the top of
             # the volume of interest.
-
-            robot_head_above_ground = 1.13
+            robot_head_above_ground = 1.13 # BS measures 4' 1.5", which is 1.2573m
 
             # How far below the expected floor height the volume of interest
             # should extend is less clear. Sunken living rooms and staircases
@@ -282,7 +281,6 @@ class HeadScan:
             # will be classified as traversable floor. This risk is mitigated
             # by separate point cloud based obstacle detection while moving
             # and cliff sensors.
-
             lowest_distance_below_ground = 0.05 #5cm
 
             total_height = robot_head_above_ground + lowest_distance_below_ground
@@ -335,7 +333,10 @@ class HeadScan:
             cloud_time = node.point_cloud.header.stamp
             cloud_frame = node.point_cloud.header.frame_id
             point_cloud = ros_numpy.numpify(node.point_cloud)
-            if (cloud_time is not None) and (cloud_time != prev_cloud_time) and (cloud_time >= settle_time): 
+            if (cloud_time is not None) and (cloud_time != prev_cloud_time) and (cloud_time >= settle_time):
+                print('mapping.HeadScan.capture_points_clouds: cloud_time = ', cloud_time)
+                # print('mapping.HeadScan.capture_points_clouds: ros_numpy.point_cloud2.get_xyz_points(point_cloud).shape = ', ros_numpy.point_cloud2.get_xyz_points(point_cloud).shape)
+                print('mapping.HeadScan.capture_points_clouds: ros_numpy.point_cloud2.split_rgb_field(point_cloud) = ', ros_numpy.point_cloud2.split_rgb_field(point_cloud))
                 only_xyz = False
                 if only_xyz:
                     xyz = ros_numpy.point_cloud2.get_xyz_points(point_cloud)
@@ -445,7 +446,7 @@ class HeadScan:
         print('HeadScan: Saving to base_filename =', base_filename)
         # save scan to disk
         max_height_image_base_filename = base_filename + '_mhi'
-        self.max_height_im.save(max_height_image_base_filename)
+        self.max_height_im.save(max_height_image_base_filename, save_visualization=save_visualization)
 
         if "tolist" in dir(self.robot_ang_rad):
             robot_ang_rad = self.robot_ang_rad.tolist()

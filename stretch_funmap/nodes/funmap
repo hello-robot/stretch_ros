@@ -1271,7 +1271,7 @@ class FunmapNode(hm.HelloNode):
         return
 
     def main(self):
-        hm.HelloNode.main(self, 'funmap', 'funmap')
+        hm.HelloNode.main(self, 'funmap', 'funmap', wait_for_first_pointcloud=True)
 
         self.debug_directory = rospy.get_param('~debug_directory')
 
