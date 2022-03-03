@@ -4,12 +4,8 @@
   <arg name="controller_yaml_file" value="$(find stretch_core)/config/controller_calibration_head.yaml"/>
   <arg name="calibration_directory" value="$(env HELLO_FLEET_PATH)/$(env HELLO_FLEET_ID)/calibration_ros/"/>
   
-  <!-- REALSENSE D435i -->
-  <include file="$(find stretch_core)/launch/d435i_high_resolution.launch"></include>
-  <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen">
-    <param name="initial_mode" type="string" value="High Accuracy"/>
-  </node>
-  <!-- -->
+  <!-- D435i CAMERA -->
+  <include file="$(find stretch_core)/launch/stretch_realsense.launch" />
 
   <!-- STRETCH DRIVER -->
   <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="true"/>
