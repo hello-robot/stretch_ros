@@ -7,6 +7,7 @@ import numpy as np
 from tabulate import tabulate
 import math
 import pprint
+import copy
 
 
 class TestRig_dashboard():
@@ -110,7 +111,7 @@ class TestRig_dashboard():
         self.test_info_title = Label(self.window, text='Test Info', font=("Arial", 13, 'bold'))
         self.test_info_title.place(x=x_pos, y=y_pos - 25)
 
-        info_dict = self.test_rig.test_results_dict
+        info_dict = copy.deepcopy(self.test_rig.test_results_dict)
         try:
             del info_dict['performance_metrics']
         except KeyError:
