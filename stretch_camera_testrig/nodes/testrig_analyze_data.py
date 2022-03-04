@@ -101,10 +101,15 @@ class TestRig_Analyze:
         return null_counts
 
     def get_realsense_fw(self):
-        fw_details = Popen("rs-fw-update -l | grep -i 'firmware'", shell=True, bufsize=64, stdin=PIPE, stdout=PIPE,
-                           close_fds=True).stdout.read()
-        fw_details = fw_details.split(',')[3]
-        fw_version = fw_details.split(' ')[-1]
+        fw_version = None
+        try:
+            fw_details = Popen("rs-fw-update -l | grep -i 'firmware'", shell=True, bufsize=64, stdin=PIPE, stdout=PIPE,
+                               close_fds=True).stdout.read()
+            fw_v = fw_details.split(',')[3]
+            fw_v = fw_details.split(' ')[-1]
+        except:
+            print('[Error] Realsense FW not found.')
+
         return fw_version
 
     def testrg_data_parse(self, filename):
@@ -131,7 +136,7 @@ class TestRig_Analyze:
                         data_dict[key].append(None)
             return data_dict
         except IOError:
-            print('[Error]:Unable to open Testrig Data file: {0}'.format(filename))
+            print('[Error] Unable to open Testrig Data file: {0}'.format(filename))
 
     def get_euclidean_errors(self, data_dict, nominal_poses_dict):
         error_dict = {}
@@ -140,7 +145,7 @@ class TestRig_Analyze:
         for key in self.data_keys:
             error_dict[key] = []
             if Num_samples != len(data_dict[key]):
-                print('[Warning]: Number of samples found inconsistent for each Marker tag.')
+                print('[Warning] Number of samples found inconsistent for each Marker tag.')
 
         for key in error_dict.keys():
             for i in range(Num_samples):
@@ -157,7 +162,7 @@ class TestRig_Analyze:
         for key in self.data_keys:
             error_dict[key] = []
             if Num_samples != len(data_dict[key]):
-                print('[Warning]: Number of samples found inconsistent for each Marker tag.')
+                print('[Warning] Number of samples found inconsistent for each Marker tag.')
 
         for key in error_dict.keys():
             for i in range(Num_samples):
@@ -187,7 +192,7 @@ class TestRig_Analyze:
                 nominal_poses_dict[key] = np.array(data['testrig_aruco_marker_info'][key])
             return nominal_poses_dict
         except IOError:
-            print('[Error]:Unable to open Testrig Nominal Poses file: {0}'.format(filename))
+            print('[Error] Unable to open Testrig Nominal Poses file: {0}'.format(filename))
 
     def save_error_computations(self):
         t = time.localtime()

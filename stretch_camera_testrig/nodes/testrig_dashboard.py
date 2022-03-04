@@ -1,11 +1,12 @@
 #!/usr/bin/env python
-from tkinter import *
+from Tkinter import *
 from testrig_analyze_data import TestRig_Analyze
 import os
 import yaml
 import numpy as np
 from tabulate import tabulate
 import math
+import pprint
 
 
 class TestRig_dashboard():
@@ -64,7 +65,7 @@ class TestRig_dashboard():
         self.nominal_poses_label.place(x=x_off + 20, y=y_off + 120)
         self.matrix_text_var = None
         self.matrix_entries = None
-        self.create_matrix_entry(x_off + 50, y_off + 150)
+        self.create_matrix_entry(x_off + 30, y_off + 150)
         self.update_nominal_poses_btn = Button(self.window, text="Update Nominal Poses",
                                                command=self.update_nominal_poses)
         self.update_nominal_poses_btn.place(x=x_off + 20, y=y_off + 280)
@@ -77,13 +78,15 @@ class TestRig_dashboard():
                             command=self.radiobutton_sel)
             self.nominal_poses_radiobuttons.append(r)
         for i in range(len(self.nominal_poses_radiobuttons)):
-            self.nominal_poses_radiobuttons[i].place(x=x_off + 220, y=y_off + 165 + i * 20)
+            self.nominal_poses_radiobuttons[i].place(x=x_off + 155, y=y_off + 150 + i * 20)
 
         ################## Test Results Display Pane ########################
         self.x_off_mid = 0
         self.y_off_mid = 0
         self.test_results_title = Label(self.window, text="Testrig Computed Results", font=("Arial", 18))
         self.test_results_title.place(x=self.x_off_mid + 20, y=self.y_off_mid + 330)
+        self.metric_title = None
+        self.test_info_title = None
 
         ################### Bottom Pane #########################
         x_off_bottom = 0
@@ -103,6 +106,19 @@ class TestRig_dashboard():
         self.target_samples_lbl = Label(self.window, text="Enter Target frames:")
         self.target_samples_lbl.place(x=x_off_bottom + 310, y=y_off_bottom + 546)
 
+    def test_data_info(self, x_pos, y_pos):
+        self.test_info_title = Label(self.window, text='Test Info', font=("Arial", 13, 'bold'))
+        self.test_info_title.place(x=x_pos, y=y_pos - 25)
+
+        info_dict = self.test_rig.test_results_dict
+        try:
+            del info_dict['performance_metrics']
+        except KeyError:
+            None
+        info_txt = str(yaml.safe_dump(info_dict, allow_unicode=True, default_flow_style=False))
+        self.info_print = Label(self.window, text=info_txt, anchor="w", font=("Arial", 12), justify=LEFT)
+        self.info_print.place(x=x_pos, y=y_pos)
+
     def metrics_table_print(self, pos_x, pos_y, error_key):
         n_rows = len(self.data_keys) + 1
         n_columns = len(self.metrics_keys) + 1
@@ -114,10 +130,12 @@ class TestRig_dashboard():
                 d.append(results[key][mkey])
             data_list.append(d)
         mkeys = self.metrics_keys
-        mkeys = ['Marker Tag'] + mkeys
+        mkeys = ['Marker Tags'] + mkeys
         data_list = [mkeys] + data_list
         x2 = 0
         y2 = 0
+        self.metric_title = Label(self.window, text=error_key + ' Metrics', font=("Arial", 13, 'bold'))
+        self.metric_title.place(x=pos_x, y=pos_y - 25)
         for i in range(n_rows):
             for j in range(n_columns):
                 if j == 0:
@@ -182,7 +200,7 @@ class TestRig_dashboard():
                 self.test_capture_id_lbl.configure(
                     text="Testrig Data Capture ID : {} loaded".format(self.test_rig.data_capture_date))
                 self.log('Loaded Test Rig data file : {}'.format(self.test_rig.data_filename.split('/')[-1]))
-            except:
+            except IOError:
                 self.log('Unable to load given data file:{}'.format(self.data_file_path.get()))
         else:
             self.log('Enter a data file path.')
@@ -201,6 +219,7 @@ class TestRig_dashboard():
         self.test_rig = test_rig
         self.metrics_table_print(self.x_off_mid + 130, self.y_off_mid + 420, 'euclidean_error')
         self.metrics_table_print(self.x_off_mid + 130, self.y_off_mid + 620, 'angle_rotation_error')
+        self.test_data_info(360, 150)
         return test_rig
 
     def mainloop(self):
