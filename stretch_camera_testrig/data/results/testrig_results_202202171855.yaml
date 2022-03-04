@@ -1,6 +1,12 @@
 capture_id: '202202171855'
-lighting_condition: {brightness: null, temperature: null}
-null_frames: {base_left_marker_pose: 0, base_right_marker_pose: 0, shoulder_marker_pose: 327,
-  wrist_inside_marker_pose: 0, wrist_top_marker_pose: 0}
+lighting_condition:
+  brightness: null
+  temperature: null
+null_frames:
+  base_left_marker_pose: 0
+  base_right_marker_pose: 0
+  shoulder_marker_pose: 327
+  wrist_inside_marker_pose: 0
+  wrist_top_marker_pose: 0
 number_samples: 600
-realsense_firmware: null
+realsense_firmware: 05.13.00.50

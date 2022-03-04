@@ -106,7 +106,8 @@ class TestRig_Analyze:
             fw_details = Popen("rs-fw-update -l | grep -i 'firmware'", shell=True, bufsize=64, stdin=PIPE, stdout=PIPE,
                                close_fds=True).stdout.read()
             fw_v = fw_details.split(',')[3]
-            fw_v = fw_details.split(' ')[-1]
+            fw_v = fw_v.split(' ')[-1]
+            fw_version = fw_v
         except:
             print('[Error] Realsense FW not found.')
 
