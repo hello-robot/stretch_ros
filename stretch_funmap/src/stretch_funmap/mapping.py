@@ -19,21 +19,8 @@ import stretch_funmap.segment_max_height_image as sm
 
 
 def stow_and_lower_arm(node):
-    pose = {'joint_gripper_finger_left': -0.15}
-    node.move_to_pose(pose)
-    pose = {'wrist_extension': 0.01}
-    node.move_to_pose(pose)
-
-    # gripper backwards stow
-    pose = {'joint_wrist_yaw': 3.3}
-    
-    # gripper forward stow needs a better forward range of motion to work well
-    node.move_to_pose(pose)
-    
-    # avoid blocking the laser range finder with the gripper
-    pose = {'joint_lift': 0.22}
-    node.move_to_pose(pose)
-    return 'lowered'
+    pose = {'joint_gripper_finger_left': -0.15, 'wrist_extension': 0.0, 'joint_wrist_yaw': 3.4, 'joint_lift': 0.2}
+    return node.move_to_pose(pose)
 
 
 def draw_robot_pose(robot_xya_pix, image, m_per_pix, color=(0, 0, 255)):
@@ -356,9 +343,9 @@ class HeadScan:
         pose = {'joint_head_pan': far_right_pan, 'joint_head_tilt': head_tilt}
         node.move_to_pose(pose)
 
-        pan_left = np.linspace(far_right_pan, far_left_pan, num_pan_steps)
+        pan_stops = np.linspace(far_right_pan, far_left_pan, num_pan_steps)
 
-        for pan_ang in pan_left:
+        for pan_ang in pan_stops:
             pose = {'joint_head_pan': pan_ang}
             self.capture_point_clouds(node, pose, capture_params)
 
