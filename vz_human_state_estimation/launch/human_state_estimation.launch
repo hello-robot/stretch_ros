@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="vz_human_state_estimation" type="ros_interface.py" name="human_state_estimation" />
+</launch>

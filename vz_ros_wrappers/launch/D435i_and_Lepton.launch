@@ -1,0 +1,4 @@
+<launch>
+      <node pkg="vz_ros_wrappers" type="grab_D435i.py" name="D435i" />
+      <node pkg="vz_ros_wrappers" type="grab_thermal.py" name="FLIRLepton" />
+  </launch>

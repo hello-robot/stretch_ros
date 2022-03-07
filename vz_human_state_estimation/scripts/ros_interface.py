@@ -1,0 +1,98 @@
+#! /usr/bin/python3
+
+# ROS specific imports 
+import rospy
+import message_filters
+from sensor_msgs.msg import Image
+from std_msgs.msg import String
+
+# Non ROS imports
+import merged_detection_algorithm as mda
+import cv2
+from cv_bridge import CvBridge, CvBridgeError
+
+UPDATE_RATE_HZ = 10 #hz for publishing bounding box later 
+
+class ROSInterface:
+    def __init__(self):
+        # Initialize the two images as None
+        self.cv_rgbd_img = None
+        self.cv_thermal_img = None
+        self.cv_bounding_boxed_img = None
+        self.MDA = mda.ConnectToROS()
+
+        # set up CV Bridge
+        self.bridge = CvBridge()
+
+        #Image subscribers
+        rgbd_sub    = message_filters.Subscriber("/D435i_raw",Image)
+        thermal_sub = message_filters.Subscriber("/flir_3_5_near_realsense_raw",Image)
+
+        # todo: confirm the slop parameter with Paul Ghanem. 2 secs seems high
+        ats = message_filters.ApproximateTimeSynchronizer([rgbd_sub,thermal_sub],queue_size=10,slop=2.0)
+        ats.registerCallback(self.ats_callback)
+    
+    def ats_callback(self,rgbd_img_data,thermal_img_data):
+        self.cv_rgbd_img = self.bridge.imgmsg_to_cv2(rgbd_img_data)
+        self.cv_thermal_img = self.bridge.imgmsg_to_cv2(thermal_img_data)
+        self.cv_bounding_boxed_img = self.MDA.processData(self.cv_rgbd_img,self.cv_thermal_img)
+
+    def run(self):
+        while not rospy.is_shutdown():
+            if(self.cv_rgbd_img is None or self.cv_thermal_img is None or self.cv_bounding_boxed_img is None):
+                continue
+            try:
+                # Show images
+                cv2.imshow('D435i',cv2.resize(self.cv_rgbd_img,(600,800), interpolation = cv2.INTER_AREA))
+                cv2.imshow('Thermal',cv2.resize(self.cv_thermal_img,(600,800), interpolation = cv2.INTER_AREA))
+                cv2.imshow('BoundingBox',cv2.resize(self.cv_bounding_boxed_img,(600,800), interpolation = cv2.INTER_AREA))
+                cv2.waitKey(3)
+
+            except Exception as e:
+                rospy.logwarn(e)
+
+if __name__ == '__main__':
+    try:
+        rospy.init_node('merged_detection_algorithm_ros', anonymous=True)
+        interface = ROSInterface()
+        interface.run()
+    except rospy.ROSInterruptException:
+        print('Human Pose Detection Node Failed')
+        pass
+    cv2.destroyAllWindows()
+
+
+# The following is just a simple subscriber. I think we need a time synced subscriber
+# class ROSInterface:
+#     def __init__(self):
+#         # Initialize the two images as None
+#         self.cv_rgbd_img = None
+#         self.cv_thermal_img = None
+
+#         # set up CV Bridge
+#         self.bridge = CvBridge()
+
+#         #Image subscribers
+#         rospy.Subscriber("/D435i_raw",Image,self.rgbd_callback)
+#         rospy.Subscriber("/flir_3_5_near_realsense_raw",Image,self.thermal_callback)
+    
+#     def rgbd_callback(self,rgbd_img_data):
+#         self.cv_rgbd_img = self.bridge.imgmsg_to_cv2(rgbd_img_data)
+#         print('rgbd callback')
+        
+#     def thermal_callback(self,thermal_img_data):
+#         self.cv_thermal_img = self.bridge.imgmsg_to_cv2(thermal_img_data)
+#         print('thermal callback')
+    
+#     def run(self):
+#         while not rospy.is_shutdown():
+#             if(self.cv_rgbd_img is None or self.cv_thermal_img is None):
+#                 continue
+#             try:
+#                 # Show images
+#                 cv2.imshow('D435i',cv2.resize(self.cv_rgbd_img,(600,800), interpolation = cv2.INTER_AREA))
+#                 cv2.imshow('Thermal',cv2.resize(self.cv_thermal_img,(600,800), interpolation = cv2.INTER_AREA))
+#                 cv2.waitKey(3)
+
+#             except Exception as e:
+#                 rospy.logwarn(e)
