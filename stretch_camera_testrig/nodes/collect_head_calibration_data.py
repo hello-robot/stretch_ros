@@ -36,24 +36,25 @@ from copy import deepcopy
 
 import yaml
 import time
-        
+
+
 class CollectHeadCalibrationDataNode:
 
-    def __init__(self,test_rig=False):
+    def __init__(self, test_rig=False):
 
         self.rate = 10.0
-        
+
         self.joint_state = None
-        self.acceleration = None        
+        self.acceleration = None
 
         self.data_time = None
         self.marker_time = None
         self.test_rig = test_rig
         self.data_lock = threading.Lock()
         if test_rig:
-            self.number_of_testrig_samples=40
+            self.number_of_testrig_samples = 40
 
-    def calibration_data_callback(self, accel, marker_array, joint_state=None):
+    def calibration_data_callback(self, marker_array, accel=None, joint_state=None):
         # Prepare and assign data for calibration to member
         # variables. The configuration of the robot's joints, the
         # D435i acceleration, and the 3D fiducial estimates made via
@@ -63,7 +64,8 @@ class CollectHeadCalibrationDataNode:
             if not self.test_rig:
                 self.data_time = joint_state.header.stamp
                 self.joint_state = joint_state
-                self.acceleration = [accel.linear_acceleration.x, accel.linear_acceleration.y, accel.linear_acceleration.z]
+                self.acceleration = [accel.linear_acceleration.x, accel.linear_acceleration.y,
+                                     accel.linear_acceleration.z]
 
             self.wrist_inside_marker_pose = None
             self.wrist_top_marker_pose = None
@@ -78,7 +80,7 @@ class CollectHeadCalibrationDataNode:
                     self.marker_time = marker.header.stamp
                 elif marker.header.stamp < self.marker_time:
                     self.marker_time = marker.header.stamp
-                
+
                 if marker.id == self.wrist_inside_marker_id:
                     self.wrist_inside_marker_pose = marker.pose
 
@@ -104,16 +106,17 @@ class CollectHeadCalibrationDataNode:
         self.trajectory_goal.trajectory.header.stamp = rospy.Time.now()
         self.trajectory_client.send_goal(self.trajectory_goal)
         self.trajectory_client.wait_for_result()
-        
-    def get_samples(self, pan_angle_center, tilt_angle_center, wrist_extension_center, number_of_samples, first_move=False):
+
+    def get_samples(self, pan_angle_center, tilt_angle_center, wrist_extension_center, number_of_samples,
+                    first_move=False):
         # Collect N observations (samples) centered around the
         # provided head and wrist extension pose. If first_move is
         # true, it indicates that this is the first movement to a new
         # region for calibration, which can induce more vibrations and
         # thus benefit from more time to settle prior to collecting a
         # sample.
-        
-        head_motion_settle_time = 1.0 #5.0
+
+        head_motion_settle_time = 1.0  # 5.0
         first_pan_tilt_extra_settle_time = 1.0
         wait_before_each_sample_s = 0.2
 
@@ -124,10 +127,10 @@ class CollectHeadCalibrationDataNode:
         # Ensure that the head is clearly in one of the two head tilt
         # backlash regimes and not in the indeterminate transition
         # region.
-        tilt_backlash_safety_margin = 0.08        
-        tilt_backlash_looking_down_max = tilt_backlash_transition - tilt_backlash_safety_margin # looking down
-        tilt_backlash_looking_up_min = tilt_backlash_transition + tilt_backlash_safety_margin # looking up
-        
+        tilt_backlash_safety_margin = 0.08
+        tilt_backlash_looking_down_max = tilt_backlash_transition - tilt_backlash_safety_margin  # looking down
+        tilt_backlash_looking_up_min = tilt_backlash_transition + tilt_backlash_safety_margin  # looking up
+
         tilt_angle = tilt_angle_center
         if (tilt_angle_center > tilt_backlash_looking_down_max) and (tilt_angle_center < tilt_backlash_looking_up_min):
             # Commanded tilt_angle_center is in an uncertain backlash range
@@ -138,29 +141,29 @@ class CollectHeadCalibrationDataNode:
                 tilt_angle = tilt_backlash_looking_up_min
             else:
                 tilt_angle = tilt_backlash_looking_down_max
-        if tilt_angle > tilt_backlash_transition: 
+        if tilt_angle > tilt_backlash_transition:
             joint_head_tilt_looking_up = True
         else:
             joint_head_tilt_looking_up = False
-            
+
         # represent all head pan and wrist extension backlash states
         backlash_combinations = ((False, False), (False, True), (True, True), (True, False))
 
-        pan_backlash_change_rad = 0.07 # ~8 degrees
-        wrist_backlash_change_m = 0.01 # 1 cm
-        
+        pan_backlash_change_rad = 0.07  # ~8 degrees
+        wrist_backlash_change_m = 0.01  # 1 cm
+
         samples = []
-        
+
         # collect samples for all head pan and wrist extension
         # backlash states
-        for joint_head_pan_looked_left, wrist_extension_retracted in backlash_combinations: 
+        for joint_head_pan_looked_left, wrist_extension_retracted in backlash_combinations:
 
             if joint_head_pan_looked_left:
                 pan_angle = pan_angle_center + pan_backlash_change_rad
             else:
                 pan_angle = pan_angle_center - pan_backlash_change_rad
 
-            if wrist_extension_retracted: 
+            if wrist_extension_retracted:
                 wrist_extension = wrist_extension_center - wrist_backlash_change_m
             else:
                 wrist_extension = wrist_extension_center + wrist_backlash_change_m
@@ -170,7 +173,6 @@ class CollectHeadCalibrationDataNode:
                              'joint_head_tilt': tilt_angle,
                              'wrist_extension': wrist_extension}
             self.move_to_pose(head_arm_pose)
-
 
             # wait for the joints and sensors to settle
             rospy.sleep(head_motion_settle_time)
@@ -186,19 +188,19 @@ class CollectHeadCalibrationDataNode:
                 rospy.sleep(wait_before_each_sample_s)
                 observation = {'joints': {'joint_head_pan': None,
                                           'joint_head_tilt': None,
-                                          'wrist_extension' : None,
-                                          'joint_lift': None },
+                                          'wrist_extension': None,
+                                          'joint_lift': None},
                                'backlash_state': {
                                    'joint_head_pan_looked_left': None,
                                    'joint_head_tilt_looking_up': None,
                                    'wrist_extension_retracted': None
-                                   },
-                               'camera_measurements': { 'd435i_acceleration': None,
-                                                        'wrist_inside_marker_pose': None,
-                                                        'wrist_top_marker_pose': None,
-                                                        'base_left_marker_pose': None,
-                                                        'base_right_marker_pose': None,
-                                                        'shoulder_marker_pose': None}
+                               },
+                               'camera_measurements': {'d435i_acceleration': None,
+                                                       'wrist_inside_marker_pose': None,
+                                                       'wrist_top_marker_pose': None,
+                                                       'base_left_marker_pose': None,
+                                                       'base_right_marker_pose': None,
+                                                       'shoulder_marker_pose': None}
                                }
 
                 # wait for a sample taken after the robot has
@@ -224,16 +226,17 @@ class CollectHeadCalibrationDataNode:
                                 # settled
                                 data_ready = True
                     if not data_ready:
-                        #rospy.sleep(0.2) #0.1
+                        # rospy.sleep(0.2) #0.1
                         rospy.sleep(1.0)
                     timeout = (rospy.Time.now() - start_wait) > timeout_duration
 
                 if timeout:
                     rospy.logerr('collect_head_calibration_data get_samples: timeout while waiting for sample.')
-                    raise Exception('Timed out waiting for joint_states/accelerations/markers messages after 10 seconds')
+                    raise Exception(
+                        'Timed out waiting for joint_states/accelerations/markers messages after 10 seconds')
 
                 with self.data_lock:
-                    #set backlash joint state
+                    # set backlash joint state
                     backlash_state = observation['backlash_state']
                     backlash_state['joint_head_pan_looked_left'] = joint_head_pan_looked_left
                     backlash_state['joint_head_tilt_looking_up'] = joint_head_tilt_looking_up
@@ -242,7 +245,7 @@ class CollectHeadCalibrationDataNode:
                     # record the settled joint values
                     joints = observation['joints']
                     for joint_name in joints:
-                        print('Joint name %s'%joint_name)
+                        print('Joint name %s' % joint_name)
                         joint_index = self.joint_state.name.index(joint_name)
                         joint_value = self.joint_state.position[joint_index]
                         joints[joint_name] = joint_value
@@ -253,19 +256,24 @@ class CollectHeadCalibrationDataNode:
 
                     # record the settled aruco measurements
                     if self.wrist_inside_marker_pose is not None:
-                        camera_measurements['wrist_inside_marker_pose'] = ros_numpy.numpify(self.wrist_inside_marker_pose).tolist()
+                        camera_measurements['wrist_inside_marker_pose'] = ros_numpy.numpify(
+                            self.wrist_inside_marker_pose).tolist()
 
                     if self.wrist_top_marker_pose is not None:
-                        camera_measurements['wrist_top_marker_pose'] = ros_numpy.numpify(self.wrist_top_marker_pose).tolist()
+                        camera_measurements['wrist_top_marker_pose'] = ros_numpy.numpify(
+                            self.wrist_top_marker_pose).tolist()
 
                     if self.base_left_marker_pose is not None:
-                        camera_measurements['base_left_marker_pose'] = ros_numpy.numpify(self.base_left_marker_pose).tolist()
+                        camera_measurements['base_left_marker_pose'] = ros_numpy.numpify(
+                            self.base_left_marker_pose).tolist()
 
                     if self.base_right_marker_pose is not None:
-                        camera_measurements['base_right_marker_pose'] = ros_numpy.numpify(self.base_right_marker_pose).tolist()
+                        camera_measurements['base_right_marker_pose'] = ros_numpy.numpify(
+                            self.base_right_marker_pose).tolist()
 
                     if self.shoulder_marker_pose is not None:
-                        camera_measurements['shoulder_marker_pose'] = ros_numpy.numpify(self.shoulder_marker_pose).tolist()
+                        camera_measurements['shoulder_marker_pose'] = ros_numpy.numpify(
+                            self.shoulder_marker_pose).tolist()
 
                 samples.append(observation)
         return samples
@@ -275,27 +283,27 @@ class CollectHeadCalibrationDataNode:
         # testrig rigid setup. This function allows to
         # collect samples in the same data dictionary format 
         # used for calibration without any robot motion.
-        
+
         samples = []
         wait_before_each_sample_s = 0.1
         for sample_number in range(number_of_samples):
             rospy.sleep(wait_before_each_sample_s)
             observation = {'joints': {'joint_head_pan': None,
-                                        'joint_head_tilt': None,
-                                        'wrist_extension' : None,
-                                        'joint_lift': None },
-                            'backlash_state': {
-                                'joint_head_pan_looked_left': None,
-                                'joint_head_tilt_looking_up': None,
-                                'wrist_extension_retracted': None
-                                },
-                            'camera_measurements': { 'd435i_acceleration': None,
-                                                    'wrist_inside_marker_pose': None,
-                                                    'wrist_top_marker_pose': None,
-                                                    'base_left_marker_pose': None,
-                                                    'base_right_marker_pose': None,
-                                                    'shoulder_marker_pose': None}
-                            }
+                                      'joint_head_tilt': None,
+                                      'wrist_extension': None,
+                                      'joint_lift': None},
+                           'backlash_state': {
+                               'joint_head_pan_looked_left': None,
+                               'joint_head_tilt_looking_up': None,
+                               'wrist_extension_retracted': None
+                           },
+                           'camera_measurements': {'d435i_acceleration': None,
+                                                   'wrist_inside_marker_pose': None,
+                                                   'wrist_top_marker_pose': None,
+                                                   'base_left_marker_pose': None,
+                                                   'base_right_marker_pose': None,
+                                                   'shoulder_marker_pose': None}
+                           }
 
             with self.data_lock:
 
@@ -305,23 +313,27 @@ class CollectHeadCalibrationDataNode:
 
                 # record the settled aruco measurements
                 if self.wrist_inside_marker_pose is not None:
-                    camera_measurements['wrist_inside_marker_pose'] = ros_numpy.numpify(self.wrist_inside_marker_pose).tolist()
+                    camera_measurements['wrist_inside_marker_pose'] = ros_numpy.numpify(
+                        self.wrist_inside_marker_pose).tolist()
 
                 if self.wrist_top_marker_pose is not None:
-                    camera_measurements['wrist_top_marker_pose'] = ros_numpy.numpify(self.wrist_top_marker_pose).tolist()
+                    camera_measurements['wrist_top_marker_pose'] = ros_numpy.numpify(
+                        self.wrist_top_marker_pose).tolist()
 
                 if self.base_left_marker_pose is not None:
-                    camera_measurements['base_left_marker_pose'] = ros_numpy.numpify(self.base_left_marker_pose).tolist()
+                    camera_measurements['base_left_marker_pose'] = ros_numpy.numpify(
+                        self.base_left_marker_pose).tolist()
 
                 if self.base_right_marker_pose is not None:
-                    camera_measurements['base_right_marker_pose'] = ros_numpy.numpify(self.base_right_marker_pose).tolist()
+                    camera_measurements['base_right_marker_pose'] = ros_numpy.numpify(
+                        self.base_right_marker_pose).tolist()
 
                 if self.shoulder_marker_pose is not None:
                     camera_measurements['shoulder_marker_pose'] = ros_numpy.numpify(self.shoulder_marker_pose).tolist()
 
             samples.append(observation)
         return samples
-    
+
     def calibrate_pan_and_tilt(self, collect_check_data=False):
         # Collects observations of fiducial markers on the robot's
         # body while moving the head pan, head tilt, arm lift, and arm
@@ -335,9 +347,9 @@ class CollectHeadCalibrationDataNode:
         # calibration. When collect_check_data is False, more samples
         # are collected with the intention of fully calibrating the
         # robot.
-        
+
         calibration_data = []
-        number_of_samples_per_head_pose = 1 #3
+        number_of_samples_per_head_pose = 1  # 3
         wrist_motion_settle_time = 1.0
 
         ########################################
@@ -353,17 +365,17 @@ class CollectHeadCalibrationDataNode:
 
         # looking down data
         min_tilt_angle_rad = -1.4
-        max_tilt_angle_rad = -0.5 
+        max_tilt_angle_rad = -0.5
 
         min_pan_angle_rad = -3.8
         max_pan_angle_rad = 1.3
 
         if collect_check_data:
-            number_of_tilt_steps = 1 
-            number_of_pan_steps = 3 
-        else: 
-            number_of_tilt_steps = 3 #4 
-            number_of_pan_steps = 5 #7 
+            number_of_tilt_steps = 1
+            number_of_pan_steps = 3
+        else:
+            number_of_tilt_steps = 3  # 4
+            number_of_pan_steps = 5  # 7
 
         pan_angles_rad = np.linspace(min_pan_angle_rad, max_pan_angle_rad, number_of_pan_steps)
         tilt_angles_rad = np.linspace(min_tilt_angle_rad, max_tilt_angle_rad, number_of_tilt_steps)
@@ -377,14 +389,17 @@ class CollectHeadCalibrationDataNode:
         self.move_to_pose(lift_pose)
 
         # wait for the joints and sensors to settle
-        rospy.loginfo('Wait {0} seconds for the robot to settle after motion of the arm.'.format(wrist_motion_settle_time))
+        rospy.loginfo(
+            'Wait {0} seconds for the robot to settle after motion of the arm.'.format(wrist_motion_settle_time))
         rospy.sleep(wrist_motion_settle_time)
 
-        rospy.loginfo('Starting to collect global head looking down data  (expect to collect {0} samples).'.format(number_of_tilt_steps * number_of_pan_steps))
+        rospy.loginfo('Starting to collect global head looking down data  (expect to collect {0} samples).'.format(
+            number_of_tilt_steps * number_of_pan_steps))
         first_pan_tilt = True
         for pan_angle in pan_angles_rad:
             for tilt_angle in tilt_angles_rad:
-                observation = self.get_samples(pan_angle, tilt_angle, wrist_extension, number_of_samples_per_head_pose, first_move=first_pan_tilt)
+                observation = self.get_samples(pan_angle, tilt_angle, wrist_extension, number_of_samples_per_head_pose,
+                                               first_move=first_pan_tilt)
                 first_pan_tilt = False
                 calibration_data.extend(observation)
                 n = len(calibration_data)
@@ -401,7 +416,7 @@ class CollectHeadCalibrationDataNode:
         rospy.loginfo('COLLECT GLOBAL HEAD LOOKING UP DATA')
         rospy.loginfo('*************************************')
         rospy.loginfo('')
-        
+
         if not collect_check_data:
             tilt_angles_rad = [-0.3, 0.38]
             pan_angles_rad = [-3.8, -1.66, 1.33]
@@ -415,20 +430,23 @@ class CollectHeadCalibrationDataNode:
             self.move_to_pose(wrist_pose)
 
             # wait for the joints and sensors to settle
-            rospy.loginfo('Wait {0} seconds for the robot to settle after motion of the arm.'.format(wrist_motion_settle_time))
+            rospy.loginfo(
+                'Wait {0} seconds for the robot to settle after motion of the arm.'.format(wrist_motion_settle_time))
             rospy.sleep(wrist_motion_settle_time)
 
-            rospy.loginfo('Starting to collect global head looking up data (expect to collect {0} samples).'.format(len(pan_angles_rad) * len(tilt_angles_rad)))
+            rospy.loginfo('Starting to collect global head looking up data (expect to collect {0} samples).'.format(
+                len(pan_angles_rad) * len(tilt_angles_rad)))
             first_pan_tilt = True
             for pan_angle in pan_angles_rad:
                 for tilt_angle in tilt_angles_rad:
-                    observation = self.get_samples(pan_angle, tilt_angle, wrist_extension, number_of_samples_per_head_pose, first_move=first_pan_tilt)
+                    observation = self.get_samples(pan_angle, tilt_angle, wrist_extension,
+                                                   number_of_samples_per_head_pose, first_move=first_pan_tilt)
                     first_pan_tilt = False
                     calibration_data.extend(observation)
                     n = len(calibration_data)
                     if (n % 10) == 0:
                         rospy.loginfo('{0} samples collected so far.'.format(n))
-                    
+
         #######################################
         ##
         ## COLLECT HIGH SHOULDER DATA
@@ -439,7 +457,7 @@ class CollectHeadCalibrationDataNode:
         rospy.loginfo('COLLECT HIGH SHOULDER DATA')
         rospy.loginfo('*************************************')
         rospy.loginfo('')
-        
+
         ##############################################################
         ### poses that see the shoulder marker
         #
@@ -463,7 +481,7 @@ class CollectHeadCalibrationDataNode:
         ##############################################################
 
         wrist_extension = 0.29
-        
+
         # low shoulder height
         pan_angle_rad = -3.7
         tilt_angle_rad_1 = -1.4
@@ -473,16 +491,19 @@ class CollectHeadCalibrationDataNode:
         pose = {'joint_lift': lift_m}
         rospy.loginfo('Move to first shoulder capture height.')
         self.move_to_pose(pose)
-        rospy.loginfo('Wait {0} seconds for the robot to settle after motion of the arm.'.format(wrist_motion_settle_time))
+        rospy.loginfo(
+            'Wait {0} seconds for the robot to settle after motion of the arm.'.format(wrist_motion_settle_time))
         rospy.sleep(wrist_motion_settle_time)
 
         first_pan_tilt = True
-        observation = self.get_samples(pan_angle_rad, tilt_angle_rad_1, wrist_extension, number_of_samples_per_head_pose, first_move=first_pan_tilt)
+        observation = self.get_samples(pan_angle_rad, tilt_angle_rad_1, wrist_extension,
+                                       number_of_samples_per_head_pose, first_move=first_pan_tilt)
         calibration_data.extend(observation)
 
         if not collect_check_data:
             first_pan_tilt = False
-            observation = self.get_samples(pan_angle_rad, tilt_angle_rad_2, wrist_extension, number_of_samples_per_head_pose, first_move=first_pan_tilt)
+            observation = self.get_samples(pan_angle_rad, tilt_angle_rad_2, wrist_extension,
+                                           number_of_samples_per_head_pose, first_move=first_pan_tilt)
             calibration_data.extend(observation)
 
         # high shoulder height
@@ -494,18 +515,20 @@ class CollectHeadCalibrationDataNode:
         pose = {'joint_lift': lift_m}
         rospy.loginfo('Move to second shoulder capture height.')
         self.move_to_pose(pose)
-        rospy.loginfo('Wait {0} seconds for the robot to settle after motion of the arm.'.format(wrist_motion_settle_time))
+        rospy.loginfo(
+            'Wait {0} seconds for the robot to settle after motion of the arm.'.format(wrist_motion_settle_time))
         rospy.sleep(wrist_motion_settle_time)
 
         first_pan_tilt = True
-        observation = self.get_samples(pan_angle_rad, tilt_angle_rad_1, wrist_extension, number_of_samples_per_head_pose, first_move=first_pan_tilt)
+        observation = self.get_samples(pan_angle_rad, tilt_angle_rad_1, wrist_extension,
+                                       number_of_samples_per_head_pose, first_move=first_pan_tilt)
         calibration_data.extend(observation)
 
         if not collect_check_data:
             first_pan_tilt = False
-            observation = self.get_samples(pan_angle_rad, tilt_angle_rad_2, wrist_extension, number_of_samples_per_head_pose, first_move=first_pan_tilt)
+            observation = self.get_samples(pan_angle_rad, tilt_angle_rad_2, wrist_extension,
+                                           number_of_samples_per_head_pose, first_move=first_pan_tilt)
             calibration_data.extend(observation)
-
 
         #######################################
         ##
@@ -542,16 +565,17 @@ class CollectHeadCalibrationDataNode:
         wrist_focused_min_tilt = -1.2
         wrist_focused_max_tilt = -0.5
 
-        
         if collect_check_data:
-            num_wrist_focused_pan_steps = 1 #3
-            num_wrist_focused_tilt_steps = 1 #3
+            num_wrist_focused_pan_steps = 1  # 3
+            num_wrist_focused_tilt_steps = 1  # 3
         else:
-            num_wrist_focused_pan_steps = 2 #3
-            num_wrist_focused_tilt_steps = 2 #3
-            
-        wrist_focused_pan_angles_rad = np.linspace(wrist_focused_min_pan, wrist_focused_max_pan, num_wrist_focused_pan_steps)
-        wrist_focused_tilt_angles_rad = np.linspace(wrist_focused_min_tilt, wrist_focused_max_tilt, num_wrist_focused_tilt_steps)
+            num_wrist_focused_pan_steps = 2  # 3
+            num_wrist_focused_tilt_steps = 2  # 3
+
+        wrist_focused_pan_angles_rad = np.linspace(wrist_focused_min_pan, wrist_focused_max_pan,
+                                                   num_wrist_focused_pan_steps)
+        wrist_focused_tilt_angles_rad = np.linspace(wrist_focused_min_tilt, wrist_focused_max_tilt,
+                                                    num_wrist_focused_tilt_steps)
 
         if collect_check_data:
             wrist_extensions = [0.2]
@@ -560,8 +584,8 @@ class CollectHeadCalibrationDataNode:
             # heights.
             #
             # 0.46 m = (0.8 m + 0.12 m) / 2.0
-            wrist_heights = [0.46, 0.8] #[0.2, 0.5, 0.8]
-            wrist_poses = [{'wrist_extension': e, 'joint_lift': h} for h in wrist_heights for e in wrist_extensions] 
+            wrist_heights = [0.46, 0.8]  # [0.2, 0.5, 0.8]
+            wrist_poses = [{'wrist_extension': e, 'joint_lift': h} for h in wrist_heights for e in wrist_extensions]
 
             num_wrist_poses = len(wrist_poses)
         else:
@@ -571,12 +595,13 @@ class CollectHeadCalibrationDataNode:
             # heights.
             #
             # 0.46 m = (0.8 m + 0.12 m) / 2.0
-            wrist_heights = [0.46, 0.8] #[0.2, 0.5, 0.8]
-            wrist_poses = [{'wrist_extension': e, 'joint_lift': h} for h in wrist_heights for e in wrist_extensions] 
+            wrist_heights = [0.46, 0.8]  # [0.2, 0.5, 0.8]
+            wrist_poses = [{'wrist_extension': e, 'joint_lift': h} for h in wrist_heights for e in wrist_extensions]
 
             num_wrist_poses = len(wrist_poses)
 
-        rospy.loginfo('Starting to collect arm focused samples (expect to collect {0} samples).'.format(num_wrist_poses * num_wrist_focused_pan_steps * num_wrist_focused_tilt_steps))
+        rospy.loginfo('Starting to collect arm focused samples (expect to collect {0} samples).'.format(
+            num_wrist_poses * num_wrist_focused_pan_steps * num_wrist_focused_tilt_steps))
 
         for wrist_pose in wrist_poses:
 
@@ -584,19 +609,21 @@ class CollectHeadCalibrationDataNode:
             self.move_to_pose(wrist_pose)
 
             # wait for the joints and sensors to settle
-            rospy.loginfo('Wait {0} seconds for the robot to settle after motion of the arm.'.format(wrist_motion_settle_time))
+            rospy.loginfo(
+                'Wait {0} seconds for the robot to settle after motion of the arm.'.format(wrist_motion_settle_time))
             rospy.sleep(wrist_motion_settle_time)
 
             first_pan_tilt = True
             for pan_angle in wrist_focused_pan_angles_rad:
                 for tilt_angle in wrist_focused_tilt_angles_rad:
-                    observation = self.get_samples(pan_angle, tilt_angle, wrist_pose['wrist_extension'], number_of_samples_per_head_pose, first_move=first_pan_tilt)
+                    observation = self.get_samples(pan_angle, tilt_angle, wrist_pose['wrist_extension'],
+                                                   number_of_samples_per_head_pose, first_move=first_pan_tilt)
                     first_pan_tilt = False
                     calibration_data.extend(observation)
                     n = len(calibration_data)
                     if (n % 10) == 0:
                         rospy.loginfo('{0} samples collected so far.'.format(n))
-        
+
         #######################################
         ##
         ## FINISHED COLLECTING DATA - SAVE IT
@@ -608,9 +635,10 @@ class CollectHeadCalibrationDataNode:
         rospy.loginfo('*************************************')
         rospy.loginfo('')
         rospy.loginfo('Collected {0} samples in total.'.format(len(calibration_data)))
-        
+
         t = time.localtime()
-        capture_date = str(t.tm_year) + str(t.tm_mon).zfill(2) + str(t.tm_mday).zfill(2) + str(t.tm_hour).zfill(2) + str(t.tm_min).zfill(2)
+        capture_date = str(t.tm_year) + str(t.tm_mon).zfill(2) + str(t.tm_mday).zfill(2) + str(t.tm_hour).zfill(
+            2) + str(t.tm_min).zfill(2)
         if collect_check_data:
             filename = self.calibration_directory + 'check_head_calibration_data_' + capture_date + '.yaml'
         else:
@@ -624,7 +652,7 @@ class CollectHeadCalibrationDataNode:
         rospy.loginfo('')
 
         #######################################
-                
+
     def testrig_data_collect(self, number_of_samples):
 
         calibration_data = []
@@ -642,14 +670,14 @@ class CollectHeadCalibrationDataNode:
         rospy.loginfo('Target Number of Frames :{0}'.format(number_of_samples))
         rospy.loginfo('')
 
-        while len(calibration_data)<number_of_samples:
+        while len(calibration_data) < number_of_samples:
             observation = self.get_samples_testrig(1)
             first_pan_tilt = False
             calibration_data.extend(observation)
             n = len(calibration_data)
             if (n % 10) == 0:
                 rospy.loginfo('{0} samples collected so far.'.format(n))
-        
+
         #######################################
         ##
         ## FINISHED COLLECTING DATA - SAVE IT
@@ -661,9 +689,10 @@ class CollectHeadCalibrationDataNode:
         rospy.loginfo('*************************************')
         rospy.loginfo('')
         rospy.loginfo('Collected {0} samples in total.'.format(len(calibration_data)))
-        
+
         t = time.localtime()
-        capture_date = str(t.tm_year) + str(t.tm_mon).zfill(2) + str(t.tm_mday).zfill(2) + str(t.tm_hour).zfill(2) + str(t.tm_min).zfill(2)
+        capture_date = str(t.tm_year) + str(t.tm_mon).zfill(2) + str(t.tm_mday).zfill(2) + str(t.tm_hour).zfill(
+            2) + str(t.tm_min).zfill(2)
         filename = self.testrig_data_path + 'testrig_collected_data_' + capture_date + '.yaml'
 
         rospy.loginfo('Saving calibration_data to a YAML file named {0}'.format(filename))
@@ -705,7 +734,7 @@ class CollectHeadCalibrationDataNode:
         else:
             rospy.init_node('collect_testrig_data')
 
-        self.node_name = rospy.get_name()        
+        self.node_name = rospy.get_name()
         rospy.loginfo("{0} started".format(self.node_name))
 
         # Obtain the ArUco marker ID numbers.
@@ -726,13 +755,15 @@ class CollectHeadCalibrationDataNode:
         if not self.test_rig:
             filename = rospy.get_param('~controller_calibration_file')
 
-            rospy.loginfo('Loading factory default tilt backlash transition angle from the YAML file named {0}'.format(filename))
+            rospy.loginfo(
+                'Loading factory default tilt backlash transition angle from the YAML file named {0}'.format(filename))
             fid = open(filename, 'r')
             controller_parameters = yaml.load(fid)
             fid.close()
             self.tilt_angle_backlash_transition_rad = controller_parameters['tilt_angle_backlash_transition']
-            deg_per_rad = 180.0/math.pi
-            rospy.loginfo('self.tilt_angle_backlash_transition_rad in degrees = {0}'.format(self.tilt_angle_backlash_transition_rad * deg_per_rad))
+            deg_per_rad = 180.0 / math.pi
+            rospy.loginfo('self.tilt_angle_backlash_transition_rad in degrees = {0}'.format(
+                self.tilt_angle_backlash_transition_rad * deg_per_rad))
 
             self.calibration_directory = rospy.get_param('~calibration_directory')
             rospy.loginfo('Using the following directory for calibration files: {0}'.format(self.calibration_directory))
@@ -742,16 +773,18 @@ class CollectHeadCalibrationDataNode:
             accel_subscriber = message_filters.Subscriber('/camera/accel/sample_corrected', Imu)
             aruco_subscriber = message_filters.Subscriber('/aruco/marker_array', MarkerArray)
             slop_time = 0.1
-            self.synchronizer = message_filters.ApproximateTimeSynchronizer([accel_subscriber, aruco_subscriber, joint_state_subscriber], 10, slop_time, allow_headerless=True)
+            self.synchronizer = message_filters.ApproximateTimeSynchronizer(
+                [aruco_subscriber, accel_subscriber, joint_state_subscriber], 10, slop_time, allow_headerless=True)
             self.synchronizer.registerCallback(self.calibration_data_callback)
 
-            self.trajectory_client = actionlib.SimpleActionClient('/stretch_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
+            self.trajectory_client = actionlib.SimpleActionClient('/stretch_controller/follow_joint_trajectory',
+                                                                  FollowJointTrajectoryAction)
             self.trajectory_goal = FollowJointTrajectoryGoal()
             self.trajectory_goal.goal_time_tolerance = rospy.Time(1.0)
-            
+
             self.point = JointTrajectoryPoint()
             self.point.time_from_start = rospy.Duration(0.0)
-            
+
             server_reached = self.trajectory_client.wait_for_server(timeout=rospy.Duration(60.0))
             if not server_reached:
                 rospy.signal_shutdown('Unable to connect to arm action server. Timeout exceeded.')
@@ -769,14 +802,11 @@ class CollectHeadCalibrationDataNode:
             accel_subscriber = message_filters.Subscriber('/camera/accel/sample_corrected', Imu)
             aruco_subscriber = message_filters.Subscriber('/aruco/marker_array', MarkerArray)
             slop_time = 0.1
-            self.synchronizer = message_filters.ApproximateTimeSynchronizer([accel_subscriber, aruco_subscriber], 10, slop_time, allow_headerless=True)
+            self.synchronizer = message_filters.ApproximateTimeSynchronizer([aruco_subscriber], 10, slop_time,
+                                                                            allow_headerless=True)
             self.synchronizer.registerCallback(self.calibration_data_callback)
 
             rate = rospy.Rate(self.rate)
             self.testrig_data_path = rospy.get_param('~testrig_data_directory')
             self.number_of_testrig_samples = rospy.get_param('~samples')
             self.testrig_data_collect(number_of_samples=self.number_of_testrig_samples)
-
-        
-
-

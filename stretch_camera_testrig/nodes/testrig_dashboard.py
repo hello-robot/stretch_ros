@@ -27,7 +27,7 @@ class TestRig_dashboard():
         self.error_keys = ["angle_rotation_error", "euclidean_error"]
         self.window = Tk()
         self.window.title("Camera Test rig Dashboard")
-        self.window.geometry('600x900')
+        self.window.geometry('700x900')
 
         self.data_file_name = None
         self.test_rig = None
@@ -117,7 +117,7 @@ class TestRig_dashboard():
         except KeyError:
             None
         info_txt = str(yaml.safe_dump(info_dict, allow_unicode=True, default_flow_style=False))
-        self.info_print = Label(self.window, text=info_txt, anchor="w", font=("Arial", 12), justify=LEFT)
+        self.info_print = Label(self.window, text=info_txt, anchor="w", font=("Arial", 10), justify=LEFT)
         self.info_print.place(x=x_pos, y=y_pos)
 
     def metrics_table_print(self, pos_x, pos_y, error_key):
@@ -220,7 +220,7 @@ class TestRig_dashboard():
         self.test_rig = test_rig
         self.metrics_table_print(self.x_off_mid + 130, self.y_off_mid + 420, 'euclidean_error')
         self.metrics_table_print(self.x_off_mid + 130, self.y_off_mid + 620, 'angle_rotation_error')
-        self.test_data_info(360, 150)
+        self.test_data_info(380, 140)
         return test_rig
 
     def mainloop(self):

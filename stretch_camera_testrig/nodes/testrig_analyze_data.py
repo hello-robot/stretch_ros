@@ -54,7 +54,7 @@ class TestRig_Analyze:
         self.data_capture_date = capture_date
 
         self.test_results_dict = {'capture_id': self.data_capture_date,
-                                  'realsense_firmware': self.realsense_fw,
+                                  'realsense_details': self.realsense_fw,
                                   'number_samples': None,
                                   'null_frames': {},
                                   'lighting_condition': {
@@ -68,17 +68,29 @@ class TestRig_Analyze:
         performance_metrics = {}
         for key in self.data_keys:
             performance_metric = {}
-            performance_metric['mean'] = float(np.mean(self.remove_null_vals(error_data_dict[key])))
-            performance_metric['maximum'] = float(np.max(self.remove_null_vals(error_data_dict[key])))
-            performance_metric['median'] = float(np.median(self.remove_null_vals(error_data_dict[key])))
-            performance_metric['rmse'] = float(np.sqrt(np.mean(self.remove_null_vals(error_data_dict[key]) ** 2)))
+            performance_metric['mean'] = np.nan
+            performance_metric['maximum'] = np.nan
+            performance_metric['median'] = np.nan
+            performance_metric['rmse'] = np.nan
+
+            try:
+                performance_metric['mean'] = float(np.mean(self.remove_null_vals(error_data_dict[key])))
+                performance_metric['maximum'] = float(np.max(self.remove_null_vals(error_data_dict[key])))
+                performance_metric['median'] = float(np.median(self.remove_null_vals(error_data_dict[key])))
+                performance_metric['rmse'] = float(np.sqrt(np.mean(self.remove_null_vals(error_data_dict[key]) ** 2)))
+            except(ValueError):
+                print('[Error] Metrics Computation Error')
 
             performance_metrics[key] = performance_metric
         return performance_metrics
 
     def remove_null_vals(self, arr):
-        arr = np.array(arr, dtype=np.float)
-        return arr[~np.isnan(arr)]
+        rn_vals = []
+        for x in arr:
+            if x is not None:
+                rn_vals.append(x)
+        rn_vals = np.array(rn_vals)
+        return rn_vals
 
     def populate_performance_metrics(self):
         self.test_results_dict['performance_metrics']['angle_rotation_error'] = self.get_performance_metric(
@@ -101,17 +113,25 @@ class TestRig_Analyze:
         return null_counts
 
     def get_realsense_fw(self):
-        fw_version = None
+        fw_details = None
         try:
             fw_details = Popen("rs-fw-update -l | grep -i 'firmware'", shell=True, bufsize=64, stdin=PIPE, stdout=PIPE,
                                close_fds=True).stdout.read()
+            fw_serial = fw_details.split(',')[1]
+            fw_serial = fw_serial.split(' ')[-1]
+
+            fw_usb = fw_details.split(',')[-1]
+            fw_usb = fw_usb.split(' ')[-1][:-1]
+
             fw_v = fw_details.split(',')[3]
             fw_v = fw_v.split(' ')[-1]
-            fw_version = fw_v
+            fw_details = {'serial': fw_serial,
+                          'firmware': fw_v,
+                          'usb': fw_usb}
         except:
             print('[Error] Realsense FW not found.')
 
-        return fw_version
+        return fw_details
 
     def testrg_data_parse(self, filename):
         # Parses the collected data in yaml
@@ -131,7 +151,7 @@ class TestRig_Analyze:
             for observation in data_list:
                 for key in self.data_keys:
                     marker_pose = observation['camera_measurements'][key]
-                    if marker_pose != None:
+                    if marker_pose is not None:
                         data_dict[key].append(np.array(marker_pose))
                     else:
                         data_dict[key].append(None)
