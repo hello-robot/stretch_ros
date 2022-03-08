@@ -35,8 +35,8 @@ class D435i:
         # initialize ros/cv2 bridge
         
         # Note: when testing with your own video, replace with local file
-        # self.D435i_cap = cv2.VideoCapture('/home/ananya/Downloads/2022-02-09-16-20-58(2).mp4')
-        self.thermal_cap = cv2.VideoCapture('/dev/video6')
+        self.D435i_cap = cv2.VideoCapture('/dev/video4')
+
         if not self.D435i_cap.isOpened():
             raise(Exception,'Unable to open video stream')
         self.bridge = CvBridge()
