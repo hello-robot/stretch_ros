@@ -42,7 +42,7 @@ class D435i:
         self.bridge = CvBridge()
         self.D435i_pub = rospy.Publisher('/D435i_raw', Image, queue_size=100)
         self.timer = rospy.Timer(rospy.Duration(0, UPDATE_RATE), self.publish_image)
-        # self.timer_display = rospy.Timer(rospy.Duration(0, UPDATE_RATE), self.display_images)
+        self.timer_display = rospy.Timer(rospy.Duration(0, UPDATE_RATE), self.display_images)
 
     def publish_image(self, timer):
         try:
