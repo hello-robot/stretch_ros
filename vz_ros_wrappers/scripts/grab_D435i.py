@@ -74,10 +74,15 @@ class D435i:
     def run(self):
         while not rospy.is_shutdown():
             ret, self.D435i_image = self.D435i_cap.read()
+            
+            ##### NOTE: Change rotation based on what you see ########
+            self.D435i_image = cv2.rotate(self.D435i_image,cv2.ROTATE_90_CLOCKWISE)
+            ################################################################
+            
             # Note : To read the input at the same frame rate as the recorded video, when using 
             # locally recorded video, uncomment the following and replace with (1/frame rate of video)
-            video_frame_rate_to_freq = 1/9
-            time.sleep(video_frame_rate_to_freq)
+            # video_frame_rate_to_freq = 1/9
+            # time.sleep(video_frame_rate_to_freq)
 
 if __name__ == '__main__':
     try:
