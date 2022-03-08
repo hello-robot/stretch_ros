@@ -42,8 +42,8 @@ class FLIR_LEPTON:
         # for the vz project stretch robot, the top aux usb is video6
         # Note: when testing with your own video, replace with local file
 
-        self.thermal_cap = cv2.VideoCapture('/home/ananya/Downloads/Thermal-3(2).mp4')
-        # self.thermal_cap = cv2.VideoCapture('/dev/video6')
+        # self.thermal_cap = cv2.VideoCapture('/home/ananya/Downloads/Thermal-3(2).mp4')
+        self.thermal_cap = cv2.VideoCapture('/dev/video6')
         
         if not self.thermal_cap.isOpened():
             raise(Exception,'Unable to open video stream')
