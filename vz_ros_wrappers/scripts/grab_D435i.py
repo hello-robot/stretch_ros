@@ -31,11 +31,18 @@ class D435i:
     def __init__(self):
         # Intialize empty stores for current image
         self.D435i_image = None
+        # The following image will be flipped or not based on parameter /flip_images_grab_data
+        self.D4355i_image_for_display = None
+
+        # To flip or not to flip..
+        self.flip_images_grab_data = rospy.get_param('flip_images_grab_data')
+
         # setup subscribed topics
         # initialize ros/cv2 bridge
         
         # Note: when testing with your own video, replace with local file
         self.D435i_cap = cv2.VideoCapture('/dev/video4')
+        # self.D435i_cap = cv2.VideoCapture('/home/ananya/Downloads/2022-02-09-16-20-58(2).mp4')
 
         if not self.D435i_cap.isOpened():
             raise(Exception,'Unable to open video stream')
@@ -60,12 +67,18 @@ class D435i:
 
     # todo ananya: comment out function below later once fully ros integrated
     def display_images(self, timer):
-        # if self.thermal_image is None:
         if self.D435i_image is None:
             return
         try:
             # Show images
-            cv2.imshow('D435i',cv2.resize(self.D435i_image,(600,800), interpolation = cv2.INTER_AREA))
+            if(self.flip_images_grab_data == True):
+                ##### NOTE: Change rotation based on what you see ########
+                self.D4355i_image_for_display = cv2.rotate(self.D435i_image,cv2.ROTATE_90_CLOCKWISE)
+                ################################################################
+            else:
+                self.D4355i_image_for_display = self.D435i_image
+            
+            cv2.imshow('D435i',cv2.resize(self.D4355i_image_for_display,(600,800), interpolation = cv2.INTER_AREA))
             cv2.waitKey(3)
 
         except Exception as e:
@@ -75,9 +88,9 @@ class D435i:
         while not rospy.is_shutdown():
             ret, self.D435i_image = self.D435i_cap.read()
             
-            ##### NOTE: Change rotation based on what you see ########
-            self.D435i_image = cv2.rotate(self.D435i_image,cv2.ROTATE_90_CLOCKWISE)
-            ################################################################
+            # ##### NOTE: Change rotation based on what you see ########
+            # self.D435i_image = cv2.rotate(self.D435i_image,cv2.ROTATE_90_CLOCKWISE)
+            # ################################################################
             
             # Note : To read the input at the same frame rate as the recorded video, when using 
             # locally recorded video, uncomment the following and replace with (1/frame rate of video)

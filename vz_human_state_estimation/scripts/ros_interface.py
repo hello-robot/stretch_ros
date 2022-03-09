@@ -19,6 +19,15 @@ class ROSInterface:
         self.cv_rgbd_img = None
         self.cv_thermal_img = None
         self.cv_bounding_boxed_img = None
+
+        # Images for display and passing to human state estimation node
+        # They will be rotated based on parameter /flip_images_human_state_est
+        self.cv_rgbd_img_probably_rotated = None
+        self.cv_thermal_img_probably_rotated = None
+
+        # To flip or not to flip...
+        self.flip_images_human_state_est = rospy.get_param('flip_images_human_state_est')
+
         self.MDA = mda.ConnectToROS()
 
         # set up CV Bridge
@@ -35,16 +44,30 @@ class ROSInterface:
     def ats_callback(self,rgbd_img_data,thermal_img_data):
         self.cv_rgbd_img = self.bridge.imgmsg_to_cv2(rgbd_img_data)
         self.cv_thermal_img = self.bridge.imgmsg_to_cv2(thermal_img_data)
-        self.cv_bounding_boxed_img = self.MDA.processData(self.cv_rgbd_img,self.cv_thermal_img)
+
+        # Rotate if needed
+        # Show images and pass onto human state estimation flipped if following true
+        # This is done because the raw images captured from rgbd and thermal cameras are oriented incorrect
+
+        if(self.flip_images_human_state_est == True):
+            ##### NOTE: Change rotation based on what you see ########
+            self.cv_rgbd_img_probably_rotated = cv2.rotate(self.cv_rgbd_img,cv2.ROTATE_90_CLOCKWISE)            
+            self.cv_thermal_img_probably_rotated = cv2.rotate(self.cv_thermal_img,cv2.ROTATE_180)
+        else:
+            self.cv_rgbd_img_probably_rotated = self.cv_rgbd_img
+            self.cv_thermal_img_probably_rotated = self.cv_thermal_img
+
+        # Call the human state estimation code via processData interface
+        self.cv_bounding_boxed_img = self.MDA.processData(self.cv_rgbd_img_probably_rotated,self.cv_thermal_img_probably_rotated)
 
     def run(self):
         while not rospy.is_shutdown():
-            if(self.cv_rgbd_img is None or self.cv_thermal_img is None or self.cv_bounding_boxed_img is None):
+            if(self.cv_rgbd_img_probably_rotated is None or self.cv_thermal_img_probably_rotated is None or self.cv_bounding_boxed_img is None):
                 continue
             try:
                 # Show images
-                cv2.imshow('D435i',cv2.resize(self.cv_rgbd_img,(600,800), interpolation = cv2.INTER_AREA))
-                cv2.imshow('Thermal',cv2.resize(self.cv_thermal_img,(600,800), interpolation = cv2.INTER_AREA))
+                cv2.imshow('D435i',cv2.resize(self.cv_rgbd_img_probably_rotated,(600,800), interpolation = cv2.INTER_AREA))
+                cv2.imshow('Thermal',cv2.resize(self.cv_thermal_img_probably_rotated,(600,800), interpolation = cv2.INTER_AREA))
                 cv2.imshow('BoundingBox',cv2.resize(self.cv_bounding_boxed_img,(600,800), interpolation = cv2.INTER_AREA))
                 cv2.waitKey(3)
 

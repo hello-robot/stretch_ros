@@ -34,6 +34,11 @@ class FLIR_LEPTON:
     def __init__(self):
         # Intialize empty stores for current image
         self.thermal_image = None
+        # The following image will be flipped or not based on parameter /flip_images_grab_data
+        self.thermal_image_for_display = None
+
+        # To flip or not to flip..
+        self.flip_images_grab_data = rospy.get_param('flip_images_grab_data')
 
         # setup subscribed topics
         # initialize ros/cv2 bridge
@@ -42,8 +47,8 @@ class FLIR_LEPTON:
         # for the vz project stretch robot, the top aux usb is video6
         # Note: when testing with your own video, replace with local file
 
-        # self.thermal_cap = cv2.VideoCapture('/home/ananya/Downloads/Thermal-3(2).mp4')
         self.thermal_cap = cv2.VideoCapture('/dev/video6')
+        # self.thermal_cap = cv2.VideoCapture('/home/ananya/Downloads/Thermal-3(2).mp4')
         
         if not self.thermal_cap.isOpened():
             raise(Exception,'Unable to open video stream')
@@ -71,7 +76,14 @@ class FLIR_LEPTON:
             return
         try:
             # Show images
-            cv2.imshow('Lepton',cv2.resize(self.thermal_image,(600,800), interpolation = cv2.INTER_AREA))
+            if(self.flip_images_grab_data == True):
+                ##### NOTE: Change rotation based on what you see ########
+                self.thermal_image_for_display = cv2.rotate(self.thermal_image,cv2.ROTATE_180)
+                ################################################################
+            else:
+                self.thermal_image_for_display = self.thermal_image
+
+            cv2.imshow('Lepton',cv2.resize(self.thermal_image_for_display,(600,800), interpolation = cv2.INTER_AREA))
             cv2.waitKey(3)
 
         except Exception as e:
@@ -81,9 +93,9 @@ class FLIR_LEPTON:
         while not rospy.is_shutdown():
             ret, self.thermal_image = self.thermal_cap.read()
 
-            ##### NOTE: Change rotation based on what you see ########
-            self.thermal_image = cv2.rotate(self.thermal_image,cv2.ROTATE_180)
-            ################################################################
+            # ##### NOTE: Change rotation based on what you see ########
+            # self.thermal_image = cv2.rotate(self.thermal_image,cv2.ROTATE_180)
+            # ################################################################
 
             # Note : To read the input at the same frame rate as the recorded video, when using 
             # locally recorded video, uncomment the following and replace with (1/frame rate of video)

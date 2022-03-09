@@ -1,3 +1,5 @@
 <launch>
     <node pkg="vz_human_state_estimation" type="ros_interface.py" name="human_state_estimation" />
+    <!-- flip images before passing onto human state estimation module -->
+    <param name="flip_images_human_state_est" type="bool" value="true" />      
 </launch>

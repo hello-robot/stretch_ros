@@ -1,4 +1,6 @@
 <launch>
       <node pkg="vz_ros_wrappers" type="grab_D435i.py" name="D435i" />
       <node pkg="vz_ros_wrappers" type="grab_thermal.py" name="FLIRLepton" />
+      <!-- Flip images and display when collecting data? -->
+      <param name="flip_images_grab_data" type="bool" value="true" />      
   </launch>
