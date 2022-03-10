@@ -184,6 +184,8 @@ def track (frame1, frame2, KF,hog,backSub):
     return frame1
 
 
+# All sub classes for your code should be initialized in this class. 
+# e.g. Here we initialize the Kalman Filter, HOG, BackSub
 class ConnectToROS:
     def __init__(self):
 
@@ -203,6 +205,12 @@ class ConnectToROS:
         #background substractor
         self.backSub = cv2.createBackgroundSubtractorMOG2()
 
+    # This is the main interface function between your code and ROS
+    # The overall algorithm takes in frame1: rgbd images, frame2: thermal images
+    # A third input parameter crucial not detailed here will be parameters not expected to change over time
+    # e.g. neural network weights. 
+    # So expect your function call to look like 'processData(input1,..,inputn, parameterlist)'
+    # Output : frame: Bounding Boxed image
     def processData(self,frame1,frame2):
         frame=track(frame1,frame2,self.KF,self.hog,self.backSub);
         return frame

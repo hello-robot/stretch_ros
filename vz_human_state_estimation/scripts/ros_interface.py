@@ -41,6 +41,9 @@ class ROSInterface:
         ats = message_filters.ApproximateTimeSynchronizer([rgbd_sub,thermal_sub],queue_size=10,slop=2.0)
         ats.registerCallback(self.ats_callback)
     
+    # Once we receive rgbd and thermal images, which are also periodically received by this function
+    # We call this ats_callback function. This is also where we call the processData function to interface
+    # with other algorithms e.g. Human State Estimation and procure their outputs
     def ats_callback(self,rgbd_img_data,thermal_img_data):
         self.cv_rgbd_img = self.bridge.imgmsg_to_cv2(rgbd_img_data)
         self.cv_thermal_img = self.bridge.imgmsg_to_cv2(thermal_img_data)
@@ -58,6 +61,7 @@ class ROSInterface:
             self.cv_thermal_img_probably_rotated = self.cv_thermal_img
 
         # Call the human state estimation code via processData interface
+        # This is where we will iteratively call the algorithms to obtain outputs eg. bounding boxes
         self.cv_bounding_boxed_img = self.MDA.processData(self.cv_rgbd_img_probably_rotated,self.cv_thermal_img_probably_rotated)
 
     def run(self):
