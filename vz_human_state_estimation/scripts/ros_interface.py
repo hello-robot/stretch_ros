@@ -34,7 +34,7 @@ class ROSInterface:
         self.bridge = CvBridge()
 
         #Image subscribers
-        rgbd_sub    = message_filters.Subscriber("/D435i_raw",Image)
+        rgbd_sub    = message_filters.Subscriber("/D435i/image_raw",Image)
         thermal_sub = message_filters.Subscriber("/flir_3_5_near_realsense_raw",Image)
 
         # todo: confirm the slop parameter with Paul Ghanem. 2 secs seems high

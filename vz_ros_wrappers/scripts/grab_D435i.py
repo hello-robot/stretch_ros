@@ -47,7 +47,7 @@ class D435i:
         if not self.D435i_cap.isOpened():
             raise(Exception,'Unable to open video stream')
         self.bridge = CvBridge()
-        self.D435i_pub = rospy.Publisher('/D435i_raw', Image, queue_size=100)
+        self.D435i_pub = rospy.Publisher('/D435i/image_raw', Image, queue_size=100)
         self.timer = rospy.Timer(rospy.Duration(0, UPDATE_RATE), self.publish_image)
         self.timer_display = rospy.Timer(rospy.Duration(0, UPDATE_RATE), self.display_images)
 
