@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 '''
-Derived from this by Nathaniel Hanson : https://github.com/RIVeR-Lab/flir_lepton
+Derived this from Nathaniel Hanson : https://github.com/RIVeR-Lab/flir_lepton
 Purpose: Capture images from D435i and republish. This is only for sim. Stretch has its own driver
 '''
 
