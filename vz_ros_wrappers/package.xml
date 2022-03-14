@@ -52,8 +52,11 @@
   <build_depend>cv_bridge</build_depend>
   <!-- <build_depend>opencv2</build_depend> -->
   <build_depend>roscpp</build_depend>
+  <build_depend>audio_common_msgs</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>sensor_msgs</build_depend>
+  <build_depend>libgstreamer1.0-dev</build_depend>
+  <build_depend>libgstreamer-plugins-base1.0-dev</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_export_depend>cv_bridge</build_export_depend>
   <!-- <build_export_depend>opencv2</build_export_depend> -->
@@ -68,6 +71,11 @@
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
 
+  <exec_depend>audio_common_msgs</exec_depend>
+  <exec_depend>gstreamer1.0</exec_depend>
+  <exec_depend>gstreamer1.0-plugins-base</exec_depend>
+  <exec_depend>gstreamer1.0-plugins-good</exec_depend>
+  <exec_depend>gstreamer1.0-plugins-ugly</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

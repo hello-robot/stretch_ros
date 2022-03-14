@@ -12,12 +12,16 @@ find_package(catkin REQUIRED COMPONENTS
   # opencv2 # ananya this does not compile
   roscpp
   rospy
+  audio_common_msgs
   sensor_msgs
   std_msgs
 )
 
+find_package(PkgConfig)
+pkg_check_modules(GST1.0 gstreamer-1.0 REQUIRED)
+
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS thread)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -121,6 +125,8 @@ catkin_package(
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
+  ${GST1.0_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -136,7 +142,8 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/vz_ros_wrappers_node.cpp)
+add_executable(audio_capture scripts/audio_capture.cpp)
+add_executable(audio_play scripts/audio_play.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -146,12 +153,20 @@ include_directories(
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(audio_capture ${catkin_EXPORTED_TARGETS})
+add_dependencies(audio_play ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(audio_capture
+   ${catkin_LIBRARIES}
+   ${GST1.0_LIBRARIES}
+   ${Boost_LIBRARIES}
+)
+target_link_libraries(audio_play
+   ${catkin_LIBRARIES}
+   ${GST1.0_LIBRARIES}
+   ${Boost_LIBRARIES}
+)
 
 #############
 ## Install ##
@@ -169,9 +184,12 @@ include_directories(
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
-# install(TARGETS ${PROJECT_NAME}_node
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+install(TARGETS audio_capture
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(TARGETS audio_play
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
@@ -182,11 +200,11 @@ include_directories(
 # )
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+install(DIRECTORY launch
+   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 #   FILES_MATCHING PATTERN "*.h"
 #   PATTERN ".svn" EXCLUDE
-# )
+)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
