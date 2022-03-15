@@ -5,8 +5,8 @@
 
 #include <ros/ros.h>
 
-#include "audio_common_msgs/AudioData.h"
-#include "audio_common_msgs/AudioInfo.h"
+#include "vz_acoustic_scene_analysis/MyAudioData.h"
+#include "vz_acoustic_scene_analysis/MyAudioInfo.h"
 
 namespace audio_transport
 {
@@ -39,8 +39,8 @@ namespace audio_transport
         std::string device;
         ros::param::param<std::string>("~device", device, "");
 
-        _pub = _nh.advertise<audio_common_msgs::AudioData>("audio", 10, true);
-        _pub_info = _nh.advertise<audio_common_msgs::AudioInfo>("audio_info", 1, true);
+        _pub = _nh.advertise<vz_acoustic_scene_analysis::MyAudioData>("audio", 10, true);
+        _pub_info = _nh.advertise<vz_acoustic_scene_analysis::MyAudioInfo>("audio_info", 1, true);
 
         _loop = g_main_loop_new(NULL, false);
         _pipeline = gst_pipeline_new("ros_pipeline");
@@ -145,7 +145,7 @@ namespace audio_transport
 
         _gst_thread = boost::thread( boost::bind(g_main_loop_run, _loop) );
 
-        audio_common_msgs::AudioInfo info_msg;
+        vz_acoustic_scene_analysis::MyAudioInfo info_msg;
         info_msg.channels = _channels;
         info_msg.sample_rate = _sample_rate;
         info_msg.sample_format = _sample_format;
@@ -167,7 +167,7 @@ namespace audio_transport
         exit(code);
       }
 
-      void publish( const audio_common_msgs::AudioData &msg )
+      void publish( const vz_acoustic_scene_analysis::MyAudioData &msg )
       {
         _pub.publish(msg);
       }
@@ -182,7 +182,7 @@ namespace audio_transport
 
         GstBuffer *buffer = gst_sample_get_buffer(sample);
 
-        audio_common_msgs::AudioData msg;
+        vz_acoustic_scene_analysis::MyAudioData msg;
         gst_buffer_map(buffer, &map, GST_MAP_READ);
         msg.data.resize( map.size );
 

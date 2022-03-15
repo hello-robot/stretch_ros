@@ -19,3 +19,4 @@ stretch_description/urdf/exported_urdf/*
 stretch_description/urdf/exported_urdf_previous
 stretch_description/urdf/exported_urdf_previous/*
 stretch_funmap/src/stretch_funmap/cython_min_cost_path.c
+vz_ros_wrappers/bags/

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(vz_ros_wrappers)
+project(vz_acoustic_scene_analysis)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -12,8 +12,10 @@ find_package(catkin REQUIRED COMPONENTS
   # opencv2 # ananya this does not compile
   roscpp
   rospy
+  audio_common_msgs
   sensor_msgs
   std_msgs
+  message_generation
 )
 
 find_package(PkgConfig)
@@ -53,11 +55,11 @@ find_package(Boost REQUIRED COMPONENTS thread)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  MyAudioInfo.msg
+  MyAudioData.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -74,10 +76,10 @@ find_package(Boost REQUIRED COMPONENTS thread)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   sensor_msgs#   std_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -110,8 +112,8 @@ find_package(Boost REQUIRED COMPONENTS thread)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES vz_ros_wrappers
-#  CATKIN_DEPENDS cv_bridge opencv2 roscpp rospy sensor_msgs std_msgs
+#  LIBRARIES vz_acoustic_scene_analysis
+  CATKIN_DEPENDS roscpp rospy sensor_msgs std_msgs message_runtime
 #  DEPENDS system_lib
 )
 
@@ -141,7 +143,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-
+add_executable(audio_capture scripts/audio_capture.cpp)
 
 
 ## Rename C++ executable without prefix
@@ -152,8 +154,14 @@ include_directories(
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
+add_dependencies(audio_capture ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
+target_link_libraries(audio_capture
+   ${catkin_LIBRARIES}
+   ${GST1.0_LIBRARIES}
+   ${Boost_LIBRARIES}
+)
 
 
 #############
@@ -172,7 +180,9 @@ include_directories(
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
-
+install(TARGETS audio_capture
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html

@@ -2,12 +2,13 @@
     <arg name="device" default="" />
   
     <!-- publish audio data as wav format -->
-    <node name="audio_capture" pkg="vz_ros_wrappers" type="audio_capture" output="screen">
+    <node name="audio_capture" pkg="vz_acoustic_scene_analysis" type="audio_capture" output="screen">
       <param name="device" value="" />
-      <param name="format" value="mp3" />
+      <param name="format" value="wave" />
       <param name="channels" value="1" />
       <param name="depth" value="16" />
       <param name="sample_rate" value="16000" />
       <param name="device" value="$(arg device)" />
     </node>
+    <node pkg="vz_acoustic_scene_analysis" type="ros_interface.py" name="ros_interface" output="screen" />
   </launch>
