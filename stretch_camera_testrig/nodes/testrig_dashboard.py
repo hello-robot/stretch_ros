@@ -117,7 +117,7 @@ class TestRig_dashboard():
         except KeyError:
             None
         info_txt = str(yaml.safe_dump(info_dict, allow_unicode=True, default_flow_style=False))
-        self.info_print = Label(self.window, text=info_txt, anchor="w", font=("Arial", 10), justify=LEFT)
+        self.info_print = Label(self.window, text=info_txt, anchor="w", font=("Arial", 11), justify=LEFT)
         self.info_print.place(x=x_pos, y=y_pos)
 
     def metrics_table_print(self, pos_x, pos_y, error_key):

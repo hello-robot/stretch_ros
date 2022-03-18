@@ -31,7 +31,7 @@ class TestRig_Analyze:
                           'wrist_top_marker_pose',
                           'shoulder_marker_pose']
 
-        self.realsense_fw = self.get_realsense_fw()
+        self.realsense_details = self.get_realsense_fw()
 
         self.data_dict = None
         self.euclidean_error_dict = None
@@ -54,7 +54,9 @@ class TestRig_Analyze:
         self.data_capture_date = capture_date
 
         self.test_results_dict = {'capture_id': self.data_capture_date,
-                                  'realsense_details': self.realsense_fw,
+                                  'camera_serial': self.realsense_details['serial'],
+                                  'firmware': self.realsense_details['firmware'],
+                                  'usb':self.realsense_details['usb'],
                                   'number_samples': None,
                                   'null_frames': {},
                                   'lighting_condition': {

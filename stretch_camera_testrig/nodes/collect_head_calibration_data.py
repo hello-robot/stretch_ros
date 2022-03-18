@@ -54,24 +54,59 @@ class CollectHeadCalibrationDataNode:
         if test_rig:
             self.number_of_testrig_samples = 40
 
-    def calibration_data_callback(self, marker_array, accel=None, joint_state=None):
+    def calibration_data_callback(self, marker_array, accel, joint_state):
         # Prepare and assign data for calibration to member
         # variables. The configuration of the robot's joints, the
         # D435i acceleration, and the 3D fiducial estimates made via
         # D435i imagery are expected to be synchronized for this
         # callback.
         with self.data_lock:
-            if not self.test_rig:
-                self.data_time = joint_state.header.stamp
-                self.joint_state = joint_state
-                self.acceleration = [accel.linear_acceleration.x, accel.linear_acceleration.y,
-                                     accel.linear_acceleration.z]
+            self.data_time = joint_state.header.stamp
+            self.joint_state = joint_state
+            self.acceleration = [accel.linear_acceleration.x, accel.linear_acceleration.y, accel.linear_acceleration.z]
 
             self.wrist_inside_marker_pose = None
             self.wrist_top_marker_pose = None
             self.base_left_marker_pose = None
             self.base_right_marker_pose = None
             self.shoulder_marker_pose = None
+
+            self.marker_time = None
+            for marker in marker_array.markers:
+                # set marker_time to the earliest marker time
+                if self.marker_time is None:
+                    self.marker_time = marker.header.stamp
+                elif marker.header.stamp < self.marker_time:
+                    self.marker_time = marker.header.stamp
+
+                if marker.id == self.wrist_inside_marker_id:
+                    self.wrist_inside_marker_pose = marker.pose
+
+                if marker.id == self.wrist_top_marker_id:
+                    self.wrist_top_marker_pose = marker.pose
+
+                if marker.id == self.base_left_marker_id:
+                    self.base_left_marker_pose = marker.pose
+
+                if marker.id == self.base_right_marker_id:
+                    self.base_right_marker_pose = marker.pose
+
+                if marker.id == self.shoulder_marker_id:
+                    self.shoulder_marker_pose = marker.pose
+
+    def calibration_data_callback_testrig(self, marker_array, accel):
+        # Prepare and assign data for calibration to member
+        # variables. The configuration of the robot's joints, the
+        # D435i acceleration, and the 3D fiducial estimates made via
+        # D435i imagery are expected to be synchronized for this
+        # callback.
+        with self.data_lock:
+            self.wrist_inside_marker_pose = None
+            self.wrist_top_marker_pose = None
+            self.base_left_marker_pose = None
+            self.base_right_marker_pose = None
+            self.shoulder_marker_pose = None
+            self.acceleration = [accel.linear_acceleration.x, accel.linear_acceleration.y, accel.linear_acceleration.z]
 
             self.marker_time = None
             for marker in marker_array.markers:
@@ -802,11 +837,10 @@ class CollectHeadCalibrationDataNode:
             accel_subscriber = message_filters.Subscriber('/camera/accel/sample_corrected', Imu)
             aruco_subscriber = message_filters.Subscriber('/aruco/marker_array', MarkerArray)
             slop_time = 0.1
-            self.synchronizer = message_filters.ApproximateTimeSynchronizer([aruco_subscriber], 10, slop_time,
+            self.synchronizer = message_filters.ApproximateTimeSynchronizer([aruco_subscriber, accel_subscriber], 10,
+                                                                            slop_time,
                                                                             allow_headerless=True)
-            self.synchronizer.registerCallback(self.calibration_data_callback)
-
-            rate = rospy.Rate(self.rate)
+            self.synchronizer.registerCallback(self.calibration_data_callback_testrig)
             self.testrig_data_path = rospy.get_param('~testrig_data_directory')
             self.number_of_testrig_samples = rospy.get_param('~samples')
             self.testrig_data_collect(number_of_samples=self.number_of_testrig_samples)
