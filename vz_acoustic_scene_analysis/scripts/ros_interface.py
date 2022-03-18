@@ -23,7 +23,7 @@ class RosInterface:
         # self.maxSize = 7
         # self.queue = [None] * 7
         # self.head = self.tail = -1
-        self.nparray = np.empty(1)
+        self.wav_data = []
         self.arraylength = 0
         self.msg_count = 0
 
@@ -53,9 +53,11 @@ class RosInterface:
 
     def raw_callback(self, msg):
         # print("Length of uint8[]:", len(msg.data))
-        if (self.msg_count < 50):
-            self.arraylength += len(msg.data)
-            np.append(self.nparray,bytes)
+        self.wav_data.append(msg.data)
+
+        # if (self.msg_count < 10000):
+        #     self.arraylength += len(msg.data)
+        #     print(self.nparray)
         #     print(len(bytes))
         # else :
         #     self.byteArray[self.msg_count] = bytes
@@ -63,8 +65,10 @@ class RosInterface:
         self.msg_count += 1 
 
     def on_shutdown(self):
-        print(str(self.arraylength))
-        write(self.save_dir +'test.wav', self.arraylength, self.nparray)
+        wav_arr = np.array(self.wav_data)
+        print(wav_arr)
+        print(wav_arr.shape)
+        write(self.save_dir +'test.mp3', 44100, wav_arr)
         print("check music")
         pass
 

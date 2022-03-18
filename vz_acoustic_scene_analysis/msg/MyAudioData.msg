@@ -1,1 +1,1 @@
-uint16[] data
+uint8[] data
