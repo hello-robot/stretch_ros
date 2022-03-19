@@ -1,0 +1,29 @@
+Realsense Details: ''
+capture_id: '202203091216'
+lighting_condition: {brightness: null, temperature: null}
+null_frames: {base_left_marker_pose: 0, base_right_marker_pose: 0, shoulder_marker_pose: 0,
+  wrist_inside_marker_pose: 0, wrist_top_marker_pose: 0}
+number_samples: 600
+performance_metrics:
+  angle_rotation_error:
+    base_left_marker_pose: {maximum: 3.1258228069143574, mean: 3.090495677559066,
+      median: 3.0898352426275784, rmse: 3.090518944468393}
+    base_right_marker_pose: {maximum: 3.141583905313619, mean: 3.13170178989854, median: 3.1330645842886318,
+      rmse: 3.131710155183963}
+    shoulder_marker_pose: {maximum: 3.117145749446174, mean: 3.07786045902488, median: 3.0775851890028987,
+      rmse: 3.077881724110398}
+    wrist_inside_marker_pose: {maximum: 3.141327402355638, mean: 3.1058216452255563,
+      median: 3.1062270425421623, rmse: 3.1058908098530496}
+    wrist_top_marker_pose: {maximum: 3.141473924121154, mean: 3.1082500276239067,
+      median: 3.112768283406675, rmse: 3.1083324817414675}
+  euclidean_error:
+    base_left_marker_pose: {maximum: 0.5790332362367818, mean: 0.5786669509096053,
+      median: 0.5786675250115955, rmse: 0.5786669620339555}
+    base_right_marker_pose: {maximum: 0.5775522418555454, mean: 0.5768582518676268,
+      median: 0.5768797683076176, rmse: 0.5768583085342299}
+    shoulder_marker_pose: {maximum: 0.5841755924455108, mean: 0.583766495075335, median: 0.5837691236193006,
+      rmse: 0.5837665124825672}
+    wrist_inside_marker_pose: {maximum: 0.5809248639389007, mean: 0.5804067895137061,
+      median: 0.5804198165198842, rmse: 0.5804068348609547}
+    wrist_top_marker_pose: {maximum: 0.5824827029263467, mean: 0.5817229397175923,
+      median: 0.5817343124317399, rmse: 0.5817230226763274}

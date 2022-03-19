@@ -52,18 +52,15 @@ class TestRig_Analyze:
         capture_date = self.data_filename.split('_')[-1]
         capture_date = capture_date.split('.')[0]
         self.data_capture_date = capture_date
-
         self.test_results_dict = {'capture_id': self.data_capture_date,
-                                  'camera_serial': self.realsense_details['serial'],
-                                  'firmware': self.realsense_details['firmware'],
-                                  'usb':self.realsense_details['usb'],
                                   'number_samples': None,
                                   'null_frames': {},
                                   'lighting_condition': {
                                       'temperature': None,
                                       'brightness': None,
                                   },
-                                  'performance_metrics': {}
+                                  'performance_metrics': {},
+                                  'Realsense Details': self.realsense_details
                                   }
 
     def get_performance_metric(self, error_data_dict):

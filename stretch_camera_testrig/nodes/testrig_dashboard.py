@@ -3,6 +3,7 @@ from Tkinter import *
 from testrig_analyze_data import TestRig_Analyze
 import os
 import yaml
+from subprocess import Popen, PIPE
 import numpy as np
 from tabulate import tabulate
 import math
@@ -173,11 +174,17 @@ class TestRig_dashboard():
             y2 += 30
             x2 = 0
 
-    def radiobutton_sel(self):
-        print('Radio Log')
-
     def run_new_test(self):
-        print('Run New Test')
+        ros_log = None
+        try:
+            ros_log = Popen("roslaunch stretch_camera_testrig testrig_collect_data.launch", shell=True, bufsize=64, stdin=PIPE, stdout=PIPE,
+                            close_fds=True).stdout.read()
+        except:
+            None
+        print(ros_log)
+
+    def radiobutton_sel(self):
+        print('Radio Button')
 
     def update_nominal_poses(self):
         self.log('Updated new Nominal Poses File.')
