@@ -222,42 +222,50 @@ def save_wav(frames, fname):
     wf.setsampwidth(p.get_sample_size(p.get_format_from_width(RESPEAKER_WIDTH)))
     wf.setframerate(RESPEAKER_RATE)
     wf.writeframes(b''.join(frames))
-    wf.close()
-    
+    wf.close() 
 
-def run_mic(respeaker, num, printed_wait_statement):
-    if not printed_wait_statement and respeaker.is_voice() == 0:
-        print("\n* waiting for audio...")
-        printed_wait_statement = True
-    else:
-        if respeaker.is_voice() == 1:
-            print("* recording 5 seconds")
-            frames = record_audio()
-            print("* done")
-            # save_wav(frames, "/home/hello-robot/Desktop/output_audio_" + str(num) + ".wav")
-            num_files += 1
-            # send test.wav files
-            print("* done")
-            printed_wait_statement = False
+def process_audio_loop():
+    rospy.init_node("audio_capture")
+    num_files = 0
+    dev = usb.core.find(idVendor=0x2886, idProduct=0x0018)
+    try:
+        if dev:
+            respeaker = Tuning()
+            while True:
+                if respeaker.is_voice() == 1:
+                    rospy.Timer(rospy.Duration(0.2), rec_and_save)
+                    num_files += 1
+    except usb.core.USBError:
+        print('Respeaker not on USB bus')
 
+def rec_and_save(timer):
+    print("* recording 5 seconds")
+    frames = record_audio() # rospy.Timer(rospy.Duration(0.2), record_audio)
+    print("* done")
+    file_name = "/home/hello-robot/Desktop/output_audio.wav"
+    save_wav(frames, file_name)
+    # send test.wav files
+    print("* done")
+
+def process_audio_loop():
+    rospy.init_node("audio_capture")
+    num_files = 0
+    dev = usb.core.find(idVendor=0x2886, idProduct=0x0018)
+    try:
+        if dev:
+            respeaker = Tuning()
+            while True:
+                if respeaker.is_voice() == 1:
+                    # rospy.Timer(rospy.Duration(0.2), rec_and_save, oneshot=False)
+                    rec_and_save(timer)
+                    num_files += 1
+    except usb.core.USBError:
+        print('Respeaker not on USB bus')
 
 if __name__ == "__main__":
     try:
-        rospy.init_node("audio_capture")
-        audio_ctrl = Tuning()
-        num_files = 0
-        dev = usb.core.find(idVendor=0x2886, idProduct=0x0018)
-        try:
-            printed_wait_statement = False
-            if dev:
-                respeaker = Tuning()
-                while True:
-                    try:
-                        rospy.Timer(rospy.Duration(0.2), run_mic(respeaker, num_files, printed_wait_statement))
-                    except KeyboardInterrupt:
-                        break
-        except usb.core.USBError:
-            print('Respeaker not on USB bus')
+        timer = rospy.Timer(rospy.Duration(0.2), rec_and_save, oneshot=False)
+        process_audio_loop()
     except rospy.ROSInterruptException:
         print('Audio processing node failed!')
         pass
