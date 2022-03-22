@@ -185,53 +185,12 @@ def get_respeaker_device_id():
     return device_id
 
 
-
 RESPEAKER_RATE = 16000
 RESPEAKER_CHANNELS = 6 # must flash 6_channels_firmware.bin first
 RESPEAKER_WIDTH = 2
 RESPEAKER_INDEX = get_respeaker_device_id()
 CHUNK = 1024
 
-# def record_audio(seconds=5):
-#     p = pyaudio.PyAudio()
-#     stream = p.open(rate=RESPEAKER_RATE,
-#                     format=p.get_format_from_width(RESPEAKER_WIDTH),
-#                     channels=RESPEAKER_CHANNELS,
-#                     input=True,
-#                     input_device_index=RESPEAKER_INDEX,
-#                     output= False)
-
-#     frames = []
-#     for i in range(0, int(RESPEAKER_RATE / CHUNK * seconds)):
-#         data = stream.read(CHUNK)
-#         a = np.frombuffer(data,dtype=np.int16)[0::6] # extracts fused channel 0
-#         frames.append(a.tobytes())
-
-#     stream.stop_stream()
-#     stream.close()
-#     p.terminate()
-
-#     return frames
-
-
-def save_wav(frames, fname):
-    p = pyaudio.PyAudio()
-    wf = wave.open(fname, 'wb')
-    wf.setnchannels(1)
-    wf.setsampwidth(p.get_sample_size(p.get_format_from_width(RESPEAKER_WIDTH)))
-    wf.setframerate(RESPEAKER_RATE)
-    for val in frames:
-        wf.writeframes(b''.join(val))
-    wf.close() 
-
-# def rec_and_save():
-#     print("* recording 5 seconds")
-#     frames = record_audio() # rospy.Timer(rospy.Duration(0.2), record_audio)
-#     print("* done")
-#     file_name = "/home/hello-robot/Desktop/output_audio.wav"
-#     save_wav(frames, file_name)
-#     # send test.wav files
-#     print("* done")
 
 class Audio:
     def __init__(self):
@@ -239,24 +198,25 @@ class Audio:
         self.wav_list = []
         self.record_count = 0 # Count how many times we've recorded f seconds of audio
         self.file_name = "/home/hello-robot/Desktop/output_audio.wav"
+        # Publisher for Audio Data
+        # self.audio_data_pub = rospy.Publisher("/wav_data", )
 
-    def write_audio(self):
-        recorded_frames = self.record_audio(.5)
-        print("i haz frames: ", self.record_count)
+    def get_audio(self):
+        recorded_frames = self.record_audio(.2) # set param here chunk size
         self.wav_list.append(recorded_frames)
         self.record_count += 1
         # Every 5 seconds for 
-        if ((self.record_count % 5) == 0):
+        if ((self.record_count % 2) == 0): # set param sequence size
+            return_list =  self.wav_list
+            # Remove the first object (0.2 seconds of audio data)
+            self.wav_list.pop(0)
             # send the frames at the beginning of the list (save as wav for now)
-            save_wav(self.wav_list,self.file_name)
-            # Empty list
-            self.wav_list = []
-            print("5 seconds have passed, very nice")
+            return return_list
+            
 
 
     def record_audio(self, seconds=5):
         p = pyaudio.PyAudio()
-        print ("i NO haz stream")
 
         stream = p.open(rate=RESPEAKER_RATE,
                         format=p.get_format_from_width(RESPEAKER_WIDTH),
@@ -264,12 +224,10 @@ class Audio:
                         input=True,
                         input_device_index=RESPEAKER_INDEX,
                         output= False)
-        print ("i haz stream")
 
         frames = []
         for i in range(0, int(RESPEAKER_RATE / CHUNK * seconds)):
             data = stream.read(CHUNK)
-            print("I haz data from stream: ", i)
             a = np.frombuffer(data,dtype=np.int16)[0::6] # extracts fused channel 0
             frames.append(a.tobytes())
 
@@ -282,6 +240,7 @@ class Audio:
 
     def process_audio_loop(self):
         rospy.init_node("audio_capture")
+        rospy.param
         audio_count = 0
         dev = usb.core.find(idVendor=0x2886, idProduct=0x0018)
         try:
@@ -289,7 +248,15 @@ class Audio:
                 respeaker = Tuning()
                 while True:
                     if respeaker.is_voice() == 1:
-                        self.write_audio()
+                        # wav_data = list of lists of bytes
+                        wav_data = self.get_audio()
+                        if (str(type(wav_data)) == "<class 'list'>"):
+                            # Maybe publish wav_data as ROS message?
+                            pass
+                        # publish_wav(wav_data) # lol
+                        # Call of Utku's function
+                        # asa_out = process_wav(wav_data, asa_params)
+                        # Convert asa_out to ROS message
                         audio_count += 1
                         print(audio_count)
         except usb.core.USBError:

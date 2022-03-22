@@ -1,4 +1,4 @@
 <launch>
-    <node name="respeak_test" pkg="respeaker_ros" type="stretch_respeak_test2.py" />
+    <node name="stretch_audio" pkg="respeaker_ros" type="stretch_audio.py" />
     <!-- <rosparam file="$(find respeaker_ros)/config/audio_params.yaml" /> -->
   </launch>
