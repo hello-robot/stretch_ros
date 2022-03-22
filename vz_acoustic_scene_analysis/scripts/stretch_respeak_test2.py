@@ -82,8 +82,8 @@ PARAMETERS = {
 
 class Tuning:
     TIMEOUT = 100000
-    
-    # what is dev?
+    audio_list = []
+
     def __init__(self):
         self.TIMEOUT = 100000
         self.dev = usb.core.find(idVendor=0x2886, idProduct=0x0018)
@@ -192,27 +192,26 @@ RESPEAKER_WIDTH = 2
 RESPEAKER_INDEX = get_respeaker_device_id()
 CHUNK = 1024
 
+# def record_audio(seconds=5):
+#     p = pyaudio.PyAudio()
+#     stream = p.open(rate=RESPEAKER_RATE,
+#                     format=p.get_format_from_width(RESPEAKER_WIDTH),
+#                     channels=RESPEAKER_CHANNELS,
+#                     input=True,
+#                     input_device_index=RESPEAKER_INDEX,
+#                     output= False)
 
-def record_audio(seconds=5):
-    p = pyaudio.PyAudio()
-    stream = p.open(rate=RESPEAKER_RATE,
-                    format=p.get_format_from_width(RESPEAKER_WIDTH),
-                    channels=RESPEAKER_CHANNELS,
-                    input=True,
-                    input_device_index=RESPEAKER_INDEX,
-                    output= False)
+#     frames = []
+#     for i in range(0, int(RESPEAKER_RATE / CHUNK * seconds)):
+#         data = stream.read(CHUNK)
+#         a = np.frombuffer(data,dtype=np.int16)[0::6] # extracts fused channel 0
+#         frames.append(a.tobytes())
 
-    frames = []
-    for i in range(0, int(RESPEAKER_RATE / CHUNK * seconds)):
-        data = stream.read(CHUNK)
-        a = np.frombuffer(data,dtype=np.int16)[0::6] # extracts fused channel 0
-        frames.append(a.tobytes())
+#     stream.stop_stream()
+#     stream.close()
+#     p.terminate()
 
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
-
-    return frames
+#     return frames
 
 
 def save_wav(frames, fname):
@@ -221,51 +220,86 @@ def save_wav(frames, fname):
     wf.setnchannels(1)
     wf.setsampwidth(p.get_sample_size(p.get_format_from_width(RESPEAKER_WIDTH)))
     wf.setframerate(RESPEAKER_RATE)
-    wf.writeframes(b''.join(frames))
+    for val in frames:
+        wf.writeframes(b''.join(val))
     wf.close() 
 
-def process_audio_loop():
-    rospy.init_node("audio_capture")
-    num_files = 0
-    dev = usb.core.find(idVendor=0x2886, idProduct=0x0018)
-    try:
-        if dev:
-            respeaker = Tuning()
-            while True:
-                if respeaker.is_voice() == 1:
-                    rospy.Timer(rospy.Duration(0.2), rec_and_save)
-                    num_files += 1
-    except usb.core.USBError:
-        print('Respeaker not on USB bus')
+# def rec_and_save():
+#     print("* recording 5 seconds")
+#     frames = record_audio() # rospy.Timer(rospy.Duration(0.2), record_audio)
+#     print("* done")
+#     file_name = "/home/hello-robot/Desktop/output_audio.wav"
+#     save_wav(frames, file_name)
+#     # send test.wav files
+#     print("* done")
 
-def rec_and_save(timer):
-    print("* recording 5 seconds")
-    frames = record_audio() # rospy.Timer(rospy.Duration(0.2), record_audio)
-    print("* done")
-    file_name = "/home/hello-robot/Desktop/output_audio.wav"
-    save_wav(frames, file_name)
-    # send test.wav files
-    print("* done")
+class Audio:
+    def __init__(self):
+        # Initialiaze list to store audio segments
+        self.wav_list = []
+        self.record_count = 0 # Count how many times we've recorded f seconds of audio
+        self.file_name = "/home/hello-robot/Desktop/output_audio.wav"
 
-def process_audio_loop():
-    rospy.init_node("audio_capture")
-    num_files = 0
-    dev = usb.core.find(idVendor=0x2886, idProduct=0x0018)
-    try:
-        if dev:
-            respeaker = Tuning()
-            while True:
-                if respeaker.is_voice() == 1:
-                    # rospy.Timer(rospy.Duration(0.2), rec_and_save, oneshot=False)
-                    rec_and_save(timer)
-                    num_files += 1
-    except usb.core.USBError:
-        print('Respeaker not on USB bus')
+    def write_audio(self):
+        recorded_frames = self.record_audio(.5)
+        print("i haz frames: ", self.record_count)
+        self.wav_list.append(recorded_frames)
+        self.record_count += 1
+        # Every 5 seconds for 
+        if ((self.record_count % 5) == 0):
+            # send the frames at the beginning of the list (save as wav for now)
+            save_wav(self.wav_list,self.file_name)
+            # Empty list
+            self.wav_list = []
+            print("5 seconds have passed, very nice")
+
+
+    def record_audio(self, seconds=5):
+        p = pyaudio.PyAudio()
+        print ("i NO haz stream")
+
+        stream = p.open(rate=RESPEAKER_RATE,
+                        format=p.get_format_from_width(RESPEAKER_WIDTH),
+                        channels=RESPEAKER_CHANNELS,
+                        input=True,
+                        input_device_index=RESPEAKER_INDEX,
+                        output= False)
+        print ("i haz stream")
+
+        frames = []
+        for i in range(0, int(RESPEAKER_RATE / CHUNK * seconds)):
+            data = stream.read(CHUNK)
+            print("I haz data from stream: ", i)
+            a = np.frombuffer(data,dtype=np.int16)[0::6] # extracts fused channel 0
+            frames.append(a.tobytes())
+
+        stream.stop_stream()
+        stream.close()
+        p.terminate()
+
+        return frames
+
+
+    def process_audio_loop(self):
+        rospy.init_node("audio_capture")
+        audio_count = 0
+        dev = usb.core.find(idVendor=0x2886, idProduct=0x0018)
+        try:
+            if dev:
+                respeaker = Tuning()
+                while True:
+                    if respeaker.is_voice() == 1:
+                        self.write_audio()
+                        audio_count += 1
+                        print(audio_count)
+        except usb.core.USBError:
+            print('Respeaker not on USB bus')
+
 
 if __name__ == "__main__":
     try:
-        timer = rospy.Timer(rospy.Duration(0.2), rec_and_save, oneshot=False)
-        process_audio_loop()
+        audio = Audio()
+        audio.process_audio_loop()
     except rospy.ROSInterruptException:
         print('Audio processing node failed!')
         pass
