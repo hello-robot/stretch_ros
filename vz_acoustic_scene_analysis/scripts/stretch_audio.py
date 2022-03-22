@@ -4,6 +4,7 @@ from __future__ import print_function
 import pyaudio
 import wave
 import numpy as np
+from sympy import re
 import usb.core
 import struct
 import time
@@ -13,6 +14,7 @@ import rospy
 from contextlib import contextmanager
 import stretch_body.hello_utils as hu
 hu.print_stretch_re_use()
+from vz_acoustic_scene_analysis.msg import MyAudioData
 
 # what does this mean
 @contextmanager
@@ -185,11 +187,11 @@ def get_respeaker_device_id():
     return device_id
 
 
-RESPEAKER_RATE = 16000
-RESPEAKER_CHANNELS = 6 # must flash 6_channels_firmware.bin first
-RESPEAKER_WIDTH = 2
+RESPEAKER_RATE = 16000 #rospy.get_param("/RESPEAKER_RATE") #16000
+RESPEAKER_CHANNELS = rospy.get_param("/RESPEAKER_CHANNELS") # 6 must flash 6_channels_firmware.bin first
+RESPEAKER_WIDTH = rospy.get_param("/RESPEAKER_WIDTH") # 2
 RESPEAKER_INDEX = get_respeaker_device_id()
-CHUNK = 1024
+CHUNK = rospy.get_param("/RESPEAKER_RATE") # 1024
 
 
 class Audio:
@@ -198,17 +200,22 @@ class Audio:
         self.wav_list = []
         self.record_count = 0 # Count how many times we've recorded f seconds of audio
         self.file_name = "/home/hello-robot/Desktop/output_audio.wav"
+        self.secs = rospy.get_param("/seconds")
+        self.chunk_size = rospy.get_param("/chunk_size")
         # Publisher for Audio Data
-        # self.audio_data_pub = rospy.Publisher("/wav_data", )
+        self.audio_data_pub = rospy.Publisher("/wav_data", MyAudioData, queue_size=10)
 
     def get_audio(self):
-        recorded_frames = self.record_audio(.2) # set param here chunk size
+        recorded_frames = self.record_audio(self.chunk_size) # set param here chunk size
+        # print(str(recorded_frames))
+        self.audio_data_pub.publish(recorded_frames)
         self.wav_list.append(recorded_frames)
         self.record_count += 1
         # Every 5 seconds for 
-        if ((self.record_count % 2) == 0): # set param sequence size
+        if ((self.record_count % (self.secs/self.chunk_size)) == 0): # set param sequence size
             return_list =  self.wav_list
-            # Remove the first object (0.2 seconds of audio data)
+            # Remove 0.2 seconds of audio data
+            self.wav_list.pop(0)
             self.wav_list.pop(0)
             # send the frames at the beginning of the list (save as wav for now)
             return return_list
@@ -240,7 +247,6 @@ class Audio:
 
     def process_audio_loop(self):
         rospy.init_node("audio_capture")
-        rospy.param
         audio_count = 0
         dev = usb.core.find(idVendor=0x2886, idProduct=0x0018)
         try:

@@ -143,7 +143,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(audio_capture scripts/audio_capture.cpp)
+# add_executable(audio_capture scripts/audio_capture.cpp)
 
 
 ## Rename C++ executable without prefix
@@ -154,14 +154,14 @@ add_executable(audio_capture scripts/audio_capture.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(audio_capture ${catkin_EXPORTED_TARGETS})
+# add_dependencies(audio_capture ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(audio_capture
-   ${catkin_LIBRARIES}
-   ${GST1.0_LIBRARIES}
-   ${Boost_LIBRARIES}
-)
+# target_link_libraries(audio_capture
+#    ${catkin_LIBRARIES}
+#    ${GST1.0_LIBRARIES}
+#    ${Boost_LIBRARIES}
+# )
 
 
 #############
@@ -180,9 +180,9 @@ target_link_libraries(audio_capture
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
-install(TARGETS audio_capture
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+# install(TARGETS audio_capture
+#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
