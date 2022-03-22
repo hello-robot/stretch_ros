@@ -1,1 +1,1 @@
-string[] data
+uint16[] data

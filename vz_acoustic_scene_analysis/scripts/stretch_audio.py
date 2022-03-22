@@ -187,12 +187,11 @@ def get_respeaker_device_id():
     return device_id
 
 
-RESPEAKER_RATE = 16000 #rospy.get_param("/RESPEAKER_RATE") #16000
-RESPEAKER_CHANNELS = rospy.get_param("/RESPEAKER_CHANNELS") # 6 must flash 6_channels_firmware.bin first
-RESPEAKER_WIDTH = rospy.get_param("/RESPEAKER_WIDTH") # 2
+RESPEAKER_RATE = rospy.get_param("/RESPEAKER_RATE", 16000)
+RESPEAKER_CHANNELS = rospy.get_param("/RESPEAKER_CHANNELS", 6) # 6 must flash 6_channels_firmware.bin first
+RESPEAKER_WIDTH = rospy.get_param("/RESPEAKER_WIDTH", 2)
 RESPEAKER_INDEX = get_respeaker_device_id()
-CHUNK = rospy.get_param("/RESPEAKER_RATE") # 1024
-
+CHUNK = rospy.get_param("/CHUNK", 1024)
 
 class Audio:
     def __init__(self):
@@ -207,8 +206,9 @@ class Audio:
 
     def get_audio(self):
         recorded_frames = self.record_audio(self.chunk_size) # set param here chunk size
-        # print(str(recorded_frames))
-        self.audio_data_pub.publish(recorded_frames)
+        audio = MyAudioData()
+        audio.data = np.array(recorded_frames, dtype=np.uint16)
+        self.audio_data_pub.publish(audio)
         self.wav_list.append(recorded_frames)
         self.record_count += 1
         # Every 5 seconds for 
@@ -256,15 +256,15 @@ class Audio:
                     if respeaker.is_voice() == 1:
                         # wav_data = list of lists of bytes
                         wav_data = self.get_audio()
-                        if (str(type(wav_data)) == "<class 'list'>"):
-                            # Maybe publish wav_data as ROS message?
-                            pass
+                        # if (str(type(wav_data)) == "<class 'list'>"):
+                        #     # Maybe publish wav_data as ROS message?
+                        #     pass
                         # publish_wav(wav_data) # lol
                         # Call of Utku's function
                         # asa_out = process_wav(wav_data, asa_params)
                         # Convert asa_out to ROS message
                         audio_count += 1
-                        print(audio_count)
+                        print("Audio count: ", audio_count)
         except usb.core.USBError:
             print('Respeaker not on USB bus')
 
