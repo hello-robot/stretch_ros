@@ -202,6 +202,7 @@ class Audio:
         self.file_name = "/home/hello-robot/Desktop/output_audio.wav"
         self.secs = rospy.get_param("/seconds")
         self.chunk_size = rospy.get_param("/chunk_size")
+        self.respeaker = Tuning()
         # Publisher for Audio Data
         self.audio_data_pub = rospy.Publisher("/wav_data", numpy_msg(MyAudioData), queue_size=10)
 
@@ -236,7 +237,7 @@ class Audio:
         frames = []
         for i in range(0, int(RESPEAKER_RATE / CHUNK * seconds)):
             data = stream.read(CHUNK)
-            a = np.frombuffer(data,dtype=np.uint16)[0::6] # extracts fused channel 0
+            a = np.frombuffer(data,dtype=np.int16)[0::6] # extracts fused channel 0
             print("a type: ", type(a[0]))
             print("a length: ", len(a))
             self.audio_data_pub.publish(a)
@@ -257,14 +258,12 @@ class Audio:
 
 
     def process_audio_loop(self):
-        rospy.init_node("audio_capture")
         audio_count = 0
         dev = usb.core.find(idVendor=0x2886, idProduct=0x0018)
         try:
             if dev:
-                respeaker = Tuning()
                 while True:
-                    if respeaker.is_voice() == 1:
+                    if self.respeaker.is_voice() == 1:
                         # wav_data = list of lists of bytes
                         wav_data = self.get_audio()
                         # if (str(type(wav_data)) == "<class 'list'>"):
@@ -279,11 +278,17 @@ class Audio:
         except usb.core.USBError:
             print('Respeaker not on USB bus')
 
+    def shutdown(self):
+        self.respeaker.close()
+        print("shutting down")
+
 
 if __name__ == "__main__":
     try:
+        rospy.init_node("audio_capture")
         audio = Audio()
         audio.process_audio_loop()
     except rospy.ROSInterruptException:
         print('Audio processing node failed!')
+        rospy.on_shutdown(audio.shutdown)
         pass
