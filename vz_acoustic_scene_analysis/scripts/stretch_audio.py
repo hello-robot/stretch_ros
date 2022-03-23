@@ -15,6 +15,7 @@ from contextlib import contextmanager
 import stretch_body.hello_utils as hu
 hu.print_stretch_re_use()
 from vz_acoustic_scene_analysis.msg import MyAudioData
+from rospy.numpy_msg import numpy_msg
 
 # what does this mean
 @contextmanager
@@ -202,13 +203,13 @@ class Audio:
         self.secs = rospy.get_param("/seconds")
         self.chunk_size = rospy.get_param("/chunk_size")
         # Publisher for Audio Data
-        self.audio_data_pub = rospy.Publisher("/wav_data", MyAudioData, queue_size=10)
+        self.audio_data_pub = rospy.Publisher("/wav_data", numpy_msg(MyAudioData), queue_size=10)
 
     def get_audio(self):
         recorded_frames = self.record_audio(self.chunk_size) # set param here chunk size
-        audio = MyAudioData()
-        audio.data = np.array(recorded_frames, dtype=np.uint16)
-        self.audio_data_pub.publish(audio)
+        # audio = MyAudioData()
+        # audio.data = np.array(recorded_frames, dtype=np.uint16)
+        # self.audio_data_pub.publish(audio)
         self.wav_list.append(recorded_frames)
         self.record_count += 1
         # Every 5 seconds for 
@@ -235,9 +236,19 @@ class Audio:
         frames = []
         for i in range(0, int(RESPEAKER_RATE / CHUNK * seconds)):
             data = stream.read(CHUNK)
-            a = np.frombuffer(data,dtype=np.int16)[0::6] # extracts fused channel 0
+            a = np.frombuffer(data,dtype=np.uint16)[0::6] # extracts fused channel 0
+            print("a type: ", type(a[0]))
+            print("a length: ", len(a))
+            self.audio_data_pub.publish(a)
             frames.append(a.tobytes())
-
+        
+        # print("Length of frames: ", len(frames))
+        # Check to prevent empty frames list
+        if (len(frames) == 0):
+            # add garbage data
+            print("Having issues")
+            data[0] == 1
+        
         stream.stop_stream()
         stream.close()
         p.terminate()
