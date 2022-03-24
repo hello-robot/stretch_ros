@@ -9,13 +9,19 @@ import usb.core
 import struct
 import time
 import os
-import sys
 import rospy
 from contextlib import contextmanager
 import stretch_body.hello_utils as hu
 hu.print_stretch_re_use()
 from vz_acoustic_scene_analysis.msg import MyAudioData
 from rospy.numpy_msg import numpy_msg
+# Utku's script
+# import segmentation as seg
+import sys
+sys.path.append('/home/hello-robot/vz_modules/NEU_VZ_ASA/MehrshadTesting/codes/A_CoughDetection/src')
+import feature_class
+import DSP
+
 
 # what does this mean
 @contextmanager
@@ -94,10 +100,6 @@ class Tuning:
         if not self.dev:
             raise RuntimeError("Failed to find Respeaker device")
         rospy.loginfo("Initializing Respeaker device")
-        # Initialize inputs and outputs to other module code
-        self.audio_signal = None
-        self.prediction = None
-        # self.param = rospy.get_param('')
 
 
     def write(self, name, value):
@@ -129,7 +131,6 @@ class Tuning:
 
         id = data[0]
 
-        # not sure what is happening here
         cmd = 0x80 | data[1]
         if data[2] == 'int':
             cmd |= 0x40
@@ -194,7 +195,7 @@ RESPEAKER_WIDTH = rospy.get_param("/RESPEAKER_WIDTH", 2)
 RESPEAKER_INDEX = get_respeaker_device_id()
 CHUNK = rospy.get_param("/CHUNK", 1024)
 
-class Audio:
+class ROSInterface:
     def __init__(self):
         # Initialiaze list to store audio segments
         self.wav_list = []
@@ -205,16 +206,15 @@ class Audio:
         self.respeaker = Tuning()
         # Publisher for Audio Data
         self.audio_data_pub = rospy.Publisher("/wav_data", numpy_msg(MyAudioData), queue_size=10)
+        # Connect to Utku's code
 
     def get_audio(self):
         recorded_frames = self.record_audio(self.chunk_size) # set param here chunk size
-        # audio = MyAudioData()
-        # audio.data = np.array(recorded_frames, dtype=np.uint16)
-        # self.audio_data_pub.publish(audio)
         self.wav_list.append(recorded_frames)
         self.record_count += 1
         # Every 5 seconds for 
-        if ((self.record_count % (self.secs/self.chunk_size)) == 0): # set param sequence size
+        # if ((self.record_count % (self.secs/self.chunk_size)) == 0): # set param sequence size
+        if (self.record_count % 3 == 0):
             return_list =  self.wav_list
             # Remove 0.2 seconds of audio data
             self.wav_list.pop(0)
@@ -243,7 +243,6 @@ class Audio:
             self.audio_data_pub.publish(a)
             frames.append(a.tobytes())
         
-        # print("Length of frames: ", len(frames))
         # Check to prevent empty frames list
         if (len(frames) == 0):
             # add garbage data
@@ -262,23 +261,24 @@ class Audio:
         dev = usb.core.find(idVendor=0x2886, idProduct=0x0018)
         try:
             if dev:
-                while True:
+                while not rospy.is_shutdown():
                     if self.respeaker.is_voice() == 1:
                         # wav_data = list of lists of bytes
                         wav_data = self.get_audio()
-                        # if (str(type(wav_data)) == "<class 'list'>"):
-                        #     # Maybe publish wav_data as ROS message?
-                        #     pass
-                        # publish_wav(wav_data) # lol
-                        # Call of Utku's function
-                        # asa_out = process_wav(wav_data, asa_params)
-                        # Convert asa_out to ROS message
+                        # if wav_data is a list
+                        if(isinstance(wav_data, list)):
+                            # flatten list
+                            flat_list = [item for sublist in wav_data for item in sublist]
+                            print(type(flat_list[0]))
+                            # Call of Utku's function
+                            # asa_out = process_wav(wav_data, asa_params)
+                            # Convert asa_out to ROS message
                         audio_count += 1
                         print("Audio count: ", audio_count)
         except usb.core.USBError:
             print('Respeaker not on USB bus')
 
-    def shutdown(self):
+    def cleanup(self):
         self.respeaker.close()
         print("shutting down")
 
@@ -286,9 +286,9 @@ class Audio:
 if __name__ == "__main__":
     try:
         rospy.init_node("audio_capture")
-        audio = Audio()
+        audio = ROSInterface()
         audio.process_audio_loop()
     except rospy.ROSInterruptException:
         print('Audio processing node failed!')
-        rospy.on_shutdown(audio.shutdown)
+        rospy.on_shutdown(audio.cleanup)
         pass
