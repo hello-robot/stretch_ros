@@ -17,21 +17,8 @@ import stretch_body.hello_utils as hu
 hu.print_stretch_re_use()
 from vz_acoustic_scene_analysis.msg import MyAudioData
 from rospy.numpy_msg import numpy_msg
-
 import NEU_VZ_ASA.MehrshadTesting.codes.A_CoughDetection.src.DSP as dsp
 
-model_path = '/home/hello-robot/clone/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/vz_acoustic_scene_analysis/models/'
-cough_classifier_file = model_path + 'cough_classifier'
-cough_classifier_scaler = model_path + 'cough_classification_scaler'
-loaded_model = pickle.load(open(cough_classifier_file, 'rb'))
-loaded_scaler = pickle.load(open(cough_classifier_scaler, 'rb'))
-
-# model_loc = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-# print(model_loc)
-from models import cough_classifier, cough_classification_scaler
-# Import Utku's script
-# from vz_acoustic_scene_analysis.models import cough_classifier as classifier
-# from vz_acoustic_scene_analysis.models import cough_classification_scaler as scaler
 
 @contextmanager
 def ignore_stderr():
@@ -216,7 +203,14 @@ class ROSInterface:
         # Publisher for Audio Data
         self.audio_data_pub = rospy.Publisher("/wav_data", numpy_msg(MyAudioData), queue_size=10)
         # For Utku's code: float of cough probabilty from sample
-        self.cough_prob = 0
+        self.cough_prob = 90
+
+        self.model_path = '/home/hello-robot/vz_modules/NEU_VZ_ASA/MehrshadTesting/codes/A_CoughDetection/models/'
+        self.cough_classifier_file = self.model_path + 'cough_classifier'
+        self.cough_classifier_scaler = self.model_path + 'cough_classification_scaler'
+        self.loaded_model = pickle.load(open(self.cough_classifier_file, 'rb'))
+        self.loaded_scaler = pickle.load(open(self.cough_classifier_scaler, 'rb'))
+
 
 
     def get_audio(self):
@@ -282,7 +276,7 @@ class ROSInterface:
                             flat_list = [item for sublist in wav_data for item in sublist]
                             print(type(flat_list[0]))
                             # Call of Utku's function
-                            self.cough_prob = dsp.classify_cough(flat_list, RESPEAKER_RATE)
+                            self.cough_prob = dsp.classify_cough(flat_list,RESPEAKER_RATE,self.loaded_model,self.loaded_scaler)
                             print(self.cough_prob)
                             # asa_out = process_wav(wav_data, asa_params)
                             # Convert asa_out to ROS message
