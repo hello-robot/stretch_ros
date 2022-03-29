@@ -242,7 +242,8 @@ class ROSInterface:
                         output= False)
 
         frames = []
-        for i in range(0, int(RESPEAKER_RATE / CHUNK * seconds)):
+        arr_length = int(RESPEAKER_RATE / CHUNK * seconds) # get length of array to produce n seconds of audio
+        for i in range(0, arr_length):
             data = stream.read(CHUNK)
             a = np.frombuffer(data,dtype=np.int16)[0::6] # extracts fused channel 0
             print("a type: ", type(a[0]))
