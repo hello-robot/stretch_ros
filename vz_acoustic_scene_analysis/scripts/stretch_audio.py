@@ -265,7 +265,6 @@ class ROSInterface:
 
 
     def process_audio_loop(self):
-        audio_count = 0
         dev = usb.core.find(idVendor=0x2886, idProduct=0x0018)
         try:
             if dev:
@@ -281,10 +280,7 @@ class ROSInterface:
                             # Call of Utku's function
                             self.cough_prob = dsp.classify_cough(flat_list,RESPEAKER_RATE,self.loaded_model,self.loaded_scaler)
                             print(self.cough_prob)
-                            # asa_out = process_wav(wav_data, asa_params)
-                            # Convert asa_out to ROS message
-                        audio_count += 1
-                        print("Audio count: ", audio_count)
+                            # do something with probability (publish?)
         except usb.core.USBError:
             print('Respeaker not on USB bus')
 
@@ -301,4 +297,3 @@ if __name__ == "__main__":
     except rospy.ROSInterruptException:
         print('Audio processing node failed!')
         rospy.on_shutdown(audio.cleanup)
-        pass
