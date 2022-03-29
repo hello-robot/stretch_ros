@@ -44,10 +44,13 @@ class D435i:
         self.D435i_cap = cv2.VideoCapture('/dev/video4')
         # self.D435i_cap = cv2.VideoCapture('/home/ananya/Downloads/2022-02-09-16-20-58(2).mp4')
 
+        # Get topic parameter
+        self.rgbd_topic = rospy.get_param("rgbd_topic")
+
         if not self.D435i_cap.isOpened():
             raise(Exception,'Unable to open video stream')
         self.bridge = CvBridge()
-        self.D435i_pub = rospy.Publisher('/D435i/image_raw', Image, queue_size=100)
+        self.D435i_pub = rospy.Publisher(self.rgbd_topic, Image, queue_size=100)
         self.timer = rospy.Timer(rospy.Duration(0, UPDATE_RATE), self.publish_image)
         self.timer_display = rospy.Timer(rospy.Duration(0, UPDATE_RATE), self.display_images)
 

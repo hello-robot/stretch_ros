@@ -222,6 +222,7 @@ class ROSInterface:
         self.sequence_size = 3 # self.secs/self.chunk_size
         if (self.record_count % self.sequence_size == 0):
             return_list =  self.wav_list
+            print("Collected %d seconds of audio" %(self.secs))
             # Remove fist two objects in array to remove 0.2 seconds of audio data from array
             self.wav_list.pop(0)
             self.wav_list.pop(0)
@@ -245,8 +246,6 @@ class ROSInterface:
         for i in range(0, arr_length):
             data = stream.read(CHUNK)
             a = np.frombuffer(data,dtype=np.int16)[0::6] # extracts fused channel 0
-            print("a type: ", type(a[0]))
-            print("a length: ", len(a))
             self.audio_data_pub.publish(a)
             frames.append(a.tobytes())
         
@@ -275,10 +274,9 @@ class ROSInterface:
                         if(isinstance(wav_data, list)):
                             # flatten list
                             flat_list = [item for sublist in wav_data for item in sublist]
-                            print(type(flat_list[0]))
                             # Call of Utku's function
                             self.cough_prob = dsp.classify_cough(flat_list,RESPEAKER_RATE,self.loaded_model,self.loaded_scaler)
-                            print(self.cough_prob)
+                            print("%d %% probability of cough" %(self.cough_prob))
                             # do something with probability (publish?)
         except usb.core.USBError:
             print('Respeaker not on USB bus')

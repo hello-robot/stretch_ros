@@ -4,5 +4,7 @@
       <node pkg="image_transport" type="republish" name="D435iCompressed"
             args="raw in:=/D435i/image_raw compressed out:=/D435i/image_raw" />
       <!-- Flip images and display when collecting data? -->
-      <param name="flip_images_grab_data" type="bool" value="true" />      
+      <param name="flip_images_grab_data" type="bool" value="true" />
+      <param name="rgbd_topic" type="string" value="/D435i/image_raw" />
+      <param name="thermal_topic" type="string" value="/Lepton/image_raw" />      
   </launch>

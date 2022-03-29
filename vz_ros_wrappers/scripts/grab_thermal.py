@@ -49,11 +49,14 @@ class FLIR_LEPTON:
 
         self.thermal_cap = cv2.VideoCapture('/dev/video6')
         # self.thermal_cap = cv2.VideoCapture('/home/ananya/Downloads/Thermal-3(2).mp4')
+
+        # Get topic parameter
+        self.thermal_topic = rospy.get_param("thermal_topic")
         
         if not self.thermal_cap.isOpened():
             raise(Exception,'Unable to open video stream')
         self.bridge = CvBridge()
-        self.thermal_pub = rospy.Publisher('/flir_3_5_near_realsense_raw', Image, queue_size=100)
+        self.thermal_pub = rospy.Publisher(self.thermal_topic, Image, queue_size=100)
         self.timer = rospy.Timer(rospy.Duration(0, UPDATE_RATE), self.publish_image)
         self.timer_display = rospy.Timer(rospy.Duration(0, UPDATE_RATE), self.display_images)
 
