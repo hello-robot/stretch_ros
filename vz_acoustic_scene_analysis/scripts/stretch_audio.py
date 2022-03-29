@@ -15,7 +15,7 @@ import pickle
 from contextlib import contextmanager
 import stretch_body.hello_utils as hu
 hu.print_stretch_re_use()
-from vz_acoustic_scene_analysis.msg import MyAudioData
+from vz_acoustic_scene_analysis.msg import VZ_AudioData
 from rospy.numpy_msg import numpy_msg
 import NEU_VZ_ASA.MehrshadTesting.codes.A_CoughDetection.src.DSP as dsp
 
@@ -201,7 +201,7 @@ class ROSInterface:
         self.chunk_size = rospy.get_param("/chunk_size")
         self.respeaker = Tuning()
         # Publisher for Audio Data
-        self.audio_data_pub = rospy.Publisher("/wav_data", numpy_msg(MyAudioData), queue_size=10)
+        self.audio_data_pub = rospy.Publisher("/wav_data", numpy_msg(VZ_AudioData), queue_size=10)
         # For Utku's code: float of cough probabilty from sample
         self.cough_prob = 90
 

@@ -57,8 +57,8 @@ catkin_python_setup()
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  MyAudioInfo.msg
-  MyAudioData.msg
+  VZ_AudioInfo.msg
+  VZ_AudioData.msg
 )
 
 ## Generate services in the 'srv' folder
