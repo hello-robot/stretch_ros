@@ -86,11 +86,8 @@ PARAMETERS = {
 
 
 class Tuning:
-    # TIMEOUT = rospy.get_param("/TIMEOUT_SECONDS", 100000)
-    audio_list = []
-
     def __init__(self):
-        self.TIMEOUT = rospy.get_param("/VZ_ACOUSTIC_SCENE_ANALYSIS/TIMEOUT_SECONDS", 100000)
+        self.TIMEOUT = rospy.get_param("/VZ_ACOUSTIC_SCENE_ANALYSIS/TIMEOUT_MILLISECONDS", 100000)
         self.dev = usb.core.find(idVendor=0x2886, idProduct=0x0018)
 
         if not self.dev:
@@ -115,9 +112,10 @@ class Tuning:
         else:
             payload = struct.pack(b'ifi', data[1], float(value), 0)
 
-        self.dev.ctrl_transfer(
-            usb.util.CTRL_OUT | usb.util.CTRL_TYPE_VENDOR | usb.util.CTRL_RECIPIENT_DEVICE,
-            0, 0, id, payload, self.TIMEOUT)
+        self.dev.ctrl_transfer()
+        # (
+        #     usb.util.CTRL_OUT | usb.util.CTRL_TYPE_VENDOR | usb.util.CTRL_RECIPIENT_DEVICE,
+        #     0, 0, id, payload, self.TIMEOUT)
 
     def read(self, name):
         try:
@@ -197,8 +195,8 @@ class ROSInterface:
         self.wav_list = []
         self.record_count = 0 # Count how many times we've recorded f seconds of audio
         self.file_name = "/home/hello-robot/Desktop/output_audio.wav"
-        self.secs = rospy.get_param("/VZ_ACOUSTIC_SCENE_ANALYSIS/seconds")
-        self.chunk_size = rospy.get_param("/VZ_ACOUSTIC_SCENE_ANALYSIS/chunk_size")
+        self.secs = rospy.get_param("/VZ_ACOUSTIC_SCENE_ANALYSIS/SECONDS")
+        self.chunk_size = rospy.get_param("/VZ_ACOUSTIC_SCENE_ANALYSIS/CHUNK_SIZE")
         self.respeaker = Tuning()
         # Publisher for Audio Data
         self.audio_data_pub = rospy.Publisher("/wav_data", numpy_msg(VZ_AudioData), queue_size=10)
