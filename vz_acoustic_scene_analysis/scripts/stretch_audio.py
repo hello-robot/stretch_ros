@@ -86,11 +86,11 @@ PARAMETERS = {
 
 
 class Tuning:
-    TIMEOUT = 100000
+    # TIMEOUT = rospy.get_param("/TIMEOUT_SECONDS", 100000)
     audio_list = []
 
     def __init__(self):
-        self.TIMEOUT = 100000
+        self.TIMEOUT = rospy.get_param("/VZ_ACOUSTIC_SCENE_ANALYSIS/TIMEOUT_SECONDS", 100000)
         self.dev = usb.core.find(idVendor=0x2886, idProduct=0x0018)
 
         if not self.dev:
@@ -185,11 +185,11 @@ def get_respeaker_device_id():
     return device_id
 
 
-RESPEAKER_RATE = rospy.get_param("/RESPEAKER_RATE", 16000)
-RESPEAKER_CHANNELS = rospy.get_param("/RESPEAKER_CHANNELS", 6) # 6 must flash 6_channels_firmware.bin first
-RESPEAKER_WIDTH = rospy.get_param("/RESPEAKER_WIDTH", 2)
+RESPEAKER_RATE = rospy.get_param("/VZ_ACOUSTIC_SCENE_ANALYSIS/RESPEAKER_RATE", 16000)
+RESPEAKER_CHANNELS = rospy.get_param("/VZ_ACOUSTIC_SCENE_ANALYSIS/RESPEAKER_CHANNELS", 6) # 6 must flash 6_channels_firmware.bin first
+RESPEAKER_WIDTH = rospy.get_param("/VZ_ACOUSTIC_SCENE_ANALYSIS/RESPEAKER_WIDTH", 2)
 RESPEAKER_INDEX = get_respeaker_device_id()
-CHUNK = rospy.get_param("/CHUNK", 1024)
+CHUNK = rospy.get_param("/VZ_ACOUSTIC_SCENE_ANALYSIS/CHUNK", 1024)
 
 class ROSInterface:
     def __init__(self):
@@ -197,8 +197,8 @@ class ROSInterface:
         self.wav_list = []
         self.record_count = 0 # Count how many times we've recorded f seconds of audio
         self.file_name = "/home/hello-robot/Desktop/output_audio.wav"
-        self.secs = rospy.get_param("/seconds")
-        self.chunk_size = rospy.get_param("/chunk_size")
+        self.secs = rospy.get_param("/VZ_ACOUSTIC_SCENE_ANALYSIS/seconds")
+        self.chunk_size = rospy.get_param("/VZ_ACOUSTIC_SCENE_ANALYSIS/chunk_size")
         self.respeaker = Tuning()
         # Publisher for Audio Data
         self.audio_data_pub = rospy.Publisher("/wav_data", numpy_msg(VZ_AudioData), queue_size=10)
