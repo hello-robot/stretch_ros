@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+# Non ROS imports
 from __future__ import print_function
 import pyaudio
 import wave
@@ -10,13 +11,17 @@ import struct
 import time
 import sys
 import os
-import rospy
 import pickle
 from contextlib import contextmanager
+
+# ROS specific imports 
+import rospy
+from rospy.numpy_msg import numpy_msg
+
+# Custom imports
 import stretch_body.hello_utils as hu
 hu.print_stretch_re_use()
 from vz_acoustic_scene_analysis.msg import VZ_AudioData
-from rospy.numpy_msg import numpy_msg
 import NEU_VZ_ASA.MehrshadTesting.codes.A_CoughDetection.src.DSP as dsp
 
 
