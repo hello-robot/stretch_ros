@@ -33,9 +33,13 @@ class ROSInterface:
         # set up CV Bridge
         self.bridge = CvBridge()
 
+        # Get topic names
+        self.rgbd_topic = rospy.get_param("rgbd_topic")
+        self.thermal_topic = rospy.get_param("thermal_topic")
+
         #Image subscribers
-        rgbd_sub    = message_filters.Subscriber("/D435i/image_raw",Image)
-        thermal_sub = message_filters.Subscriber("/flir_3_5_near_realsense_raw",Image)
+        rgbd_sub    = message_filters.Subscriber(self.rgbd_topic, Image)
+        thermal_sub = message_filters.Subscriber(self.thermal_topic, Image)
 
         # todo: confirm the slop parameter with Paul Ghanem. 2 secs seems high
         ats = message_filters.ApproximateTimeSynchronizer([rgbd_sub,thermal_sub],queue_size=10,slop=2.0)
