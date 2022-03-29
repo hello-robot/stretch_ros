@@ -218,10 +218,9 @@ class ROSInterface:
     def get_audio(self):
         recorded_frames = self.record_audio(self.chunk_size) # set param here chunk size
         self.wav_list.append(recorded_frames)
-        self.record_count += 1
-        # Every 5 seconds for 
-        # if ((self.record_count % (self.secs/self.chunk_size)) == 0): # set param sequence size
-        if (self.record_count % 3 == 0):
+        self.record_count += 1 
+        self.sequence_size = 3 # self.secs/self.chunk_size
+        if (self.record_count % self.sequence_size == 0):
             return_list =  self.wav_list
             # Remove fist two objects in array to remove 0.2 seconds of audio data from array
             self.wav_list.pop(0)
