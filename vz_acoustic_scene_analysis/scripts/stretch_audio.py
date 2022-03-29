@@ -199,7 +199,6 @@ class ROSInterface:
         # Initialiaze list to store audio segments
         self.wav_list = []
         self.record_count = 0 # Count how many times we've recorded f seconds of audio
-        self.file_name = "/home/hello-robot/Desktop/output_audio.wav"
         self.secs = rospy.get_param("/VZ_ACOUSTIC_SCENE_ANALYSIS/SECONDS")
         self.chunk_size = rospy.get_param("/VZ_ACOUSTIC_SCENE_ANALYSIS/CHUNK_SIZE")
         self.respeaker = Tuning()
