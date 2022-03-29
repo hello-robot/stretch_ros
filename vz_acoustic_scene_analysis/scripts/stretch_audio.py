@@ -223,7 +223,7 @@ class ROSInterface:
         # if ((self.record_count % (self.secs/self.chunk_size)) == 0): # set param sequence size
         if (self.record_count % 3 == 0):
             return_list =  self.wav_list
-            # Remove 0.2 seconds of audio data
+            # Remove fist two objects in array to remove 0.2 seconds of audio data from array
             self.wav_list.pop(0)
             self.wav_list.pop(0)
             # send the frames at the beginning of the list (save as wav for now)
