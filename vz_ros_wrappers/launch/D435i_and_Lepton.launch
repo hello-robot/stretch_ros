@@ -1,7 +1,7 @@
 <launch>
       <node pkg="vz_ros_wrappers" type="grab_D435i.py" name="D435i" />
       <node pkg="vz_ros_wrappers" type="grab_thermal.py" name="FLIRLepton" />
-      <node pkg="vz_ros_wrappers" type="orvs_ros_interface.py" name="bpm_capture" />
+      <node pkg="vz_ros_wrappers" type="orvs_ros_interface.py" name="bpm_capture" output="screen" />
       <node pkg="image_transport" type="republish" name="D435iCompressed"
             args="raw in:=/D435i/image_raw compressed out:=/D435i/image_raw" />
       <!-- Flip images and display when collecting data? -->

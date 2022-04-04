@@ -15,7 +15,8 @@ import time
 import cv2
 
 # Custom imports
-import VZ_ORVS.Thermal_Video_Submodule.Thermal_Camera_PostProcessing_Demo as pp_demo
+# import VZ_ORVS.Thermal_Video_Submodule.Thermal_Camera_PostProcessing_Demo as pp_demo
+from VZ_ORVS.Thermal_Video_Submodule.Thermal_Camera_PostProcessing_Demo import AVI as avi
 
 class FLIR_LEPTON:
     def __init__(self):
@@ -27,10 +28,11 @@ class FLIR_LEPTON:
         self.file_name = '/home/hello-robot/Desktop/bpm_vid.avi'
         self.fps = 30
         self.seconds = rospy.get_param("rec_secs")
-        # self.frame_arr = np.empty(shape=(self.fps*self.seconds,2), dtype=uint8)
-        self.frame_arr = np.empty(shape=300)
-        # print(type(self.frame_arr))
+        self.frame_arr = [None]*(self.seconds*self.fps)
+        self.time_arr = [None]*(self.seconds*self.fps)
+        # print(len(self.frame_arr))
         self.index = 0
+        self.t_zero = 0
 
         self.thermal_topic = rospy.get_param("thermal_topic")
         self.bpm_topic = rospy.get_param("bpm_topic")
@@ -41,14 +43,21 @@ class FLIR_LEPTON:
 
     def thermal_cb(self, msg_data):
         cv_image = self.bridge.imgmsg_to_cv2(msg_data, desired_encoding='passthrough')
-        print('CV_Image Type')
-        print(type(cv_image[0,0,0]))
-        print(cv_image.shape)
-        for i in range(self.frame_arr):
-            print(i)
-            # self.frame_arr[i] = cv_image
-            # if i == 299:
-            #     pp_demo(self.frame_arr)
+        t = msg_data.header.stamp
+        if self.index == 0:
+            self.t_zero = t.to_sec()
+        if self.index < 300:
+            print(self.index)
+            self.frame_arr[self.index] = cv_image
+            self.index += 1
+            deltat = t.to_sec() - self.t_zero
+            self.time_arr[self.index] = deltat
+        else: # when list is full
+            self.index = 0 # reset index
+            vid_arr = np.asarray(self.frame_arr) # make into np array 
+            print("sending to Rahul's code")
+            avi.get_bpm(self,vid_arr,self.time_arr) # perform bpm measurement
+            
 
 
         # im_arr = np.asarray(cv_image)
