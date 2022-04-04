@@ -30,7 +30,7 @@ class FLIR_LEPTON:
         self.seconds = rospy.get_param("rec_secs")
         self.frame_arr = [None]*(self.seconds*self.fps)
         self.time_arr = [None]*(self.seconds*self.fps)
-        # print(len(self.frame_arr))
+        
         self.index = 0
         self.t_zero = 0
 
@@ -59,36 +59,10 @@ class FLIR_LEPTON:
             avi.get_bpm(self,vid_arr,self.time_arr) # perform bpm measurement
             
 
-
-        # im_arr = np.asarray(cv_image)
-        # if self.index == 0:
-            # self.tzero = cv_image.header.stamp
-        # self.frame_arr[self.index,0] = data.data
-        # self.frame_arr[self.index,1] = data.header.stamp - self.tzero
-        # self.index +=1
-        
-        # pp_demo.get_bpm(im_arr)
-        # print(type(cv_image.data))
-        # print(type(cv_image.header.stamp))
-
-        #data.header.timestamp
-        # img_arr = np.array(data.data, dtype=np.uint8)
-        # # get image data into mp4 form
-        # cv_image = self.bridge.imgmsg_to_cv2(data, 'bgr8')
-
-        # if self.video_writer is None:
-        #     rows, cols, _ = cv_image.shape
-        #     fourcc = cv2.cv.CV_FOURCC(*'MJPG') # double check here -> cv2.VideoWriter_fourcc(*'MJPG')
-        #     self.video_writer = cv2.VideoWriter(self.file_name, -1, self.fps, (cols, rows))
-        
-        # self.video_writer.write(cv_image)
-
     def cleanup(self):
         if self.video_writer is not None:
             self.video_writer.release()
 
-        # for row in self.frame_arr:
-        #     print(row[1])
 
 if __name__== '__main__':
     try:
