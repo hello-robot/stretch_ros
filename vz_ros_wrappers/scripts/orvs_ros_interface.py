@@ -49,9 +49,9 @@ class FLIR_LEPTON:
         if self.index < 300:
             print(self.index)
             self.frame_arr[self.index] = cv_image
-            self.index += 1
             deltat = t.to_sec() - self.t_zero
             self.time_arr[self.index] = deltat
+            self.index += 1
         else: # when list is full
             self.index = 0 # reset index
             vid_arr = np.asarray(self.frame_arr) # make into np array 
