@@ -1,9 +1,6 @@
 #! /usr/bin/python3
 
 # ROS imports
-from pickletools import uint8
-from pprint import pp
-from turtle import shape
 import rospy
 import numpy as np
 from sensor_msgs.msg import Image
@@ -11,11 +8,8 @@ from std_msgs.msg import Float64
 
 # Python imports
 from cv_bridge import CvBridge, CvBridgeError
-import time
-import cv2
 
 # Custom imports
-# import VZ_ORVS.Thermal_Video_Submodule.Thermal_Camera_PostProcessing_Demo as pp_demo
 from VZ_ORVS.Thermal_Video_Submodule.Thermal_Camera_PostProcessing_Demo import AVI as avi
 
 class FLIR_LEPTON:
@@ -25,11 +19,12 @@ class FLIR_LEPTON:
 
         self.bridge = CvBridge()
         self.video_writer = None
-        self.file_name = '/home/hello-robot/Desktop/bpm_vid.avi'
+
         self.fps = 30
         self.seconds = rospy.get_param("rec_secs")
-        self.frame_arr = [None]*(self.seconds*self.fps)
-        self.time_arr = [None]*(self.seconds*self.fps)
+        self.num_frames = self.fps * self.seconds
+        self.frame_arr = [None]*(self.num_frames)
+        self.time_arr = [None]*(self.num_frames)
         
         self.index = 0
         self.t_zero = 0
@@ -46,7 +41,7 @@ class FLIR_LEPTON:
         t = msg_data.header.stamp
         if self.index == 0:
             self.t_zero = t.to_sec()
-        if self.index < 300:
+        if self.index < self.num_frames:
             print(self.index)
             self.frame_arr[self.index] = cv_image
             deltat = t.to_sec() - self.t_zero
@@ -68,7 +63,6 @@ if __name__== '__main__':
     try:
         rospy.init_node("bpm_capture")
         processor = FLIR_LEPTON()
-        # processor.run()
         rospy.spin()
     except rospy.ROSInterruptException:
         print('BPM extraction node failed!')
