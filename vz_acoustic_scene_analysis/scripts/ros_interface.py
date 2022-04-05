@@ -204,7 +204,7 @@ class ROSInterface:
         # Publisher for Audio Data
         self.audio_data_pub = rospy.Publisher("/wav_data", numpy_msg(VZ_AudioData), queue_size=10)
         # For Utku's code: float of cough probabilty from sample
-        self.cough_prob = 90
+        self.cough_prob = 90.000
 
         self.model_path = '/home/hello-robot/vz_modules/NEU_VZ_ASA/MehrshadTesting/codes/A_CoughDetection/models/'
         self.cough_classifier_file = self.model_path + 'cough_classifier'
@@ -213,8 +213,8 @@ class ROSInterface:
         self.loaded_scaler = pickle.load(open(self.cough_classifier_scaler, 'rb'))
 
         # for testing audio collection
-        # self.file_name = 'testing_audio_node1.wav'
-        # self.dir = os.path.join('/home/hello-robot/clone/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/vz_acoustic_scene_analysis/scripts/', self.file_name)
+        self.file_name = 'testing_audio_node6.wav'
+        self.dir = os.path.join('/home/hello-robot/clone/Robot_Autonomous_Navigation/catkin_ws/src/stretch_ros/vz_acoustic_scene_analysis/scripts/', self.file_name)
 
 
 
@@ -288,7 +288,7 @@ class ROSInterface:
                             flatter_list_np = np.asarray(flatter_list)
 
                             # Test that the data is good
-                            # scipy.io.wavfile.write(self.dir, 16000, flatter_list_np)
+                            scipy.io.wavfile.write(self.dir, 16000, flatter_list_np)
 
                             # remove first 0.2 seconds from wav data
                             self.wav_list.pop(0)
@@ -296,7 +296,7 @@ class ROSInterface:
 
                             # Call of Utku's function
                             self.cough_prob = dsp.classify_cough(flatter_list_np,RESPEAKER_RATE,self.loaded_model,self.loaded_scaler)
-                            print("%d %% probability of cough" %(self.cough_prob))
+                            print("%d %% probability of cough" %round(self.cough_prob*100,2))
                             # do something with probability (publish?)
         except usb.core.USBError:
             print('Respeaker not on USB bus')
