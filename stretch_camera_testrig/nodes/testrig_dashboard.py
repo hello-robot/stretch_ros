@@ -13,11 +13,10 @@ import copy
 
 class TestRig_dashboard():
     def __init__(self):
-        self.data_directory = os.path.expanduser('~/catkin_ws/src/stretch_ros/stretch_camera_testrig/data')
-        self.nominal_poses_filename = os.path.expanduser(
-            '~/catkin_ws/src/stretch_ros/stretch_camera_testrig/config/testrig_marker_info.yaml')
-        self.nominal_poses_filename = os.path.expanduser(
-            '~/catkin_ws/src/stretch_ros/stretch_camera_testrig/config/testrig_marker_info.yaml')
+        self.ros_package_dir = os.path.expanduser('~/catkin_ws/src/stretch_ros/stretch_camera_testrig')
+        self.data_directory = self.ros_package_dir + '/data'
+        self.nominal_poses_filename = self.ros_package_dir + '/config/testrig_marker_info.yaml'
+        self.nominal_poses_filename = self.ros_package_dir + '/config/testrig_marker_info.yaml'
 
         self.data_keys = ['base_left_marker_pose',
                           'base_right_marker_pose',
@@ -73,11 +72,12 @@ class TestRig_dashboard():
         self.update_nominal_poses_btn.place(x=x_off + 20, y=y_off + 280)
 
         self.nominal_poses_radiobuttons = []
-        self.nominal_poses_selector_vars = []
+        self.radio_var = IntVar()
+        vi = 0
         for key in self.data_keys:
-            self.nominal_poses_selector_vars.append(IntVar)
-            r = Radiobutton(self.window, text=key, value=0,
+            r = Radiobutton(self.window, text=key, value=vi, var=self.radio_var,
                             command=self.radiobutton_sel)
+            vi = vi + 1
             self.nominal_poses_radiobuttons.append(r)
         for i in range(len(self.nominal_poses_radiobuttons)):
             self.nominal_poses_radiobuttons[i].place(x=x_off + 155, y=y_off + 150 + i * 20)
@@ -184,7 +184,7 @@ class TestRig_dashboard():
         print(ros_log)
 
     def radiobutton_sel(self):
-        print('Radio Button')
+        print('selected {}'.format(self.data_keys[self.radio_var.get()]))
 
     def update_nominal_poses(self):
         self.log('Updated new Nominal Poses File.')

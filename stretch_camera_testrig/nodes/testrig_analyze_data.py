@@ -22,9 +22,9 @@ data_file = None
 
 class TestRig_Analyze:
     def __init__(self, data_filename=None):
-        self.data_directory = os.path.expanduser('~/catkin_ws/src/stretch_ros/stretch_camera_testrig/data')
-        self.nominal_poses_filename = os.path.expanduser(
-            '~/catkin_ws/src/stretch_ros/stretch_camera_testrig/config/testrig_marker_info.yaml')
+        self.ros_package_dir = os.path.expanduser('~/catkin_ws/src/stretch_ros/stretch_camera_testrig')
+        self.data_directory = self.ros_package_dir+'/data'
+        self.nominal_poses_filename = self.ros_package_dir+'/config/testrig_marker_info.yaml'
         self.data_keys = ['base_left_marker_pose',
                           'base_right_marker_pose',
                           'wrist_inside_marker_pose',
