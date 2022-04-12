@@ -1,4 +1,7 @@
-Realsense Details: ''
+Realsense Details:
+  firmware: 05.13.00.50
+  serial: 040322072690
+  usb: '3.2'
 capture_id: '202203091216'
 lighting_condition:
   brightness: null

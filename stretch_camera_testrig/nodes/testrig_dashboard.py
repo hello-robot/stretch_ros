@@ -16,7 +16,6 @@ class TestRig_dashboard():
         self.ros_package_dir = os.path.expanduser('~/catkin_ws/src/stretch_ros/stretch_camera_testrig')
         self.data_directory = self.ros_package_dir + '/data'
         self.nominal_poses_filename = self.ros_package_dir + '/config/testrig_marker_info.yaml'
-        self.nominal_poses_filename = self.ros_package_dir + '/config/testrig_marker_info.yaml'
 
         self.data_keys = ['base_left_marker_pose',
                           'base_right_marker_pose',
@@ -116,7 +115,7 @@ class TestRig_dashboard():
         try:
             del info_dict['performance_metrics']
         except KeyError:
-            None
+            print('Performance Metrics not found.')
         info_txt = str(yaml.safe_dump(info_dict, allow_unicode=True, default_flow_style=False))
         self.info_print = Label(self.window, text=info_txt, anchor="w", font=("Arial", 11), justify=LEFT)
         self.info_print.place(x=x_pos, y=y_pos)
@@ -180,11 +179,32 @@ class TestRig_dashboard():
             ros_log = Popen("roslaunch stretch_camera_testrig testrig_collect_data.launch", shell=True, bufsize=64, stdin=PIPE, stdout=PIPE,
                             close_fds=True).stdout.read()
         except:
-            None
+            print('Unable to Collect Testrig Data.')
         print(ros_log)
 
     def radiobutton_sel(self):
-        print('selected {}'.format(self.data_keys[self.radio_var.get()]))
+        selected_data_key = self.data_keys[self.radio_var.get()]
+        print('selected {}'.format(selected_data_key))
+        nominal_poses_dict = self.get_nominal_pose_dict(self.nominal_poses_filename)
+        for key in self.data_keys:
+            if key == selected_data_key:
+                print(nominal_poses_dict[key])
+                for i in range(4):
+                    for j in range(4):
+                        self.matrix_text_var[i][j].set(nominal_poses_dict[key][i][j])
+        # print(self.matrix_text_var)
+        # print(self.matrix_entries)
+
+    def get_nominal_pose_dict(self, filename):
+        try:
+            with open(filename, 'r') as file:
+                data = yaml.safe_load(file)
+            nominal_poses_dict = {}
+            for key in data['testrig_aruco_marker_info'].keys():
+                nominal_poses_dict[key] = np.array(data['testrig_aruco_marker_info'][key])
+            return nominal_poses_dict
+        except IOError:
+            print('[Error] Unable to open Testrig Nominal Poses file: {0}'.format(filename))
 
     def update_nominal_poses(self):
         self.log('Updated new Nominal Poses File.')
