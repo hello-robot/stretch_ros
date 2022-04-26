@@ -341,7 +341,6 @@ class CollectHeadCalibrationDataNode:
                            }
 
             with self.data_lock:
-
                 # record the settled camera measurments
                 camera_measurements = observation['camera_measurements']
                 camera_measurements['d435i_acceleration'] = self.acceleration
