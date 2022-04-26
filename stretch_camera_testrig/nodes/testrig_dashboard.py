@@ -176,7 +176,8 @@ class TestRig_dashboard():
     def run_new_test(self):
         ros_log = None
         try:
-            ros_log = Popen("roslaunch stretch_camera_testrig testrig_collect_data.launch", shell=True, bufsize=64, stdin=PIPE, stdout=PIPE,
+            ros_log = Popen("roslaunch stretch_camera_testrig testrig_collect_data.launch", shell=True, bufsize=64,
+                            stdin=PIPE, stdout=PIPE,
                             close_fds=True).stdout.read()
         except:
             print('Unable to Collect Testrig Data.')
@@ -184,10 +185,11 @@ class TestRig_dashboard():
 
     def radiobutton_sel(self):
         selected_data_key = self.data_keys[self.radio_var.get()]
-        print('selected {}'.format(selected_data_key))
-        nominal_poses_dict = self.get_nominal_pose_dict(self.nominal_poses_filename)
+        self.log('selected {}'.format(selected_data_key))
+        nominal_poses_dict = self.get_nominal_pose_dict()
         for key in self.data_keys:
             if key == selected_data_key:
+                print('Current Value:')
                 print(nominal_poses_dict[key])
                 for i in range(4):
                     for j in range(4):
@@ -195,7 +197,8 @@ class TestRig_dashboard():
         # print(self.matrix_text_var)
         # print(self.matrix_entries)
 
-    def get_nominal_pose_dict(self, filename):
+    def get_nominal_pose_dict(self):
+        filename = self.nominal_poses_filename
         try:
             with open(filename, 'r') as file:
                 data = yaml.safe_load(file)
@@ -206,8 +209,38 @@ class TestRig_dashboard():
         except IOError:
             print('[Error] Unable to open Testrig Nominal Poses file: {0}'.format(filename))
 
+    def get_current_entry_matrix(self):
+        mat = None
+        try:
+            mat = []
+            rows, cols = (4, 4)
+            for i in range(rows):
+                mat.append([])
+                for j in range(cols):
+                    mat[i].append(float(self.matrix_entries[i][j].get()))
+            return np.array(mat)
+        except:
+            self.log('Non-Valid Matrix Entered.')
+            return None
+
+    def set_nominal_pose_dict(self, pose_matrix, marker_name):
+        filename = self.nominal_poses_filename
+        try:
+            with open(filename, 'r') as file:
+                data = yaml.safe_load(file)
+            data['testrig_aruco_marker_info'][marker_name] = pose_matrix.tolist()
+            with open(filename, 'w') as file:
+                yaml.dump(data, file)
+        except IOError:
+            print('[Error] Unable to update Nominal Poses file: {0}'.format(filename))
+            self.log('Unable to set Nominal Pose Matrix')
+
     def update_nominal_poses(self):
-        self.log('Updated new Nominal Poses File.')
+        mat = self.get_current_entry_matrix()
+        selected_data_key = self.data_keys[self.radio_var.get()]
+        print(selected_data_key)
+        self.set_nominal_pose_dict(mat, selected_data_key)
+        self.log('Updated "{}" Nominal Pose.'.format(selected_data_key))
 
     def log(self, txt):
         self.LOGGER.configure(text=txt)
