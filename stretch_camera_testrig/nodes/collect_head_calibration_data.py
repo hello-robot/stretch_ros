@@ -95,11 +95,7 @@ class CollectHeadCalibrationDataNode:
                     self.shoulder_marker_pose = marker.pose
 
     def calibration_data_callback_testrig(self, marker_array, accel):
-        # Prepare and assign data for calibration to member
-        # variables. The configuration of the robot's joints, the
-        # D435i acceleration, and the 3D fiducial estimates made via
-        # D435i imagery are expected to be synchronized for this
-        # callback.
+
         with self.data_lock:
             self.wrist_inside_marker_pose = None
             self.wrist_top_marker_pose = None

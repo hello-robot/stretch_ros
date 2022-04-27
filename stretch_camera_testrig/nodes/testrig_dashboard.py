@@ -23,10 +23,10 @@ class TestRig_dashboard():
                           'wrist_top_marker_pose',
                           'shoulder_marker_pose']
         self.metrics_keys = ["maximum", "mean", "median", "rmse"]
-        self.error_keys = ["angle_rotation_error", "euclidean_error"]
+        self.error_keys = ["angle_rotation", "euclidean_error"]
         self.window = Tk()
         self.window.title("Camera Test rig Dashboard")
-        self.window.geometry('700x900')
+        self.window.geometry('800x900')
 
         self.data_file_name = None
         self.test_rig = None
@@ -96,12 +96,12 @@ class TestRig_dashboard():
                                        font=("Arial", 14))
         self.save_results_btn.place(x=x_off_bottom + 150, y=y_off_bottom + 500)
 
-        self.run_new_test_btn = Button(self.window, text="Run a new Test", command=self.run_new_test,
+        self.run_new_test_btn = Button(self.window, text="Run a new Test", command=self.run_new_test,state='disabled',
                                        font=("Arial", 14))
         self.run_new_test_btn.place(x=x_off_bottom + 150, y=y_off_bottom + 540)
 
         self.target_samples = IntVar()
-        self.target_samples_entry = Entry(self.window, textvariable=self.target_samples, width=6)
+        self.target_samples_entry = Entry(self.window, textvariable=self.target_samples, width=6,state='disabled')
         self.target_samples_entry.place(x=x_off_bottom + 450, y=y_off_bottom + 546)
 
         self.target_samples_lbl = Label(self.window, text="Enter Target frames:")
@@ -116,6 +116,9 @@ class TestRig_dashboard():
             del info_dict['performance_metrics']
         except KeyError:
             print('Performance Metrics not found.')
+        for key in self.data_keys:
+            null_frames_percent = (float(info_dict['null_frames'][key]) / float(info_dict['number_samples'])) * 100
+            info_dict['null_frames'][key] = "{} ({:.1f}%)".format(info_dict['null_frames'][key], null_frames_percent)
         info_txt = str(yaml.safe_dump(info_dict, allow_unicode=True, default_flow_style=False, indent=4))
         self.info_print = Label(self.window, text=info_txt, anchor="w", font=("Arial", 11), justify=LEFT)
         self.info_print.place(x=x_pos, y=y_pos)
@@ -135,7 +138,14 @@ class TestRig_dashboard():
         data_list = [mkeys] + data_list
         x2 = 0
         y2 = 0
+
         self.metric_title = Label(self.window, text=error_key + ' Metrics', font=("Arial", 13, 'bold'))
+
+        if error_key == 'angle_rotation':
+            self.metric_title.configure(text=error_key + ' Metrics (deg)')
+        if error_key == 'euclidean_error':
+            self.metric_title.configure(text=error_key + ' Metrics (meter)')
+
         self.metric_title.place(x=pos_x, y=pos_y - 25)
         for i in range(n_rows):
             for j in range(n_columns):
@@ -279,7 +289,7 @@ class TestRig_dashboard():
         test_rig.populate_performance_metrics()
         self.test_rig = test_rig
         self.metrics_table_print(self.x_off_mid + 130, self.y_off_mid + 420, 'euclidean_error')
-        self.metrics_table_print(self.x_off_mid + 130, self.y_off_mid + 620, 'angle_rotation_error')
+        self.metrics_table_print(self.x_off_mid + 130, self.y_off_mid + 620, 'angle_rotation')
         self.test_data_info(480, 140)
         return test_rig
 

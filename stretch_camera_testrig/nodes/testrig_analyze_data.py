@@ -44,7 +44,11 @@ class TestRig_Analyze:
         if data_filename:
             self.data_filename = data_filename
         else:
-            files = os.listdir(self.data_directory)
+            all_files = os.listdir(self.data_directory)
+            files = []
+            for f in all_files:
+                if f.startswith("testrig_collected_data_"):
+                    files.append(f)
             files.sort()
             if files[-1].startswith("testrig_collected_data_"):
                 self.data_filename = self.data_directory + '/' + files[-1]
@@ -58,8 +62,7 @@ class TestRig_Analyze:
                                   'number_samples': None,
                                   'null_frames': {},
                                   'lighting_condition': {
-                                      'temperature': None,
-                                      'brightness': None,
+                                      'illuminance': None
                                   },
                                   'performance_metrics': {},
                                   'Realsense Details': self.realsense_details
@@ -94,7 +97,7 @@ class TestRig_Analyze:
         return rn_vals
 
     def populate_performance_metrics(self):
-        self.test_results_dict['performance_metrics']['angle_rotation_error'] = self.get_performance_metric(
+        self.test_results_dict['performance_metrics']['angle_rotation'] = self.get_performance_metric(
             self.angle_rotation_error_dict)
         self.test_results_dict['performance_metrics']['euclidean_error'] = self.get_performance_metric(
             self.euclidean_error_dict)
@@ -189,20 +192,27 @@ class TestRig_Analyze:
         for key in error_dict.keys():
             for i in range(Num_samples):
                 if type(data_dict[key][i]) != type(None):
-                    error_dict[key].append(self.angle_rot_error(nominal_poses_dict[key], data_dict[key][i]))
+                    error_dict[key].append(self.angle_rot(nominal_poses_dict[key], data_dict[key][i]))
                 else:
                     error_dict[key].append(None)
         return error_dict
 
-    def angle_rot_error(self, r1, r2):
+    def angle_rot(self, r1, r2):
         rot1 = np.array(r1)[:3, :3]
         rot2 = np.array(r2)[:3, :3]
         rot12 = np.matmul(rot1.T, rot2)
         theta_error = np.arccos((np.trace(rot12) - 1) / 2)
+        # Converting to Degrees
+        theta_error = np.degrees(theta_error)
         return float(theta_error)
 
     def euclidean_error(self, r1, r2):
-        dist = np.linalg.norm(r1[:3, 3] - r2[:3, 3])
+        p1 = r1[:3, 3]
+        p2 = r2[:3, 3]
+        dist1 = np.linalg.norm(p1)
+        dist2 = np.linalg.norm(p2)
+        dist = abs(dist1 - dist2)
+        #     dist = np.linalg.norm(p1-p2)
         return float(dist)
 
     def get_nominal_pose_dict(self, filename):
@@ -225,7 +235,7 @@ class TestRig_Analyze:
             error = {'error_data': {}}
             for key in self.data_keys:
                 vals = {}
-                vals['angle_rotation_error'] = self.angle_rotation_error_dict[key][i]
+                vals['angle_rotation'] = self.angle_rotation_error_dict[key][i]
                 vals['euclidean_error'] = self.euclidean_error_dict[key][i]
                 error['error_data'][key] = vals
             testrig_results.append(error)

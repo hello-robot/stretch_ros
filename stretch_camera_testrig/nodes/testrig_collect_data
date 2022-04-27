@@ -9,5 +9,6 @@ if __name__ == '__main__':
     try:
         node = CollectHeadCalibrationDataNode(test_rig=True)
         node.main()
+        rospy.signal_shutdown('Finished Test Data Collection.')
     except rospy.ROSInterruptException:
         pass
