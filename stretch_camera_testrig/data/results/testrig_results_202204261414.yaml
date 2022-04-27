@@ -1,0 +1,68 @@
+Realsense Details:
+  firmware: 05.13.00.50
+  serial: '134322070297'
+  usb: '3.2'
+capture_id: '202204261414'
+lighting_condition:
+  brightness: null
+  temperature: null
+null_frames:
+  base_left_marker_pose: 59
+  base_right_marker_pose: 90
+  shoulder_marker_pose: 4
+  wrist_inside_marker_pose: 0
+  wrist_top_marker_pose: 0
+number_samples: 600
+performance_metrics:
+  angle_rotation_error:
+    base_left_marker_pose:
+      maximum: 3.1275576076978107
+      mean: 3.0844446192804003
+      median: 3.085289002989193
+      rmse: 3.084509116150328
+    base_right_marker_pose:
+      maximum: 3.1415675780257146
+      mean: 3.120280746109533
+      median: 3.1220539908722342
+      rmse: 3.1203188088447393
+    shoulder_marker_pose:
+      maximum: 3.1412206574486286
+      mean: 3.0803388462890138
+      median: 3.086926562084815
+      rmse: 3.0805747860699184
+    wrist_inside_marker_pose:
+      maximum: 3.140033572342562
+      mean: 3.028636293238632
+      median: 3.034294458026425
+      rmse: 3.0294976506020994
+    wrist_top_marker_pose:
+      maximum: 3.1414217232795028
+      mean: 2.9309349672425977
+      median: 2.9226252953142797
+      rmse: 2.9319990113675507
+  euclidean_error:
+    base_left_marker_pose:
+      maximum: 0.9724175395587147
+      mean: 0.9711948725610475
+      median: 0.9711874765852018
+      rmse: 0.9711949482590717
+    base_right_marker_pose:
+      maximum: 0.9739097812523311
+      mean: 0.9731779719411534
+      median: 0.9731709697130762
+      rmse: 0.973177992657312
+    shoulder_marker_pose:
+      maximum: 0.9860701882814852
+      mean: 0.9846072444944528
+      median: 0.9846312727709248
+      rmse: 0.9846073629903658
+    wrist_inside_marker_pose:
+      maximum: 0.9834809515322587
+      mean: 0.9805508942375426
+      median: 0.9805141568620914
+      rmse: 0.9805512942588581
+    wrist_top_marker_pose:
+      maximum: 0.9819304933010518
+      mean: 0.9784622428409652
+      median: 0.9783632048498961
+      rmse: 0.9784627071336145

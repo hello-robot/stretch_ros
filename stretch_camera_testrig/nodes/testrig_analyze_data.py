@@ -23,8 +23,8 @@ data_file = None
 class TestRig_Analyze:
     def __init__(self, data_filename=None):
         self.ros_package_dir = os.path.expanduser('~/catkin_ws/src/stretch_ros/stretch_camera_testrig')
-        self.data_directory = self.ros_package_dir+'/data'
-        self.nominal_poses_filename = self.ros_package_dir+'/config/testrig_marker_info.yaml'
+        self.data_directory = self.ros_package_dir + '/data'
+        self.nominal_poses_filename = self.ros_package_dir + '/config/testrig_marker_info.yaml'
         self.data_keys = ['base_left_marker_pose',
                           'base_right_marker_pose',
                           'wrist_inside_marker_pose',
@@ -48,6 +48,8 @@ class TestRig_Analyze:
             files.sort()
             if files[-1].startswith("testrig_collected_data_"):
                 self.data_filename = self.data_directory + '/' + files[-1]
+            else:
+                print('[Error] No Test Data Found')
 
         capture_date = self.data_filename.split('_')[-1]
         capture_date = capture_date.split('.')[0]
@@ -107,7 +109,7 @@ class TestRig_Analyze:
             nulls = 0
             for x in self.data_dict[key]:
                 if x is None:
-                    nulls = nulls+1
+                    nulls = nulls + 1
             null_counts[key] = nulls
         return null_counts
 
@@ -228,14 +230,16 @@ class TestRig_Analyze:
                 error['error_data'][key] = vals
             testrig_results.append(error)
 
-        filename = self.data_directory + '/results/testrig_errors_data_' + capture_date + '.yaml'
+        filename = self.data_directory + '/results/testrig_errors_data_' + self.realsense_details[
+            'serial'] + '_' + capture_date + '.yaml'
 
         with open(filename, 'w') as file:
             documents = yaml.dump(testrig_results, file)
         print('Test Rig Computed Error Data Saved to : {}'.format(filename))
 
     def save_testrig_results(self):
-        filename = self.data_directory + '/results/testrig_results_' + self.data_capture_date + '.yaml'
+        filename = self.data_directory + '/results/testrig_results_' + self.realsense_details[
+            'serial'] + '_' + self.data_capture_date + '.yaml'
         with open(filename, 'w') as file:
             documents = yaml.dump(self.test_results_dict, file)
         print('Test Rig Results Data Saved to : {}'.format(filename))

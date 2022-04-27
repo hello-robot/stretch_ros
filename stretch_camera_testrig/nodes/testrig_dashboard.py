@@ -79,13 +79,13 @@ class TestRig_dashboard():
             vi = vi + 1
             self.nominal_poses_radiobuttons.append(r)
         for i in range(len(self.nominal_poses_radiobuttons)):
-            self.nominal_poses_radiobuttons[i].place(x=x_off + 155, y=y_off + 150 + i * 20)
+            self.nominal_poses_radiobuttons[i].place(x=x_off + 250, y=y_off + 150 + i * 20)
 
         ################## Test Results Display Pane ########################
         self.x_off_mid = 0
         self.y_off_mid = 0
         self.test_results_title = Label(self.window, text="Testrig Computed Results", font=("Arial", 18))
-        self.test_results_title.place(x=self.x_off_mid + 20, y=self.y_off_mid + 330)
+        self.test_results_title.place(x=self.x_off_mid + 50, y=self.y_off_mid + 330)
         self.metric_title = None
         self.test_info_title = None
 
@@ -116,7 +116,7 @@ class TestRig_dashboard():
             del info_dict['performance_metrics']
         except KeyError:
             print('Performance Metrics not found.')
-        info_txt = str(yaml.safe_dump(info_dict, allow_unicode=True, default_flow_style=False))
+        info_txt = str(yaml.safe_dump(info_dict, allow_unicode=True, default_flow_style=False, indent=4))
         self.info_print = Label(self.window, text=info_txt, anchor="w", font=("Arial", 11), justify=LEFT)
         self.info_print.place(x=x_pos, y=y_pos)
 
@@ -167,9 +167,9 @@ class TestRig_dashboard():
             for j in range(cols):
                 # append your StringVar and Entry
                 self.matrix_text_var[i].append(StringVar())
-                self.matrix_entries[i].append(Entry(self.window, textvariable=self.matrix_text_var[i][j], width=3))
+                self.matrix_entries[i].append(Entry(self.window, textvariable=self.matrix_text_var[i][j], width=6))
                 self.matrix_entries[i][j].place(x=pos_x + x2, y=pos_y + y2)
-                x2 += 30
+                x2 += 55
             y2 += 30
             x2 = 0
 
@@ -280,7 +280,7 @@ class TestRig_dashboard():
         self.test_rig = test_rig
         self.metrics_table_print(self.x_off_mid + 130, self.y_off_mid + 420, 'euclidean_error')
         self.metrics_table_print(self.x_off_mid + 130, self.y_off_mid + 620, 'angle_rotation_error')
-        self.test_data_info(380, 140)
+        self.test_data_info(480, 140)
         return test_rig
 
     def mainloop(self):
