@@ -1,0 +1,46 @@
+<launch>
+  <!-- The navigation_3d launch file includes all of the launch files needed for a robot to accomplish 3D navigation.
+  The nodes needed for navigation are map_server, octomap_server, amcl, and move_base.-->
+
+  <!-- Map name -->
+  <arg name="map" default="map"/>
+  <!-- Move_base configuration folder. -->
+  <arg name="move_base_config" value="3d" />
+
+  <!-- Robot sensor topic mapping-->
+  <arg name="laser_topic" default="scan"/>
+  <arg name="pointcloud_topic" default="/camera/depth/color/points"/>
+  <arg name="cmd_vel_topic" default="/stretch_diff_drive_controller/cmd_vel"/>
+  <arg name="odom_topic" default="/stretch_diff_drive_controller/odom"/>
+  <arg name="odom_link" default="odom"/>
+  <arg name="base_link" default="base_link"/>
+
+  <!-- Launch Map Server -->
+  <include file="$(find stretch_navigation)/launch/navigation/map_server.launch">
+    <arg name="map_name" value="$(find stretch_navigation)/resources/static_maps/2d/$(arg map).yaml" />
+  </include>
+
+  <!-- Launch positive and negative Octomap Server -->
+  <include file="$(find stretch_navigation)/launch/navigation/octomap_server.launch">
+    <arg name="map" value="$(find stretch_navigation)/resources/static_maps/3d/$(arg map).bt" />
+    <arg name="base_link" value="$(arg base_link)" />
+  </include>
+
+  <!--- Launch AMCL (Laser Localization) -->
+    <node pkg="amcl" type="amcl" name="amcl" output="screen">
+      <rosparam file="$(find stretch_navigation)/resources/config/amcl.yaml" command="load" />
+    </node>
+
+
+  <!-- Launch move_base -->
+  <!-- Note that you will also need to change the relevant .yaml files (or make new copies)
+       if you wish to use another namespace/robot_name. -->
+  <include file="$(find stretch_navigation)/launch/navigation/move_base.launch">
+      <arg name="config" value="$(arg move_base_config)" />
+      <arg name="cmd_vel_topic" value="$(arg cmd_vel_topic)" />
+      <arg name="odom_topic" value="$(arg odom_topic)" />
+  </include>
+
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find stretch_navigation)/rviz/octomap.rviz" />
+
+</launch>

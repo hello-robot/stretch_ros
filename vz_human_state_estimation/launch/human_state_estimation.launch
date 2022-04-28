@@ -1,0 +1,7 @@
+<launch>
+    <node pkg="vz_human_state_estimation" type="ros_interface.py" name="human_state_estimation" />
+    <!-- flip images before passing onto human state estimation module -->
+    <param name="flip_images_human_state_est" type="bool" value="true" />
+    <param name="rgbd_topic" type="string" value="/D435i/image_raw" />
+    <param name="thermal_topic" type="string" value="/Lepton/image_raw" />
+</launch>

@@ -1,0 +1,54 @@
+<launch>
+
+  <arg name="map_yaml"                                                   doc="filepath to previously captured map (required)" />
+  <arg name="rviz"                   default="true"                      doc="whether to show Rviz" />
+  <arg name="gazebo_world"           default="worlds/willowgarage.world" doc="the environment within which Stretch is loaded in Gazebo" />
+  <arg name="gazebo_gpu_lidar"       default="false"                     doc="whether to compute lidar with hardware acceleration (requires GPU)" />
+  <arg name="gazebo_visualize_lidar" default="false"                     doc="whether to visualize planar lidar within Gazebo" />
+
+  <!-- GAZEBO SIMULATION -->
+  <include file="$(find stretch_gazebo)/launch/gazebo.launch">
+    <arg name="world" value="$(arg gazebo_world)" />
+    <arg name="visualize_lidar" value="$(arg gazebo_visualize_lidar)" />
+    <arg name="gpu_lidar" value="$(arg gazebo_gpu_lidar)" />
+  </include>
+
+  <!-- MAP SERVER -->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_yaml)" />
+
+  <!-- LOCALIZATION -->
+  <include file="$(find amcl)/examples/amcl_diff.launch" />
+
+  <!-- NAVIGATION -->
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <!-- The common_costmap_params_gazebo.yaml sends laser data on the /scan topic. Physical robot uses /scan_filtered -->
+    <rosparam file="$(find vz_stretch_navigation)/config/common_costmap_params_gazebo.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find vz_stretch_navigation)/config/common_costmap_params_gazebo.yaml" command="load" ns="local_costmap" />
+    
+    <rosparam file="$(find vz_stretch_navigation)/config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find vz_stretch_navigation)/config/global_costmap_params_withmap.yaml" command="load" />
+    
+    <!-- Only in this file we are loading teb_local_planner_params.yaml instead of base_local_planner_params.yaml -->
+    <!-- Eventually we should load teb params from the base_local_planner_params.yaml file -->
+    <!-- <rosparam file="$(find vz_stretch_navigation)/config/base_local_planner_params.yaml" command="load" /> -->
+    <rosparam file="$(find vz_stretch_navigation)/config/teb_local_planner_params_gazebo.yaml" command="load" />
+    
+    <remap from="/cmd_vel" to="/stretch_diff_drive_controller/cmd_vel" />
+
+    <!-- Switch base local planners-->
+    <!-- Uncommenting both the following uses the simplest planner. 
+         The bottom two are long term solutions which need tuning. 
+         So they will not work well as of now -->
+
+         
+    <!-- <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" /> -->
+    <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
+    <param name="controller_frequency" value="10.0" />
+
+
+  </node>
+
+  <!-- VISUALIZE -->
+  <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find stretch_navigation)/rviz/navigation.rviz" if="$(arg rviz)" />
+
+</launch>

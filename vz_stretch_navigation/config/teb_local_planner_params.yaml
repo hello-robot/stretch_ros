@@ -1,0 +1,14 @@
+TebLocalPlannerROS:
+    max_vel_x: 0.4
+    max_vel_theta: 0.4
+
+    acc_lim_theta: 1.5
+    acc_lim_x: 1.5
+    acc_lim_y: 1.5
+    
+    yaw_goal_tolerance: 0.05
+    xy_goal_tolerance: 0.1
+
+    holonomic_robot: false
+
+    global_plan_viapoint_sep: 0.1

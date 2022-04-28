@@ -1,0 +1,24 @@
+<launch>
+
+  <arg name="teleop_type" default="keyboard" doc="how to teleop ('keyboard', 'joystick', or 'none')" />
+
+  <!-- STRETCH DRIVER -->
+  <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="true"/>
+  <param name="/stretch_driver/mode" type="string" value="navigation" />
+  <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true"/>
+
+  <!-- LASER RANGE FINDER -->
+  <include file="$(find stretch_core)/launch/rplidar.launch" />
+
+  <!-- TELEOP -->
+  <include file="$(find stretch_core)/launch/teleop_twist.launch">
+    <arg name="teleop_type" value="$(arg teleop_type)" />
+    <arg name="linear" value="0.04" />
+    <arg name="angular" value="0.1" />
+    <arg name="twist_topic" value="/stretch/cmd_vel" />
+  </include>
+
+  <!-- MAPPING -->
+  <node pkg="gmapping" type="slam_gmapping" name="gmapping_record_map" output="log" />
+
+</launch>

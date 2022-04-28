@@ -1,0 +1,4 @@
+<launch>
+    <rosparam ns="VZ_ACOUSTIC_SCENE_ANALYSIS" command="load" file="$(find vz_acoustic_scene_analysis)/config/audio_params.yaml" />
+    <node name="stretch_audio" pkg="vz_acoustic_scene_analysis" type="ros_interface.py" output="screen" />
+  </launch>
