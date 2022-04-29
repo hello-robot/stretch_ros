@@ -175,7 +175,7 @@ class TestRig_Analyze:
         for key in error_dict.keys():
             for i in range(Num_samples):
                 if type(data_dict[key][i]) != type(None):
-                    error_dict[key].append(self.euclidean_error(nominal_poses_dict[key], data_dict[key][i]))
+                    error_dict[key].append(self.euclidean_error(data_dict[key][i], nominal_poses_dict[key]))
                 else:
                     error_dict[key].append(None)
         return error_dict
@@ -211,7 +211,8 @@ class TestRig_Analyze:
         p2 = r2[:3, 3]
         dist1 = np.linalg.norm(p1)
         dist2 = np.linalg.norm(p2)
-        dist = abs(dist1 - dist2)
+        dist = dist1 - dist2
+        # dist = abs(dist)
         #     dist = np.linalg.norm(p1-p2)
         return float(dist)
 

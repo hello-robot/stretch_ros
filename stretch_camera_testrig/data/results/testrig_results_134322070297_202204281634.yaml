@@ -1,0 +1,67 @@
+Realsense Details:
+  firmware: 05.13.00.50
+  serial: '134322070297'
+  usb: '3.2'
+capture_id: '202204281634'
+lighting_condition:
+  illuminance: null
+null_frames:
+  base_left_marker_pose: 0
+  base_right_marker_pose: 95
+  shoulder_marker_pose: 289
+  wrist_inside_marker_pose: 15
+  wrist_top_marker_pose: 3
+number_samples: 600
+performance_metrics:
+  angle_rotation:
+    base_left_marker_pose:
+      maximum: 7.883329791794328
+      mean: 3.333362385585352
+      median: 3.1888204675914764
+      rmse: 3.528896862288492
+    base_right_marker_pose:
+      maximum: 12.735867335526736
+      mean: 7.616777191598444
+      median: 7.699020844123073
+      rmse: 7.861219384542112
+    shoulder_marker_pose:
+      maximum: 27.306679457568823
+      mean: 20.449430883324162
+      median: 20.628420193173156
+      rmse: 20.628435996037233
+    wrist_inside_marker_pose:
+      maximum: 29.23617249110053
+      mean: 23.128910857772752
+      median: 23.255818372351502
+      rmse: 23.230346917342548
+    wrist_top_marker_pose:
+      maximum: 25.371802060809532
+      mean: 18.688207615257518
+      median: 18.728240832467602
+      rmse: 18.853912306903087
+  euclidean_error:
+    base_left_marker_pose:
+      maximum: -0.002290839411512313
+      mean: -0.0037081369247007646
+      median: -0.003719444131558114
+      rmse: 0.0037363307582611556
+    base_right_marker_pose:
+      maximum: -0.00042089050574423137
+      mean: -0.0023382929359848687
+      median: -0.00221527329632476
+      rmse: 0.0025078253699411953
+    shoulder_marker_pose:
+      maximum: 0.007758186739723727
+      mean: 0.005496741248451533
+      median: 0.0057369441134687005
+      rmse: 0.005645993132779887
+    wrist_inside_marker_pose:
+      maximum: 0.004220067988259468
+      mean: 0.002450121622343215
+      median: 0.002474100441822502
+      rmse: 0.0025470915277097613
+    wrist_top_marker_pose:
+      maximum: 0.0027556869442825205
+      mean: 0.00039448586391564207
+      median: 0.00043695966301537936
+      rmse: 0.0009758048021871322

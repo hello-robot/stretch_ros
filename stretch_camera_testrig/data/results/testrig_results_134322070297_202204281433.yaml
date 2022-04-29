@@ -1,0 +1,67 @@
+Realsense Details:
+  firmware: 05.13.00.50
+  serial: '134322070297'
+  usb: '3.2'
+capture_id: '202204281433'
+lighting_condition:
+  illuminance: null
+null_frames:
+  base_left_marker_pose: 0
+  base_right_marker_pose: 26
+  shoulder_marker_pose: 50
+  wrist_inside_marker_pose: 7
+  wrist_top_marker_pose: 10
+number_samples: 600
+performance_metrics:
+  angle_rotation:
+    base_left_marker_pose:
+      maximum: 5.825776514914376
+      mean: 2.9954012224652917
+      median: 2.946734907433167
+      rmse: 3.078626594110408
+    base_right_marker_pose:
+      maximum: 7.567008009518704
+      mean: 4.50741189429689
+      median: 4.469461271789145
+      rmse: 4.6102176286044765
+    shoulder_marker_pose:
+      maximum: 18.091681718730758
+      mean: 10.459194783228007
+      median: 10.595758488338625
+      rmse: 10.83379138062113
+    wrist_inside_marker_pose:
+      maximum: 31.983934642146934
+      mean: 26.31073325365646
+      median: 26.461641297217252
+      rmse: 26.399583220659725
+    wrist_top_marker_pose:
+      maximum: 22.324392504976935
+      mean: 14.566053360223123
+      median: 14.661843549829827
+      rmse: 14.884930665992593
+  euclidean_error:
+    base_left_marker_pose:
+      maximum: -0.008985985486859138
+      mean: -0.009577033088789532
+      median: -0.00957521465757799
+      rmse: 0.009578776189420272
+    base_right_marker_pose:
+      maximum: -0.006553125706156626
+      mean: -0.007660758286062072
+      median: -0.007668665583789813
+      rmse: 0.007668300536341694
+    shoulder_marker_pose:
+      maximum: 0.00043430227684115863
+      mean: -0.0018141936483635234
+      median: -0.0018266486931424186
+      rmse: 0.0019980920692085295
+    wrist_inside_marker_pose:
+      maximum: -0.0017848569388676516
+      mean: -0.0037750775114444263
+      median: -0.0037610304025108565
+      rmse: 0.003849088485712081
+    wrist_top_marker_pose:
+      maximum: -0.00028974841665929674
+      mean: -0.002435837573032023
+      median: -0.0024146604383572523
+      rmse: 0.0025604756984339387
