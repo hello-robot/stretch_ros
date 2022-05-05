@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from Tkinter import *
+import ttk
 from testrig_analyze_data import TestRig_Analyze
 import os
 import yaml
@@ -65,6 +66,13 @@ class TestRig_dashboard():
 
         self.nominal_poses_label = Label(self.window, text="Nominal Poses", font=("Arial", 18))
         self.nominal_poses_label.place(x=x_off + 50, y=y_off + 120)
+
+        # Choose Setup Nominal Poses File (WIP)
+        # self.marker_info_config_filename = StringVar()
+        # self.choose_marker_info_config = ttk.Combobox(self.window, width=30, textvariable=self.marker_info_config_filename)
+        # self.choose_marker_info_config['values'] = os.listdir(self.ros_package_dir+'/config')
+        # self.choose_marker_info_config.place(x=x_off + 250, y=y_off + 123)
+
         self.matrix_text_var = None
         self.matrix_entries = None
         self.create_matrix_entry(x_off + 30, y_off + 150)
@@ -96,7 +104,7 @@ class TestRig_dashboard():
         self.result_file_name_entry = Entry(self.window, textvariable=self.result_file_name, width=30)
         self.result_file_name_entry.place(x=self.x_off_mid + 120, y=self.y_off_mid + 365)
 
-        self.load_result_btn = Button(self.window, text="Load", command=self.result_load_clicked)
+        self.load_result_btn = Button(self.window, text="Show Result", command=self.result_load_clicked)
         self.load_result_btn.place(x=self.x_off_mid + 370, y=self.y_off_mid + 365)
 
         self.metric_title = None
@@ -167,18 +175,21 @@ class TestRig_dashboard():
         self.metric_title.place(x=pos_x, y=pos_y - 25)
         for i in range(n_rows):
             for j in range(n_columns):
+                d = data_list[i][j]
+                if type(d) == type(float()):
+                    d = format(d, '.6f')
                 if j == 0:
                     self.table_entry = Entry(self.window, width=22, font=('Arial', 10, 'bold'))
                     self.table_entry.place(x=pos_x + x2 - 110, y=pos_y + y2)
-                    self.table_entry.insert(END, data_list[i][j])
+                    self.table_entry.insert(END, d)
                 elif i == 0:
-                    self.table_entry = Entry(self.window, width=7, font=('Arial', 10, 'bold'))
+                    self.table_entry = Entry(self.window, width=8, font=('Arial', 10, 'bold'))
                     self.table_entry.place(x=pos_x + x2, y=pos_y + y2)
-                    self.table_entry.insert(END, data_list[i][j])
+                    self.table_entry.insert(END, d)
                 else:
-                    self.table_entry = Entry(self.window, width=7)
+                    self.table_entry = Entry(self.window, width=8)
                     self.table_entry.place(x=pos_x + x2, y=pos_y + y2)
-                    self.table_entry.insert(END, data_list[i][j])
+                    self.table_entry.insert(END, d)
                 x2 += 70
             y2 += 30
             x2 = 0
