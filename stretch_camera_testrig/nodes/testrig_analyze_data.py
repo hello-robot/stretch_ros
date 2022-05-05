@@ -241,16 +241,15 @@ class TestRig_Analyze:
                 error['error_data'][key] = vals
             testrig_results.append(error)
 
-        filename = self.data_directory + '/results/testrig_errors_data_' + self.realsense_details[
-            'serial'] + '_' + capture_date + '.yaml'
+
+        filename = self.data_directory + '/results/testrig_errors_data_' + self.realsense_details['serial'] + '_' + capture_date + '.yaml'
 
         with open(filename, 'w') as file:
             documents = yaml.dump(testrig_results, file)
         print('Test Rig Computed Error Data Saved to : {}'.format(filename))
 
     def save_testrig_results(self):
-        filename = self.data_directory + '/results/testrig_results_' + self.realsense_details[
-            'serial'] + '_' + self.data_capture_date + '.yaml'
+        filename = self.data_directory + '/results/testrig_results_' + self.realsense_details['serial'] + '_' + self.data_capture_date + '.yaml'
         with open(filename, 'w') as file:
             documents = yaml.dump(self.test_results_dict, file)
         print('Test Rig Results Data Saved to : {}'.format(filename))

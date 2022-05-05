@@ -1,0 +1,29 @@
+Realsense Details: {firmware: 05.13.00.50, serial: '134322074170', usb: '3.2'}
+capture_id: '202205041641'
+lighting_condition: {illuminance: null}
+null_frames: {base_left_marker_pose: 85, base_right_marker_pose: 372, shoulder_marker_pose: 449,
+  wrist_inside_marker_pose: 3, wrist_top_marker_pose: 1}
+number_samples: 600
+performance_metrics:
+  angle_rotation:
+    base_left_marker_pose: {maximum: 3.906822674740479, mean: 1.956215235965856, median: 1.9629538212983384,
+      rmse: 2.0826002358577265}
+    base_right_marker_pose: {maximum: 7.256183839913319, mean: 5.417145105603689,
+      median: 5.41984098048761, rmse: 5.463244788316876}
+    shoulder_marker_pose: {maximum: 7.253177603940083, mean: 4.724608407077394, median: 4.5658704682457385,
+      rmse: 4.821787390017953}
+    wrist_inside_marker_pose: {maximum: 15.597118669867465, mean: 8.321177080872502,
+      median: 8.323223879019228, rmse: 8.504413194153896}
+    wrist_top_marker_pose: {maximum: 10.338385285146236, mean: 3.216156327676982,
+      median: 2.9086813076251934, rmse: 3.5926450245069845}
+  euclidean_error:
+    base_left_marker_pose: {maximum: -0.0034991983338171773, mean: -0.003994873199213004,
+      median: -0.003941468016249505, rmse: 0.00400361186391423}
+    base_right_marker_pose: {maximum: -0.0031517819442394845, mean: -0.004145478079845989,
+      median: -0.004170061512028089, rmse: 0.004152734680960731}
+    shoulder_marker_pose: {maximum: -0.0021337282995234075, mean: -0.0028357078027150726,
+      median: -0.0028610493903151735, rmse: 0.002846184865310038}
+    wrist_inside_marker_pose: {maximum: -0.0026954479726216674, mean: -0.003562880164499508,
+      median: -0.0035545384584766415, rmse: 0.0035775329640608702}
+    wrist_top_marker_pose: {maximum: -0.004021915184601377, mean: -0.0046585837709138935,
+      median: -0.004655790578540153, rmse: 0.0046621130583177905}

@@ -31,6 +31,7 @@ class TestRig_dashboard():
         self.data_file_name = None
         self.test_rig = None
         self.table_entry = None
+        self.result_file_name = None
 
         #################### Top Pane ##########################
 
@@ -61,8 +62,9 @@ class TestRig_dashboard():
 
         x_off = 0
         y_off = 0
+
         self.nominal_poses_label = Label(self.window, text="Nominal Poses", font=("Arial", 18))
-        self.nominal_poses_label.place(x=x_off + 20, y=y_off + 120)
+        self.nominal_poses_label.place(x=x_off + 50, y=y_off + 120)
         self.matrix_text_var = None
         self.matrix_entries = None
         self.create_matrix_entry(x_off + 30, y_off + 150)
@@ -86,6 +88,17 @@ class TestRig_dashboard():
         self.y_off_mid = 0
         self.test_results_title = Label(self.window, text="Testrig Computed Results", font=("Arial", 18))
         self.test_results_title.place(x=self.x_off_mid + 50, y=self.y_off_mid + 330)
+
+        self.result_file_entry_lbl = Label(self.window, text="Result file path ")
+        self.result_file_entry_lbl.place(x=self.x_off_mid + 10, y=self.y_off_mid + 365)
+
+        self.result_file_name = StringVar()
+        self.result_file_name_entry = Entry(self.window, textvariable=self.result_file_name, width=30)
+        self.result_file_name_entry.place(x=self.x_off_mid + 120, y=self.y_off_mid + 365)
+
+        self.load_result_btn = Button(self.window, text="Load", command=self.result_load_clicked)
+        self.load_result_btn.place(x=self.x_off_mid + 370, y=self.y_off_mid + 365)
+
         self.metric_title = None
         self.test_info_title = None
 
@@ -96,22 +109,24 @@ class TestRig_dashboard():
                                        font=("Arial", 14))
         self.save_results_btn.place(x=x_off_bottom + 150, y=y_off_bottom + 500)
 
-        self.run_new_test_btn = Button(self.window, text="Run a new Test", command=self.run_new_test,state='disabled',
+        self.run_new_test_btn = Button(self.window, text="Run a new Test", command=self.run_new_test, state='disabled',
                                        font=("Arial", 14))
         self.run_new_test_btn.place(x=x_off_bottom + 150, y=y_off_bottom + 540)
 
         self.target_samples = IntVar()
-        self.target_samples_entry = Entry(self.window, textvariable=self.target_samples, width=6,state='disabled')
+        self.target_samples_entry = Entry(self.window, textvariable=self.target_samples, width=6, state='disabled')
         self.target_samples_entry.place(x=x_off_bottom + 450, y=y_off_bottom + 546)
 
         self.target_samples_lbl = Label(self.window, text="Enter Target frames:")
         self.target_samples_lbl.place(x=x_off_bottom + 310, y=y_off_bottom + 546)
 
-    def test_data_info(self, x_pos, y_pos):
+    def test_data_info(self, x_pos, y_pos, results_dict=None):
         self.test_info_title = Label(self.window, text='Test Info', font=("Arial", 13, 'bold'))
         self.test_info_title.place(x=x_pos, y=y_pos - 25)
+        info_dict = copy.deepcopy(results_dict)
+        if not results_dict:
+            info_dict = copy.deepcopy(self.test_rig.test_results_dict)
 
-        info_dict = copy.deepcopy(self.test_rig.test_results_dict)
         try:
             del info_dict['performance_metrics']
         except KeyError:
@@ -123,14 +138,17 @@ class TestRig_dashboard():
         self.info_print = Label(self.window, text=info_txt, anchor="w", font=("Arial", 11), justify=LEFT)
         self.info_print.place(x=x_pos, y=y_pos)
 
-    def metrics_table_print(self, pos_x, pos_y, error_key):
+    def metrics_table_print(self, pos_x, pos_y, error_key, results_dict=None):
         n_rows = len(self.data_keys) + 1
         n_columns = len(self.metrics_keys) + 1
         data_list = []
+
+        if not results_dict:
+            results_dict = self.test_rig.test_results_dict
         for key in self.data_keys:
             d = [key]
             for mkey in self.metrics_keys:
-                results = self.test_rig.test_results_dict['performance_metrics'][error_key]
+                results = results_dict['performance_metrics'][error_key]
                 d.append(results[key][mkey])
             data_list.append(d)
         mkeys = self.metrics_keys
@@ -263,6 +281,16 @@ class TestRig_dashboard():
             self.test_rig.save_testrig_results()
             self.log('Testrig Analyze results saved in /stretch_camera_testrig/data/results')
 
+    def result_load_clicked(self):
+        try:
+            with open(self.data_directory + '/results/' + self.result_file_name.get(), 'r') as file:
+                data = yaml.safe_load(file)
+            self.display_results(data)
+            self.test_capture_id_lbl.configure(text="Testrig Data Capture ID : {} loaded".format(data['capture_id']))
+            self.log('Loaded Result File : {}'.format(self.result_file_name.get()))
+        except IOError:
+            self.log('Unable to load result file.')
+
     def load_clicked(self):
         if len(self.data_file_path.get()) > 0:
             try:
@@ -283,14 +311,18 @@ class TestRig_dashboard():
             text="Testrig Capture ID : {} loaded".format(self.test_rig.data_capture_date))
         self.log('Loaded Test Rig data file : {}'.format(self.test_rig.data_filename.split('/')[-1]))
 
+    def display_results(self, results_dict=None):
+        self.metrics_table_print(self.x_off_mid + 130, self.y_off_mid + 420, 'euclidean_error', results_dict)
+        self.metrics_table_print(self.x_off_mid + 130, self.y_off_mid + 620, 'angle_rotation', results_dict)
+        self.test_data_info(480, 140, results_dict)
+
     def get_testrig(self, data_file=None):
         test_rig = TestRig_Analyze(data_file)
         test_rig.generate_error_observations()
         test_rig.populate_performance_metrics()
         self.test_rig = test_rig
-        self.metrics_table_print(self.x_off_mid + 130, self.y_off_mid + 420, 'euclidean_error')
-        self.metrics_table_print(self.x_off_mid + 130, self.y_off_mid + 620, 'angle_rotation')
-        self.test_data_info(480, 140)
+        self.display_results()
+        self.result_file_name.set('')
         return test_rig
 
     def mainloop(self):
