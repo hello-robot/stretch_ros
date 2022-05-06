@@ -209,11 +209,10 @@ class TestRig_Analyze:
     def euclidean_error(self, r1, r2):
         p1 = r1[:3, 3]
         p2 = r2[:3, 3]
-        dist1 = np.linalg.norm(p1)
-        dist2 = np.linalg.norm(p2)
-        dist = dist1 - dist2
-        # dist = abs(dist)
-        #     dist = np.linalg.norm(p1-p2)
+        # dist1 = np.linalg.norm(p1)
+        # dist2 = np.linalg.norm(p2)
+        # dist = dist1 - dist2
+        dist = np.linalg.norm(p1-p2)
         return float(dist)
 
     def get_nominal_pose_dict(self, filename):
