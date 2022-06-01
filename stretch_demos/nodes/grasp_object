@@ -119,7 +119,12 @@ class GraspObjectNode(hm.HelloNode):
         self.look_at_surface(scan_time_s = 3.0)
         
         grasp_target = self.manipulation_view.get_grasp_target(self.tf2_buffer)
-        
+        if grasp_target is None:
+            return TriggerResponse(
+                success=False,
+                message='Failed to find grasp target'
+            )
+
         if grasp_target is not None: 
             pregrasp_lift_m = self.manipulation_view.get_pregrasp_lift(grasp_target, self.tf2_buffer)
 
