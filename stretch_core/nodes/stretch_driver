@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import yaml
+import time
 import numpy as np
 import threading
 from rwlock import RWLock
@@ -327,6 +328,29 @@ class StretchBodyNode:
             message='is_runstopped: {0}'.format(request.data)
             )
 
+    def reboot_dxls_callback(self, request):
+        self.robot.end_of_arm.get_joint('wrist_yaw').motor.do_reboot()
+        self.robot.end_of_arm.get_joint('stretch_gripper').motor.do_reboot()
+        self.robot.head.get_joint('head_pan').motor.do_reboot()
+        self.robot.head.get_joint('head_tilt').motor.do_reboot()
+
+        time.sleep(0.1)
+        self.robot.end_of_arm.get_joint('wrist_yaw').disable_torque()
+        self.robot.end_of_arm.get_joint('stretch_gripper').disable_torque()
+        self.robot.head.get_joint('head_pan').disable_torque()
+        self.robot.head.get_joint('head_tilt').disable_torque()
+
+        time.sleep(0.1)
+        self.robot.end_of_arm.get_joint('wrist_yaw').enable_pos()
+        self.robot.end_of_arm.get_joint('stretch_gripper').enable_pos()
+        self.robot.head.get_joint('head_pan').enable_pos()
+        self.robot.head.get_joint('head_tilt').enable_pos()
+
+        return TriggerResponse(
+            success=True,
+            message='Rebooted all dxls.'
+        )
+
     ########### MAIN ############
 
     def main(self):
@@ -449,6 +473,10 @@ class StretchBodyNode:
         self.runstop_service = rospy.Service('/runstop',
                                               SetBool,
                                               self.runstop_service_callback)
+
+        self.reboot_dxls = rospy.Service('/reboot_dxls',
+                                         Trigger,
+                                         self.reboot_dxls_callback)
 
         try:
             # start loop to command the mobile base velocity, publish
