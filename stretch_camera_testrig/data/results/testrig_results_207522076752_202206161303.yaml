@@ -1,0 +1,67 @@
+Realsense Details:
+  firmware: 05.13.00.50
+  serial: '207522076752'
+  usb: '3.2'
+capture_id: '202206161303'
+lighting_condition:
+  illuminance: null
+null_frames:
+  base_left_marker_pose: 319
+  base_right_marker_pose: 491
+  shoulder_marker_pose: 109
+  wrist_inside_marker_pose: 19
+  wrist_top_marker_pose: 1
+number_samples: 600
+performance_metrics:
+  angle_rotation:
+    base_left_marker_pose:
+      maximum: 5.696524816481864
+      mean: 3.1634193622330504
+      median: 3.1732907646033297
+      rmse: 3.2937639313351923
+    base_right_marker_pose:
+      maximum: 3.8755084874448817
+      mean: 2.015587754314066
+      median: 1.8743882477914655
+      rmse: 2.1468038084124705
+    shoulder_marker_pose:
+      maximum: 12.811256938663673
+      mean: 8.469476001351504
+      median: 8.477108893260201
+      rmse: 8.577239706851579
+    wrist_inside_marker_pose:
+      maximum: 16.370843229094852
+      mean: 6.8734707673045055
+      median: 6.78649890156885
+      rmse: 7.4574463718272375
+    wrist_top_marker_pose:
+      maximum: 16.051146380950755
+      mean: 9.200876033508544
+      median: 9.18956702298436
+      rmse: 9.485123284981631
+  euclidean_error:
+    base_left_marker_pose:
+      maximum: 0.01576199390596246
+      mean: 0.015350915413478798
+      median: 0.015335367754012875
+      rmse: 0.015351350552299678
+    base_right_marker_pose:
+      maximum: 0.01600093959795176
+      mean: 0.0156804609419771
+      median: 0.01566103387834939
+      rmse: 0.01568088917510146
+    shoulder_marker_pose:
+      maximum: 0.015915628403084886
+      mean: 0.015568578754194677
+      median: 0.015564558464629228
+      rmse: 0.015568718508577472
+    wrist_inside_marker_pose:
+      maximum: 0.017557938095374
+      mean: 0.01704589165080867
+      median: 0.017042106172767676
+      rmse: 0.01704651047529715
+    wrist_top_marker_pose:
+      maximum: 0.0168651378015282
+      mean: 0.016521875764238133
+      median: 0.016532311996749465
+      rmse: 0.016522465042528113

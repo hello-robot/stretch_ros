@@ -1,0 +1,67 @@
+Realsense Details:
+  firmware: 05.13.00.50
+  serial: '207522076752'
+  usb: '3.2'
+capture_id: '202206161301'
+lighting_condition:
+  illuminance: null
+null_frames:
+  base_left_marker_pose: 327
+  base_right_marker_pose: 498
+  shoulder_marker_pose: 107
+  wrist_inside_marker_pose: 6
+  wrist_top_marker_pose: 2
+number_samples: 600
+performance_metrics:
+  angle_rotation:
+    base_left_marker_pose:
+      maximum: 5.871382735118804
+      mean: 3.406748981925342
+      median: 3.4369046269647803
+      rmse: 3.5096483832802225
+    base_right_marker_pose:
+      maximum: 4.5283038092268075
+      mean: 2.1529659301684507
+      median: 2.020065750836005
+      rmse: 2.271740458323301
+    shoulder_marker_pose:
+      maximum: 11.622666461748905
+      mean: 7.978057019176527
+      median: 7.879944359911159
+      rmse: 8.089757174207318
+    wrist_inside_marker_pose:
+      maximum: 16.981642837672556
+      mean: 8.00527918158517
+      median: 7.991972702578705
+      rmse: 8.578189099698447
+    wrist_top_marker_pose:
+      maximum: 18.28474107546764
+      mean: 10.397716401305459
+      median: 10.352193746533857
+      rmse: 10.787128047168324
+  euclidean_error:
+    base_left_marker_pose:
+      maximum: 0.015785164545727863
+      mean: 0.015370389809189623
+      median: 0.015362496915868776
+      rmse: 0.015370859425742515
+    base_right_marker_pose:
+      maximum: 0.015988943926433248
+      mean: 0.015746532832705613
+      median: 0.0157334800974005
+      rmse: 0.015746788532868896
+    shoulder_marker_pose:
+      maximum: 0.015672204054380513
+      mean: 0.01551331680214745
+      median: 0.015512071883051362
+      rmse: 0.015513420342544224
+    wrist_inside_marker_pose:
+      maximum: 0.017531037127648766
+      mean: 0.01702223914158389
+      median: 0.017022253594753484
+      rmse: 0.017022798296648135
+    wrist_top_marker_pose:
+      maximum: 0.016656967778639422
+      mean: 0.016276454305237557
+      median: 0.01629275527382922
+      rmse: 0.016277277761250163
