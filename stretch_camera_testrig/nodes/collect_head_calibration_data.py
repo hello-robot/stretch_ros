@@ -94,7 +94,8 @@ class CollectHeadCalibrationDataNode:
                 if marker.id == self.shoulder_marker_id:
                     self.shoulder_marker_pose = marker.pose
 
-    def calibration_data_callback_testrig(self, marker_array, accel):
+    # def calibration_data_callback_testrig(self, marker_array, accel):
+    def calibration_data_callback_testrig(self, marker_array):
 
         with self.data_lock:
             self.wrist_inside_marker_pose = None
@@ -102,7 +103,7 @@ class CollectHeadCalibrationDataNode:
             self.base_left_marker_pose = None
             self.base_right_marker_pose = None
             self.shoulder_marker_pose = None
-            self.acceleration = [accel.linear_acceleration.x, accel.linear_acceleration.y, accel.linear_acceleration.z]
+            # self.acceleration = [accel.linear_acceleration.x, accel.linear_acceleration.y, accel.linear_acceleration.z]
 
             self.marker_time = None
             for marker in marker_array.markers:
@@ -829,10 +830,13 @@ class CollectHeadCalibrationDataNode:
 
         else:
             # Setup time synchronization for collecting testrig data. 
-            accel_subscriber = message_filters.Subscriber('/camera/accel/sample_corrected', Imu)
+            # accel_subscriber = message_filters.Subscriber('/camera/accel/sample_corrected', Imu)
             aruco_subscriber = message_filters.Subscriber('/aruco/marker_array', MarkerArray)
             slop_time = 0.1
-            self.synchronizer = message_filters.ApproximateTimeSynchronizer([aruco_subscriber, accel_subscriber], 10,
+            # self.synchronizer = message_filters.ApproximateTimeSynchronizer([aruco_subscriber, accel_subscriber], 10,
+            #                                                                 slop_time,
+            #                                                                 allow_headerless=True)
+            self.synchronizer = message_filters.ApproximateTimeSynchronizer([aruco_subscriber], 10,
                                                                             slop_time,
                                                                             allow_headerless=True)
             self.synchronizer.registerCallback(self.calibration_data_callback_testrig)

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/stretch_camera_testrig.iml" filepath="$PROJECT_DIR$/.idea/stretch_camera_testrig.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/stretch_ros.iml" filepath="$PROJECT_DIR$/.idea/stretch_ros.iml" />
     </modules>
   </component>
 </project>
