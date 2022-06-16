@@ -51,6 +51,7 @@ class CollectHeadCalibrationDataNode:
         self.marker_time = None
         self.test_rig = test_rig
         self.data_lock = threading.Lock()
+        self.callback_sync = False
         if test_rig:
             self.number_of_testrig_samples = 40
 
@@ -61,6 +62,7 @@ class CollectHeadCalibrationDataNode:
         # D435i imagery are expected to be synchronized for this
         # callback.
         with self.data_lock:
+            self.callback_sync = True
             self.data_time = joint_state.header.stamp
             self.joint_state = joint_state
             self.acceleration = [accel.linear_acceleration.x, accel.linear_acceleration.y, accel.linear_acceleration.z]
@@ -842,4 +844,6 @@ class CollectHeadCalibrationDataNode:
             self.synchronizer.registerCallback(self.calibration_data_callback_testrig)
             self.testrig_data_path = rospy.get_param('~testrig_data_directory')
             self.number_of_testrig_samples = rospy.get_param('~samples')
+            while self.callback_sync == False:
+                print("Waiting for Callback Sync.")
             self.testrig_data_collect(number_of_samples=self.number_of_testrig_samples)

@@ -1,0 +1,67 @@
+Realsense Details:
+  firmware: 05.13.00.50
+  serial: '134322070297'
+  usb: '3.2'
+capture_id: '202206161358'
+lighting_condition:
+  illuminance: null
+null_frames:
+  base_left_marker_pose: 254
+  base_right_marker_pose: 243
+  shoulder_marker_pose: 34
+  wrist_inside_marker_pose: 21
+  wrist_top_marker_pose: 0
+number_samples: 600
+performance_metrics:
+  angle_rotation:
+    base_left_marker_pose:
+      maximum: 8.56901506223646
+      mean: 3.098860819640147
+      median: 2.9960165771715905
+      rmse: 3.3191757487873264
+    base_right_marker_pose:
+      maximum: 10.322906163027199
+      mean: 4.855928183545053
+      median: 4.794761439158953
+      rmse: 5.129364990206177
+    shoulder_marker_pose:
+      maximum: 12.276964572641928
+      mean: 7.28231635255359
+      median: 7.335692790613825
+      rmse: 7.537932957638142
+    wrist_inside_marker_pose:
+      maximum: 15.740149459256005
+      mean: 7.438405933191273
+      median: 7.155645741048993
+      rmse: 7.856674014509478
+    wrist_top_marker_pose:
+      maximum: 20.675619312275153
+      mean: 11.741809522830227
+      median: 11.927337634440375
+      rmse: 12.240472411701194
+  euclidean_error:
+    base_left_marker_pose:
+      maximum: 0.014663117090907545
+      mean: 0.014251331764807756
+      median: 0.01425239055692304
+      rmse: 0.014252173610543166
+    base_right_marker_pose:
+      maximum: 0.014662918909920983
+      mean: 0.014100664125084357
+      median: 0.014107133928218578
+      rmse: 0.014102325881132572
+    shoulder_marker_pose:
+      maximum: 0.014388140935330423
+      mean: 0.013512367617515765
+      median: 0.013470076843944717
+      rmse: 0.013513162088143633
+    wrist_inside_marker_pose:
+      maximum: 0.016135109014583163
+      mean: 0.01496556262495376
+      median: 0.014963144717641824
+      rmse: 0.01497139902330008
+    wrist_top_marker_pose:
+      maximum: 0.015029566314354858
+      mean: 0.014164330810921895
+      median: 0.014156945083730247
+      rmse: 0.014166831527373885
