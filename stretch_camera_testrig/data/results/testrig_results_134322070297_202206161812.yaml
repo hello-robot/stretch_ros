@@ -1,0 +1,67 @@
+Realsense Details:
+  firmware: 05.13.00.50
+  serial: '134322070297'
+  usb: '3.2'
+capture_id: '202206161812'
+lighting_condition:
+  illuminance: null
+null_frames:
+  base_left_marker_pose: 131
+  base_right_marker_pose: 181
+  shoulder_marker_pose: 14
+  wrist_inside_marker_pose: 1
+  wrist_top_marker_pose: 0
+number_samples: 600
+performance_metrics:
+  angle_rotation:
+    base_left_marker_pose:
+      maximum: 9.931289470321966
+      mean: 3.7104872069118353
+      median: 3.6101117777931173
+      rmse: 4.005799327339507
+    base_right_marker_pose:
+      maximum: 9.453856394982443
+      mean: 3.6843306226769212
+      median: 3.627967278508939
+      rmse: 3.939172394725308
+    shoulder_marker_pose:
+      maximum: 23.37215488810715
+      mean: 9.619696891000034
+      median: 9.621909084567399
+      rmse: 9.95347514669319
+    wrist_inside_marker_pose:
+      maximum: 50.306841895103496
+      mean: 6.464653128141085
+      median: 5.651083557971305
+      rmse: 7.647391594386693
+    wrist_top_marker_pose:
+      maximum: 29.63121487821617
+      mean: 10.649305388828664
+      median: 10.695584751510147
+      rmse: 11.116379790379092
+  euclidean_error:
+    base_left_marker_pose:
+      maximum: 0.014888819941324336
+      mean: 0.014406939207287521
+      median: 0.014427354378141067
+      rmse: 0.014409451337391872
+    base_right_marker_pose:
+      maximum: 0.015720109033163496
+      mean: 0.014755809651178191
+      median: 0.014755455330697335
+      rmse: 0.014757247903729594
+    shoulder_marker_pose:
+      maximum: 0.017178401710986082
+      mean: 0.013730450430575627
+      median: 0.013673997371296289
+      rmse: 0.013734205401655968
+    wrist_inside_marker_pose:
+      maximum: 0.016104017119047565
+      mean: 0.01470152634402796
+      median: 0.014670383819638736
+      rmse: 0.01470575195296595
+    wrist_top_marker_pose:
+      maximum: 0.035046188193519054
+      mean: 0.015039366631937614
+      median: 0.014938005055508578
+      rmse: 0.015104525807585272

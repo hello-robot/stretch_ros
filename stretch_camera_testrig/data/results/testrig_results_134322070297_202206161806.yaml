@@ -1,0 +1,67 @@
+Realsense Details:
+  firmware: 05.13.00.50
+  serial: '134322070297'
+  usb: '3.2'
+capture_id: '202206161806'
+lighting_condition:
+  illuminance: null
+null_frames:
+  base_left_marker_pose: 126
+  base_right_marker_pose: 312
+  shoulder_marker_pose: 6
+  wrist_inside_marker_pose: 279
+  wrist_top_marker_pose: 1
+number_samples: 600
+performance_metrics:
+  angle_rotation:
+    base_left_marker_pose:
+      maximum: 9.721013198222572
+      mean: 4.744618429706966
+      median: 4.88846057666857
+      rmse: 5.049473206535794
+    base_right_marker_pose:
+      maximum: 10.724984044098948
+      mean: 2.7094702296338538
+      median: 2.430403535439326
+      rmse: 3.0840132583175994
+    shoulder_marker_pose:
+      maximum: 27.176011958537106
+      mean: 8.953451364023
+      median: 8.914686123006224
+      rmse: 9.191249755027581
+    wrist_inside_marker_pose:
+      maximum: 21.974949127055595
+      mean: 6.363154697847797
+      median: 6.09826705418112
+      rmse: 7.047482980038714
+    wrist_top_marker_pose:
+      maximum: 31.072313539941078
+      mean: 10.310189133248889
+      median: 10.342545108000197
+      rmse: 10.862188318212702
+  euclidean_error:
+    base_left_marker_pose:
+      maximum: 0.01454881196910414
+      mean: 0.013875662645947147
+      median: 0.013853399406421548
+      rmse: 0.013878292560631274
+    base_right_marker_pose:
+      maximum: 0.015824204293630833
+      mean: 0.014521232116930564
+      median: 0.014510794674644832
+      rmse: 0.014524193605997698
+    shoulder_marker_pose:
+      maximum: 0.018653544352193158
+      mean: 0.013634922619371314
+      median: 0.013508727006374224
+      rmse: 0.013646252401958594
+    wrist_inside_marker_pose:
+      maximum: 0.016109818074342912
+      mean: 0.015118193357062373
+      median: 0.015142304466099356
+      rmse: 0.015126904834081654
+    wrist_top_marker_pose:
+      maximum: 0.018763004706685425
+      mean: 0.014615812910175099
+      median: 0.01457469273884228
+      rmse: 0.014623664566247509
