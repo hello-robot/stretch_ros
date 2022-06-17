@@ -55,7 +55,7 @@ class CollectHeadCalibrationDataNode:
         if test_rig:
             self.number_of_testrig_samples = 40
 
-    def calibration_data_callback(self, marker_array, accel, joint_state):
+    def calibration_data_callback(self, marker_array, joint_state):
         # Prepare and assign data for calibration to member
         # variables. The configuration of the robot's joints, the
         # D435i acceleration, and the 3D fiducial estimates made via
@@ -65,7 +65,7 @@ class CollectHeadCalibrationDataNode:
             self.callback_sync = True
             self.data_time = joint_state.header.stamp
             self.joint_state = joint_state
-            self.acceleration = [accel.linear_acceleration.x, accel.linear_acceleration.y, accel.linear_acceleration.z]
+            # self.acceleration = [accel.linear_acceleration.x, accel.linear_acceleration.y, accel.linear_acceleration.z]
 
             self.wrist_inside_marker_pose = None
             self.wrist_top_marker_pose = None
@@ -803,11 +803,11 @@ class CollectHeadCalibrationDataNode:
 
             # Setup time synchronization for calibration data. 
             joint_state_subscriber = message_filters.Subscriber('/stretch/joint_states', JointState)
-            accel_subscriber = message_filters.Subscriber('/camera/accel/sample_corrected', Imu)
+            # accel_subscriber = message_filters.Subscriber('/camera/accel/sample_corrected', Imu)
             aruco_subscriber = message_filters.Subscriber('/aruco/marker_array', MarkerArray)
             slop_time = 0.1
             self.synchronizer = message_filters.ApproximateTimeSynchronizer(
-                [aruco_subscriber, accel_subscriber, joint_state_subscriber], 10, slop_time, allow_headerless=True)
+                [aruco_subscriber, joint_state_subscriber], 10, slop_time, allow_headerless=True)
             self.synchronizer.registerCallback(self.calibration_data_callback)
 
             self.trajectory_client = actionlib.SimpleActionClient('/stretch_controller/follow_joint_trajectory',
