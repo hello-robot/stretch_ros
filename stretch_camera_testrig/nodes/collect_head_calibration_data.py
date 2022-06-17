@@ -844,6 +844,6 @@ class CollectHeadCalibrationDataNode:
             self.synchronizer.registerCallback(self.calibration_data_callback_testrig)
             self.testrig_data_path = rospy.get_param('~testrig_data_directory')
             self.number_of_testrig_samples = rospy.get_param('~samples')
-            while self.callback_sync == False:
-                print("Waiting for Callback Sync.")
+            # while self.callback_sync == False:
+            #     print("Waiting for Callback Sync.")
             self.testrig_data_collect(number_of_samples=self.number_of_testrig_samples)

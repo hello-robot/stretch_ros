@@ -1,0 +1,67 @@
+Realsense Details:
+  firmware: 05.13.00.50
+  serial: '134322070297'
+  usb: '3.2'
+capture_id: '202206161410'
+lighting_condition:
+  illuminance: null
+null_frames:
+  base_left_marker_pose: 328
+  base_right_marker_pose: 325
+  shoulder_marker_pose: 3
+  wrist_inside_marker_pose: 1
+  wrist_top_marker_pose: 0
+number_samples: 600
+performance_metrics:
+  angle_rotation:
+    base_left_marker_pose:
+      maximum: 7.782279589053169
+      mean: 2.800300228717867
+      median: 2.6343093188653004
+      rmse: 3.075435129439728
+    base_right_marker_pose:
+      maximum: 10.779604968199775
+      mean: 3.9629805004702146
+      median: 3.836816162040444
+      rmse: 4.209278404225413
+    shoulder_marker_pose:
+      maximum: 23.337735456970755
+      mean: 8.951375746692596
+      median: 9.003420748221842
+      rmse: 9.216223771192254
+    wrist_inside_marker_pose:
+      maximum: 25.91909442665257
+      mean: 7.934594210071674
+      median: 7.768920434236713
+      rmse: 8.611283560137542
+    wrist_top_marker_pose:
+      maximum: 25.58068104579419
+      mean: 11.466341413691076
+      median: 11.593415298333891
+      rmse: 11.891844031545192
+  euclidean_error:
+    base_left_marker_pose:
+      maximum: 0.01490427337434044
+      mean: 0.014390751891819082
+      median: 0.014434747502845954
+      rmse: 0.014393258772611004
+    base_right_marker_pose:
+      maximum: 0.015599572828354585
+      mean: 0.01434068470952296
+      median: 0.014345241138254304
+      rmse: 0.014342537630481308
+    shoulder_marker_pose:
+      maximum: 0.017227646027196536
+      mean: 0.01367231028353971
+      median: 0.013600331291690927
+      rmse: 0.013676195736331529
+    wrist_inside_marker_pose:
+      maximum: 0.01631896673128959
+      mean: 0.015172724079440359
+      median: 0.015176047061081813
+      rmse: 0.015179352069674076
+    wrist_top_marker_pose:
+      maximum: 0.03283524861211185
+      mean: 0.014550753238677166
+      median: 0.014335081559594525
+      rmse: 0.01465518562434544
