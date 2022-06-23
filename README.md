@@ -10,7 +10,6 @@ We are beginning to use this port internally at Hello Robot to test it, improve 
 
 ## Known Issues
 
- - The deep perception demos won't work with a default installation, since they require OpenCV compiled with OpenVINO.
  - There is no support for the Respeaker Microphone Array.
 
 ---

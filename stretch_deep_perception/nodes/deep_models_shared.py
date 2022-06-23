@@ -6,8 +6,6 @@ def print_model_info(model, text_name):
     print('{0}.getLayerNames() ='.format(text_name), layer_names)
     output_layer_indices = model.getUnconnectedOutLayers()
     print('{0}.getUnconnectedOutLayers() ='.format(text_name), output_layer_indices)
-    output_layer_names = [layer_names[i[0] - 1] for i in output_layer_indices]
-    print('{0} output layer names ='.format(text_name), output_layer_names)
     output_layer_names = model.getUnconnectedOutLayersNames()
     print('{0} output layer names ='.format(text_name), output_layer_names)
 
