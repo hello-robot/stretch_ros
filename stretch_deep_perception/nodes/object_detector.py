@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
-import cv2
+try:
+    import renamed_cv2 as cv2
+except ModuleNotFoundError as e:
+    raise ModuleNotFoundError("Run 'pip3 install renamed-opencv-python-inference-engine'. See https://github.com/hello-robot/stretch_ros/issues/66 for details.") from e
 import numpy as np
 from scipy.spatial.transform import Rotation
 

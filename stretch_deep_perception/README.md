@@ -72,6 +72,10 @@ A less risky use of this detection is for object delivery. stretch_demos has a d
 roslaunch stretch_deep_perception stretch_detect_nearest_mouth.launch 
 ```
 
+## Details
+
+Underlying the deep perception demos provided in this package is the OpenCV deep learning submodule, `dnn`, which is backed by the Intel Inference Engine. A python package called [opencv-python-inference-engine](https://github.com/banderlog/opencv-python-inference-engine) compiles the inference engine into OpenCV, provided as `cv2.dnn`. Unfortunately, this package conflicts with the [opencv-contrib-python](https://pypi.org/project/opencv-contrib-python/) package, which provide additional submodules, such as ARUCO detection support. This is why a version of the opencv-python-inference-engine was recompiled under a different name, [renamed-opencv-python-inference-engine](https://github.com/hello-binit/renamed-opencv-python-inference-engine/). This package is set up by default on the Stretch robot as of June 2022. With this new package, the deep learning submodule is provided as `renamed_cv2.dnn`. For developers looking to the source code in this repo as a guide, please take note of the OpenCV import statement which aliases the renamed OpenCV module to the more commonly seen module name: `import renamed_cv2 as cv2`. When you'd like to use the contrib modules from OpenCV (e.g. `cv2.aruco`), you can import OpenCV as per usual: `import cv2`. Please feel free to ask any questions on the [forum](https://forum.hello-robot.com/).
+
 ## References
 
 [1] Hand It Over or Set It Down: A User Study of Object Delivery with an Assistive Mobile Manipulator, Young Sang Choi, Tiffany L. Chen, Advait Jain, Cressel Anderson, Jonathan D. Glass, and Charles C. Kemp, IEEE International Symposium on Robot and Human Interactive Communication (RO-MAN), 2009. http://pwp.gatech.edu/hrl/wp-content/uploads/sites/231/2016/05/roman2009_delivery.pdf
