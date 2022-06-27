@@ -38,6 +38,8 @@ rosdep install --from-paths src --ignore-src -r -y
 catkin_make
 ```
 
+In order to use the built packages, make the packages discoverable by sourcing the ROS workspace: `source ~/catkin_ws/devel/setup.bash`. It is popular to add the sourcing command to your `~/.bashrc` file, so that the ROS packages are discoverable in every new terminal that is opened.
+
 ## Running Demo
 
 ```bash
