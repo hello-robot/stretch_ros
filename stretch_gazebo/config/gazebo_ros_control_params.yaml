@@ -1,0 +1,14 @@
+gazebo_ros_control/pid_gains:
+  #joint_right_wheel: {p: 10000, i: 0.0, d: 0.4}
+  #joint_left_wheel: {p: 10000, i: 0.0, d: 0.4}
+  joint_lift: {p: 5000, i: 0.0, d: 200}
+  joint_arm_l0: {p: 100, i: 0.0, d: 30}
+  joint_arm_l1: {p: 100, i: 0.0, d: 30}
+  joint_arm_l2: {p: 100, i: 0.0, d: 30}
+  joint_arm_l3: {p: 100, i: 0.0, d: 30}
+  joint_wrist_yaw: {p: 20, i: 5.0, d: 0.4}
+  joint_head_pan: {p: 2, i: 0.0, d: 0.4}
+  joint_head_tilt: {p: 2, i: 0.0, d: 0.4}
+  joint_gripper_finger_left: {p: 0.5, i: 0.0, d: 0.4}
+  joint_gripper_finger_right: {p: 0.5, i: 0.0, d: 0.4}
+

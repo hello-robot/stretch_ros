@@ -11,8 +11,11 @@
   <xacro:include filename="$(find stretch_description)/urdf/stretch_gripper.xacro" />
 
   <gazebo>
-    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+    <plugin name="gazebo_ros_control" filename="libstretch_gazebo_ros_control_plugin.so">
+      <robotSimType>stretch_gazebo/StretchHardwareGazebo</robotSimType>
       <robotNamespace>/</robotNamespace>
+      <eStopTopic>estop</eStopTopic>
+      <jointStatesTopic>stretch/joint_states</jointStatesTopic>
     </plugin>
   </gazebo>
 
@@ -372,7 +375,7 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
     <joint name="joint_lift">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
   </transmission>
 
@@ -428,7 +431,7 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
     <joint name="joint_arm_l0">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
   </transmission>
   <transmission name="trans_arm_l1">
@@ -437,7 +440,7 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
     <joint name="joint_arm_l1">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
   </transmission>
   <transmission name="trans_arm_l2">
@@ -446,7 +449,7 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
     <joint name="joint_arm_l2">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
   </transmission>
   <transmission name="trans_arm_l3">
@@ -455,7 +458,7 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
     <joint name="joint_arm_l3">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
   </transmission>
 
@@ -475,7 +478,7 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
     <joint name="joint_wrist_yaw">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
   </transmission>
 
@@ -510,7 +513,7 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
     <joint name="joint_head_pan">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
   </transmission>
 
@@ -520,7 +523,7 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
     <joint name="joint_head_tilt">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
   </transmission>
 
@@ -585,7 +588,7 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
     <joint name="joint_gripper_finger_left">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
   </transmission>
   <transmission name="trans_gripper_finger_right">
@@ -594,7 +597,7 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
     <joint name="joint_gripper_finger_right">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
 </transmission>
 

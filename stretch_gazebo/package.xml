@@ -12,22 +12,33 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <depend>angles</depend>
+  <depend>control_toolbox</depend>
   <depend>controller_manager</depend>
   <depend>gazebo_msgs</depend>
   <depend>gazebo_plugins</depend>
   <depend>gazebo_ros_control</depend>
   <depend>gazebo_ros</depend>
+  <depend>hardware_interface</depend>
+  <depend>joint_limits_interface</depend>
   <depend>nav_msgs</depend>
+  <depend>pluginlib</depend>
   <depend>realsense_gazebo_plugin</depend>
   <depend>realsense2_camera</depend>
   <depend>realsense2_description</depend>
   <depend>robot_state_publisher</depend>
   <depend>ros_controllers</depend>
+  <depend>roscpp</depend>
   <depend>joint_state_controller</depend>
   <depend>rospy</depend>
   <depend>rviz</depend>
   <depend>std_msgs</depend>
   <depend>teleop_twist_joy</depend>
+  <depend>transmission_interface</depend>
+  <depend>urdf</depend>
   <depend>xacro</depend>
 
+  <export>
+    <gazebo_ros_control plugin="${prefix}/stretch_gazebo_plugins.xml"/>
+  </export>
 </package>

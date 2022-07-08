@@ -27,6 +27,13 @@
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
         args=" -urdf -model robot -param robot_description -J joint_lift 0.2 -J joint_wrist_yaw 3.14" respawn="false" output="screen" />
 
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
+      <param name="rate" value="25.0"/>
+      <rosparam param="source_list">
+          [/stretch/joint_states]
+      </rosparam>
+  </node>
+
   <node pkg="robot_state_publisher" type="robot_state_publisher"  name="robot_state_publisher">
     <param name="publish_frequency" type="double" value="30.0" />
   </node>
@@ -34,24 +41,17 @@
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find stretch_gazebo)/config/sim.rviz" if="$(arg rviz)"/>
 
   <rosparam command="load"
-            file="$(find stretch_gazebo)/config/joints.yaml" 
-            ns="stretch_joint_state_controller" />
+              file="$(find stretch_gazebo)/config/gazebo_ros_control_params.yaml"/>
 
   <rosparam command="load"
             file="$(find stretch_gazebo)/config/drive_config.yaml"
             ns="stretch_diff_drive_controller" />
 
   <rosparam command="load"
-            file="$(find stretch_gazebo)/config/arm.yaml"/>
-
-  <rosparam command="load"
-            file="$(find stretch_gazebo)/config/head.yaml" />
-
-  <rosparam command="load"
-            file="$(find stretch_gazebo)/config/gripper.yaml" />
+            file="$(find stretch_gazebo)/config/body.yaml" />
 
   <node name="stretch_controller_spawner" pkg="controller_manager" type="spawner"
-        args="stretch_joint_state_controller stretch_diff_drive_controller stretch_arm_controller stretch_head_controller stretch_gripper_controller"/>
+        args="stretch_diff_drive_controller stretch_controller_raw"/>
 
   <node name="publish_ground_truth_odom" pkg="stretch_gazebo" type="publish_ground_truth_odom.py" output="screen"/>
 
