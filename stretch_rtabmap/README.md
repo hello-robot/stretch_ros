@@ -25,23 +25,23 @@ Use `rosdep` to install the required packages.
 
 ```bash
     roslaunch stretch_rtabmap gazebo.launch
-    roslaunch stretch_rtabmap start_rtab.launch sim:=true localization:=false move_base_config:=2d
+    roslaunch stretch_rtabmap start_rtab.launch sim:=true localization:=false move_base_config:=3d
     roslaunch stretch_rtabmap rviz_rtab.launch mapping:=true
 ```
 
 ### Stretch RE1
 ```bash
-    roslaunch stretch_rtabmap start_rtab.launch sim:=false localization:=false move_base_config:=2d
+    roslaunch stretch_rtabmap start_rtab.launch sim:=false localization:=false move_base_config:=3d
     roslaunch stretch_rtabmap rviz_rtab.launch mapping:=true
 ```
 ## Code Status & Development Plans
 
 Move_base_config | Gazebo          | Stretch RE1
 -----------------|-----------------|----------------
-2d               | okay            | Good
-2d_unkown        | Not Implemented | Not Implemented
-3d               | Testing         | Testing
-3d_unkown        | Not Implemented | Not Implemented
+2d               | Okay            | Good
+2d_unkown        | Working         | Working
+3d               | Okay            | Good
+3d_unkown        | Working         | Working
 
 ## License
 
