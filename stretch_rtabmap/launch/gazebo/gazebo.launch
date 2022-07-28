@@ -1,15 +1,18 @@
 <launch>
 
-  <arg name="paused" default="false"/>
+  <arg name="paused" default="true"/>
   <arg name="use_sim_time" default="true"/>
   <arg name="gui" default="true"/>
   <arg name="headless" default="false"/>
   <arg name="debug" default="false"/>
   <arg name="rviz" default="false"/>
   <arg name="model" default="$(find stretch_gazebo)/urdf/stretch_gazebo.urdf.xacro"/>
+  <arg name="gpu_lidar" default="false"/>
+  <arg name="visualize_lidar" default="false"/>
+  <arg name="world" default="/usr/share/gazebo-11/worlds/willowgarage.world"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="/usr/share/gazebo-11/worlds/willowgarage.world"/>
+    <arg name="world_name" value="$(arg world)" />
     <arg name="debug" value="$(arg debug)" />
     <arg name="gui" value="$(arg gui)" />
     <arg name="paused" value="$(arg paused)"/>
@@ -18,11 +21,11 @@
     <arg name="verbose" value="true"/>
   </include>
 
-  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model) gpu_lidar:=$(arg gpu_lidar) visualize_lidar:=$(arg visualize_lidar)" />
 
   <!-- push robot_description to factory and spawn robot in gazebo -->
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
-        args=" -urdf -model robot -param robot_description" respawn="false" output="screen" />
+        args=" -urdf -model robot -param robot_description -J joint_lift 0.2 -J joint_wrist_yaw 3.14" respawn="false" output="screen" />
 
   <node pkg="robot_state_publisher" type="robot_state_publisher"  name="robot_state_publisher">
     <param name="publish_frequency" type="double" value="30.0" />
@@ -31,7 +34,7 @@
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find stretch_gazebo)/config/sim.rviz" if="$(arg rviz)"/>
 
   <rosparam command="load"
-            file="$(find stretch_gazebo)/config/joints.yaml"
+            file="$(find stretch_gazebo)/config/joints.yaml" 
             ns="stretch_joint_state_controller" />
 
   <rosparam command="load"

@@ -1,11 +1,17 @@
 <launch>
     <!-- REALSENSE D435i -->
-    <include file="$(find stretch_core)/launch/d435i_high_resolution.launch"></include>
-    <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen">
-    <!--<param name="initial_mode" type="string" value="Default"/>-->
-    <param name="initial_mode" type="string" value="High Accuracy"/>
-    </node>
-    <!-- -->
+  <include file="$(find stretch_rtabmap)/launch/robot/d435i_basic.launch" pass_all_args="true">
+    <arg name="depth_width" value="640"/>
+    <arg name="depth_height" value="480"/>
+    <arg name="color_width" value="640"/>
+    <arg name="color_height" value="480"/>
+  </include>
+  <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen">
+    <param name="initial_mode" type="string" value="Default"/>
+    <!-- <param name="initial_mode" type="string" value="Medium Density"/> -->
+    <!-- <param name="initial_mode" type="string" value="High Accuracy"/> -->
+  </node>
+  <!-- -->
 
     <!-- FRUSTUM FIELD OF VIEW VISUALIZATION -->
     <node name="d435i_frustum_visualizer" pkg="stretch_core" type="d435i_frustum_visualizer" output="screen" />
@@ -31,6 +37,6 @@
     <!-- -->
 
     <!-- ROBOT LOCALIZATION FILTER -->
-    <include file="$(find stretch_core)/launch/stretch_ekf.launch" />
+    <!-- <include file="$(find stretch_core)/launch/stretch_ekf.launch" /> -->
     <!-- -->
 </launch>
