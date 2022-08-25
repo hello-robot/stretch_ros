@@ -1,9 +1,11 @@
 <launch>
 
-  <arg name="initial_preset" default="$(find stretch_core)/config/HighAccuracyPreset.json" doc="depth image visual preset (pass in filepath to json defined preset)" />
+  <arg name="rs_initial_preset" default="$(find stretch_core)/config/HighAccuracyPreset.json" doc="depth image visual preset (pass in filepath to json defined preset)" />
+  <arg name="rs_initial_reset"  default="true"                                                doc="whether to reset camera before streaming, useful if the camera got into a bad state in the last session" />
+  <arg name="rs_enable_imu"     default="true"                                                doc="whether to enable gyro/accel streams" />
 
   <!-- REDUCE RATE AND USE NUC TIME -->
-  <node name="d435i_accel_correction" pkg="stretch_core" type="d435i_accel_correction" output="screen" />
+  <node name="d435i_accel_correction" pkg="stretch_core" type="d435i_accel_correction" output="screen" if="$(arg rs_enable_imu)" />
 
   <!-- REALSENSE D435i -->
   <include file="$(find realsense2_camera)/launch/rs_camera.launch">
@@ -13,8 +15,8 @@
     <arg name="enable_infra" value="false"/>
     <arg name="enable_color" value="true"/>
     <arg name="enable_depth" value="true"/>
-    <arg name="enable_accel" value="true"/>
-    <arg name="enable_gyro" value="true"/>
+    <arg name="enable_accel" value="$(arg rs_enable_imu)"/>
+    <arg name="enable_gyro" value="$(arg rs_enable_imu)"/>
 
     <!-- The D435i depth camera generates and transmits the gyro and
          accelerometer samples independently, as the inertial sensors
@@ -53,13 +55,13 @@
     <!-- initial_reset: On occasions the device was not closed
          properly and due to firmware issues needs to reset. If set to
          true, the device will reset prior to usage. -->
-    <arg name="initial_reset" value="true"/>
+    <arg name="initial_reset" value="$(arg rs_initial_reset)"/>
 
     <!-- publishes a single imu message with gyro/accel filled out -->
     <!--<arg name="unite_imu_method" value="copy"/> linear_interpolation-->
 
      <!-- configure the depth image to the high accuracy visual preset -->
-    <arg name="json_file_path" value="$(arg initial_preset)" />
+    <arg name="json_file_path" value="$(arg rs_initial_preset)" />
   </include>
 
 </launch>
