@@ -1,41 +1,24 @@
 <launch>
 
   <arg name="debug_directory" value="$(env HELLO_FLEET_PATH)/debug/"/>
+  <arg name="launch_drivers"  default="true" doc="whether to launch Stretch, D435i, Lidar, and other drivers" />
 
-  <!-- REALSENSE D435i -->
-  <include file="$(find stretch_core)/launch/d435i_high_resolution.launch"></include>
-  <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen">
-    <!--<param name="initial_mode" type="string" value="Default"/>-->
-    <param name="initial_mode" type="string" value="High Accuracy"/>
-  </node>
-  <!-- -->
-  
-  <!-- STRETCH DRIVER -->
-  <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="false"/>
-  <param name="/stretch_driver/fail_out_of_range_goal" type="bool" value="false"/>
-  <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true"/>
-  <!-- -->
+  <!-- ROBOT DRIVERS -->
+  <include file="$(find stretch_core)/launch/stretch_all_drivers.launch" if="$(arg launch_drivers)">
+    <arg name="broadcast_odom_tf" value="false" />
+    <arg name="fail_out_of_range_goal" value="false" />
+    <arg name="rs_publish_frustum_viz" value="true" />
+  </include>
 
   <!-- MAPPING -->
   <node name="funmap" pkg="stretch_funmap" type="funmap" output="screen" >
     <param name="debug_directory" type="string" value="$(arg debug_directory)"/>
   </node>
-  <!-- -->
-
-  <!-- LASER RANGE FINDER -->
-  <include file="$(find stretch_core)/launch/rplidar.launch" />
-  <!-- -->
-  
-  <!-- LASER SCAN MATCHER FOR ODOMETRY -->
-  <include file="$(find stretch_core)/launch/stretch_scan_matcher.launch" />
-  <!-- -->
 
   <!-- OPEN DRAWER -->
   <node name="open_drawer" pkg="stretch_demos" type="open_drawer" output="screen"/>
-  <!-- -->
 
   <!-- KEYBOARD TELEOP -->
   <node name="keyboard_teleop" pkg="stretch_core" type="keyboard_teleop" output="screen" args='--open_drawer_on'/>
-  <!-- -->
-    
+
 </launch>
