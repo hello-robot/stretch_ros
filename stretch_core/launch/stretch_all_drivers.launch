@@ -1,0 +1,36 @@
+<launch>
+
+  <arg name="rviz"                   default="false"                                               doc="whether to show Rviz" />
+  <arg name="broadcast_odom_tf"      default="true"                                                doc="whether to broadcast odom tf" />
+  <arg name="fail_out_of_range_goal" default="true"                                                doc="whether to fail trajectories with goals exceeding joint ranges" />
+  <arg name="rs_resolution"          default="high"                                                doc="resolution of the color/depth images ('low' or 'high')" />
+  <arg name="rs_initial_preset"      default="$(find stretch_core)/config/HighAccuracyPreset.json" doc="depth image visual preset (pass in filepath to json defined preset)" />
+  <arg name="rs_publish_frustum_viz" default="false"                                               doc="whether to pub viz of cameras' frustums" />
+  <arg name="rs_publish_upright_img" default="true"                                                doc="whether to pub rotated upright color image" />
+  <arg name="rp_scan_mode"           default="Boost"                                               doc="scanning mode of the lidar ('Standard', 'Express', or 'Boost')" />
+
+  <!-- STRETCH DRIVER -->
+  <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="$(arg broadcast_odom_tf)"/>
+  <param name="/stretch_driver/fail_out_of_range_goal" type="bool" value="$(arg fail_out_of_range_goal)"/>
+  <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true"/>
+
+  <!-- D435i CAMERA -->
+  <include file="$(find stretch_core)/launch/stretch_realsense.launch">
+    <arg name="resolution" value="$(arg rs_resolution)" />
+    <arg name="initial_preset" value="$(arg rs_initial_preset)" />
+    <arg name="publish_frustum_viz" value="$(eval rs_publish_frustum_viz or rviz)" />
+    <arg name="publish_upright_img" value="$(arg rs_publish_upright_img)" />
+  </include>
+
+  <!-- LASER RANGE FINDER -->
+  <include file="$(find stretch_core)/launch/stretch_rplidar.launch">
+    <arg name="scan_mode" value="$(arg rp_scan_mode)" />
+  </include>
+
+  <!-- ODOMETRY FROM LASER SCAN MATCHER -->
+  <include file="$(find stretch_core)/launch/stretch_scan_matcher.launch" />
+
+  <!-- VISUALIZE -->
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_core)/rviz/stretch_all_drivers.rviz" if="$(arg rviz)" />
+
+</launch>
