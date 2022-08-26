@@ -1,17 +1,18 @@
 <launch>
 
+  <arg name="initial_preset" default="$(find stretch_core)/config/HighAccuracyPreset.json" doc="depth image visual preset (pass in filepath to json defined preset)" />
+
   <!-- REALSENSE D435i -->
   <include file="$(find stretch_core)/launch/d435i_basic.launch" pass_all_args="true">
-    <!--
-	LOWEST RESOLUTION, but also has the lowest minimum depth
-	(105mm Min-Z) below which objects generate bad noise, such as
-	when the arm and gripper are raised close to the camera.
-    -->    
+    <!-- LOWEST RESOLUTION, but also has the lowest minimum depth
+         (105mm Min-Z) below which objects generate bad noise, such as
+         when the arm and gripper are raised close to the camera. -->
     <arg name="depth_width" value="424"/>
     <arg name="depth_height" value="240"/>
     <arg name="color_width" value="424"/>
     <arg name="color_height" value="240"/>
-    
+
+    <arg name="initial_preset" value="$(arg initial_preset)" />
   </include>
 
 </launch>
