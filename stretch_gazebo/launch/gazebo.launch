@@ -10,6 +10,7 @@
   <arg name="gpu_lidar" default="false"/>
   <arg name="visualize_lidar" default="false"/>
   <arg name="world" default="worlds/empty.world"/>
+  <arg name="publish_upright_img" default="true"  doc="whether to pub rotated upright color image" />
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(arg world)" />
@@ -34,7 +35,7 @@
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find stretch_gazebo)/config/sim.rviz" if="$(arg rviz)"/>
 
   <rosparam command="load"
-            file="$(find stretch_gazebo)/config/joints.yaml" 
+            file="$(find stretch_gazebo)/config/joints.yaml"
             ns="stretch_joint_state_controller" />
 
   <rosparam command="load"
@@ -55,4 +56,11 @@
 
   <node name="publish_ground_truth_odom" pkg="stretch_gazebo" type="publish_ground_truth_odom.py" output="screen"/>
 
+  <!-- UPRIGHT ROTATED CAMERA VIEW -->
+  <node name="upright_rotater" pkg="image_rotate" type="image_rotate" if="$(arg publish_upright_img)">
+    <remap from="image" to="/camera/color/image_raw" />
+    <remap from="rotated/image" to="/camera/color/upright_image_raw" />
+    <param name="target_frame_id" type="str" value="" />
+    <param name="target_x" type="double" value="-1.5708" />
+  </node>
 </launch>
