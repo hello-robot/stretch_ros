@@ -9,7 +9,7 @@
   <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true"/>
 
   <!-- LASER RANGE FINDER -->
-  <include file="$(find stretch_core)/launch/rplidar.launch" />
+  <include file="$(find stretch_core)/launch/stretch_rplidar.launch" />
 
   <!-- TELEOP -->
   <include file="$(find stretch_core)/launch/teleop_twist.launch">

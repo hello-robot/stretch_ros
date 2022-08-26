@@ -12,7 +12,7 @@
   <node name="centered_base_link_tf_publisher" pkg="tf" type="static_transform_publisher" args="-0.1 0 0 0 0 0 1 /base_link /centered_base_link 100" />
 
   <!-- LASER RANGE FINDER -->
-  <include file="$(find stretch_core)/launch/rplidar.launch" />
+  <include file="$(find stretch_core)/launch/stretch_rplidar.launch" />
 
   <!-- MAP SERVER -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_yaml)" />
