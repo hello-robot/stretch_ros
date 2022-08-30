@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="stretch_respeaker">
+
+  <link
+    name="respeaker_base">
+    <inertial>
+      <origin
+        xyz="-0.003809 -0.0023075 -0.012854"
+        rpy="0 0 0" />
+      <mass
+        value="0.015643" />
+      <inertia
+        ixx="1.0075E-06"
+        ixy="-5.4396E-08"
+        ixz="-2.8652E-07"
+        iyy="1.0569E-06"
+        iyz="-1.8463E-07"
+        izz="1.1947E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description/meshes/respeaker_base.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description/meshes/respeaker_base.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint
+    name="joint_respeaker"
+    type="fixed">
+    <origin
+      xyz="0 1.37236408874452 0.00303065898329655"
+      rpy="-1.5707963267949 -0.698131700797725 4.93295812652799E-16" />
+    <parent
+      link="link_mast" />
+    <child
+      link="respeaker_base" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  
+</robot>
+
+  
+
