@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+"""
+This script updates the Mesh files and URDF file specific to a robot batch.
+"""
 import os
 from os.path import exists
 import stretch_body.hello_utils as hu
