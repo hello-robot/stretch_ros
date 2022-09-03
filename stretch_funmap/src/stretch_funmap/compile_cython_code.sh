@@ -2,7 +2,10 @@
 
 echo "Building cython_min_cost_path.pyx..."
 cython ./cython_min_cost_path.pyx 
-gcc -shared -pthread -fPIC -fwrapv -ffast-math -O3 -Wall -fno-strict-aliasing -I/usr/include/python2.7 -o cython_min_cost_path.so cython_min_cost_path.c
+
+PY_INCLUDE_PATH=$(python -c 'from sysconfig import get_paths as gp; print(gp()["include"])')
+echo "Using python lib: $PY_INCLUDE_PATH"
+gcc -shared -pthread -fPIC -fwrapv -ffast-math -O3 -Wall -fno-strict-aliasing -I$PY_INCLUDE_PATH -o cython_min_cost_path.so cython_min_cost_path.c
 echo "Done."
 echo ""
 
