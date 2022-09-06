@@ -1,20 +1,21 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="stretch_respeaker">
 
-  <link name="respeaker_base">
+  <link
+    name="respeaker_base">
     <inertial>
       <origin
-        xyz="-0.00078082896792734 0.00765742173486017 -0.0042488298301937"
+        xyz="-0.003809 -0.0023075 -0.012854"
         rpy="0 0 0" />
       <mass
-        value="0.00969129410417277" />
+        value="0.015643" />
       <inertia
-        ixx="8.95656300428405E-07"
-        ixy="2.67330745809535E-08"
-        ixz="-3.84519793580934E-08"
-        iyy="4.0421099617056E-07"
-        iyz="3.15533542838673E-07"
-        izz="7.08282597118018E-07" />
+        ixx="1.0075E-06"
+        ixy="-5.4396E-08"
+        ixz="-2.8652E-07"
+        iyy="1.0569E-06"
+        iyz="-1.8463E-07"
+        izz="1.1947E-07" />
     </inertial>
     <visual>
       <origin
@@ -22,12 +23,12 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://stretch_description/meshes/link_respeaker.STL" />
+          filename="package://stretch_description/meshes/respeaker_base.STL" />
       </geometry>
       <material
         name="">
         <color
-          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+          rgba="0.79216 0.81961 0.93333 1" />
       </material>
     </visual>
     <collision>
@@ -36,7 +37,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://stretch_description/meshes/link_respeaker.STL" />
+          filename="package://stretch_description/meshes/respeaker_base.STL" />
       </geometry>
     </collision>
   </link>
@@ -44,10 +45,9 @@
   <joint
     name="joint_respeaker"
     type="fixed">
-    <!-- rpy="   ?   rotate_sound_source_direction    ?   " --> 
     <origin
-      xyz="1.09074743137871E-05 1.36992 0.00303572796911382"
-      rpy="1.57079632679553 0.0 3.14159265358916" />
+      xyz="0 1.37236408874452 0.00303065898329655"
+      rpy="-1.5707963267949 -0.698131700797725 4.93295812652799E-16" />
     <parent
       link="link_mast" />
     <child
