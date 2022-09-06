@@ -80,6 +80,7 @@ extra:
 
 nav:
  - Overview: README.md
+ - Tutorials: https://docs.hello-robot.com/0.2/stretch-tutorials/ros1/
  - Packages:
     - hello_helpers: ./hello_helpers/README.md
     - stretch_calibration: ./stretch_calibration/README.md
