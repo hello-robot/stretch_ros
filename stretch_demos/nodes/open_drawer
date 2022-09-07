@@ -57,7 +57,7 @@ class OpenDrawerNode(hm.HelloNode):
         max_reach_m = 0.4
         extension_m = self.wrist_position + max_reach_m
         extension_m = min(extension_m, max_extension_m)
-        extension_contact_effort = 45.0 #42.0 #40.0 from funmap
+        extension_contact_effort = 0.185 #effort_pct #42.0 #40.0 from funmap
         pose = {'wrist_extension': (extension_m, extension_contact_effort)}
         self.move_to_pose(pose, custom_contact_thresholds=True)
         
@@ -65,7 +65,7 @@ class OpenDrawerNode(hm.HelloNode):
         rospy.loginfo('lower_hook_until_contact')
         max_drop_m = 0.15
         lift_m = self.lift_position - max_drop_m
-        lift_contact_effort = 16.0 #18.0 #20.0 #20.0 from funmap
+        lift_contact_effort = 0.049 #effort_pct #18.0 #20.0 #20.0 from funmap
         pose = {'joint_lift': (lift_m, lift_contact_effort)}
         self.move_to_pose(pose, custom_contact_thresholds=True)
 
@@ -82,7 +82,7 @@ class OpenDrawerNode(hm.HelloNode):
         rospy.loginfo('raise_hook_until_contact')
         max_raise_m = 0.15
         lift_m = self.lift_position + max_raise_m
-        lift_contact_effort = 45.0
+        lift_contact_effort = 0.138 #effort_pct
         pose = {'joint_lift': (lift_m, lift_contact_effort)}
         self.move_to_pose(pose, custom_contact_thresholds=True)
 
@@ -113,7 +113,7 @@ class OpenDrawerNode(hm.HelloNode):
             extension_m = self.wrist_position - 0.2
             extension_m = min(extension_m, max_extension_m)
             extension_m = max(0.01, extension_m)
-            extension_contact_effort = 120 #100.0 #40.0 from funmap
+            extension_contact_effort = 0.493 #effort_pct #100.0 #40.0 from funmap
             pose = {'wrist_extension': (extension_m, extension_contact_effort)}
             self.move_to_pose(pose, custom_contact_thresholds=True)
             return True
