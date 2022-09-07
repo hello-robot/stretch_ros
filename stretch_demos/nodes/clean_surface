@@ -26,6 +26,7 @@ import hello_helpers.hello_misc as hm
 import stretch_funmap.navigate as nv
 import stretch_funmap.manipulation_planning as mp
 
+
 class CleanSurfaceNode(hm.HelloNode):
 
     def __init__(self):
@@ -39,18 +40,18 @@ class CleanSurfaceNode(hm.HelloNode):
         self.lift_position = None
         self.manipulation_view = None
         self.debug_directory = None
-
+        
     def joint_states_callback(self, joint_states):
-        with self.joint_states_lock:
+        with self.joint_states_lock: 
             self.joint_states = joint_states
         wrist_position, wrist_velocity, wrist_effort = hm.get_wrist_state(joint_states)
         self.wrist_position = wrist_position
         lift_position, lift_velocity, lift_effort = hm.get_lift_state(joint_states)
         self.lift_position = lift_position
-
+        
     def lower_tool_until_contact(self):
         rospy.loginfo('lower_tool_until_contact')
-        trigger_request = TriggerRequest()
+        trigger_request = TriggerRequest() 
         trigger_result = self.trigger_lower_until_contact_service(trigger_request)
         rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
@@ -90,15 +91,15 @@ class CleanSurfaceNode(hm.HelloNode):
             manip.save_scan(dirname + filename)
         else:
             rospy.loginfo('CleanSurfaceNode: No debug directory provided, so debugging data will not be saved.')
-
+        
     def trigger_clean_surface_callback(self, request):
 
         tool_width_m = 0.08
         tool_length_m = 0.08
-        step_size_m = 0.04
+        step_size_m = 0.04 
         min_extension_m = 0.01
         max_extension_m = 0.5
-
+        
         self.look_at_surface()
         strokes, simple_plan, lift_to_surface_m = self.manipulation_view.get_surface_wiping_plan(self.tf2_buffer, tool_width_m, tool_length_m, step_size_m)
 
@@ -106,10 +107,10 @@ class CleanSurfaceNode(hm.HelloNode):
 
         if True and (strokes is not None) and (len(strokes) > 0):
 
-            if (self.lift_position is not None) and (self.wrist_position is not None):
+            if (self.lift_position is not None) and (self.wrist_position is not None): 
 
                 above_surface_m = 0.1
-
+                
                 lift_above_surface_m = self.lift_position + lift_to_surface_m + above_surface_m
                 pose = {'joint_lift': lift_above_surface_m}
                 rospy.loginfo('Raise tool above surface.')
@@ -121,7 +122,7 @@ class CleanSurfaceNode(hm.HelloNode):
                 rospy.loginfo('Drive to the start of the cleaning region.')
                 self.move_to_pose(pose)
 
-                initial_wrist_position = self.wrist_position
+                initial_wrist_position = self.wrist_position 
                 extension_m = start['start_wrist_extension_m']
 
                 start_extension_m = initial_wrist_position + extension_m
@@ -130,15 +131,15 @@ class CleanSurfaceNode(hm.HelloNode):
                 self.move_to_pose(pose)
 
                 use_old_code = False
-                if use_old_code:
+                if use_old_code: 
                     self.lower_tool_until_contact()
-                else:
+                else: 
                     lift_m = self.lift_position - (above_surface_m - 0.02)
-                    lift_contact_effort = 0.061 #effort_pct 20.0 pseudo_N from funmap
-                    extension_contact_effort = 0.164 #effort_pct 40.0 pseudo_N from funmap
+                    lift_contact_effort = 20.0 #20.0 from funmap
+                    extension_contact_effort = 40.0 #40.0 from funmap
                     pose = {'joint_lift': (lift_m, lift_contact_effort)}
                     self.move_to_pose(pose, custom_contact_thresholds=True)
-
+                    
                     use_correction = True
                     if use_correction:
                         # raise due to drop down after contact detection
@@ -197,15 +198,15 @@ class CleanSurfaceNode(hm.HelloNode):
             message='Completed surface cleaning!'
             )
 
-
+    
     def main(self):
         hm.HelloNode.main(self, 'clean_surface', 'clean_surface', wait_for_first_pointcloud=False)
-
+        
         self.debug_directory = rospy.get_param('~debug_directory')
         rospy.loginfo('Using the following directory for debugging files: {0}'.format(self.debug_directory))
 
         self.joint_states_subscriber = rospy.Subscriber('/stretch/joint_states', JointState, self.joint_states_callback)
-
+        
         self.trigger_clean_surface_service = rospy.Service('/clean_surface/trigger_clean_surface',
                                                            Trigger,
                                                            self.trigger_clean_surface_callback)
@@ -227,12 +228,12 @@ class CleanSurfaceNode(hm.HelloNode):
         rospy.wait_for_service(high_accuracy_service)
         rospy.loginfo('Node ' + self.node_name + ' connected to'  + high_accuracy_service)
         self.trigger_d435i_high_accuracy_mode_service = rospy.ServiceProxy(high_accuracy_service, Trigger)
-
+        
         rate = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
             rate.sleep()
 
-
+        
 if __name__ == '__main__':
     try:
         parser = ap.ArgumentParser(description='Clean Surface behavior for stretch.')
