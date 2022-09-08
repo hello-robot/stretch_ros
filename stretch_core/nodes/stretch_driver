@@ -6,6 +6,7 @@ import threading
 from rwlock import RWLock
 import stretch_body.robot as rb
 from stretch_body.hello_utils import ThreadServiceExit
+import stretch_body
 
 import tf2_ros
 import tf_conversions
@@ -337,6 +338,10 @@ class StretchBodyNode:
         rospy.loginfo("For use with S T R E T C H (TM) RESEARCH EDITION from Hello Robot Inc.")
 
         rospy.loginfo("{0} started".format(self.node_name))
+
+        if int(stretch_body.__version__.split('.')[1]) < 4:
+            rospy.logerr("ERROR: Found old stretch_body version. Please upgrade stretch_body to 0.4.0 or above.")
+            rospy.signal_shutdown('Found old stretch_body version.')
 
         self.robot = rb.Robot()
         self.robot.startup()
