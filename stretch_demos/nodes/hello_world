@@ -69,7 +69,7 @@ class HelloWorldNode(hm.HelloNode):
             wrist_position, wrist_velocity, wrist_effort = hm.get_wrist_state(self.joint_states)
         extension_m = wrist_position + max_reach_m
         extension_m = min(extension_m, max_extension_m)
-        extension_contact_effort = 45.0
+        extension_contact_effort = 18.5 #effort_pct
         pose = {'wrist_extension': (extension_m, extension_contact_effort)}
         self.move_to_pose(pose, custom_contact_thresholds=True)
         
@@ -83,7 +83,7 @@ class HelloWorldNode(hm.HelloNode):
         extension_m = wrist_position - backoff_m
         extension_m = min(extension_m, max_extension_m)
         extension_m = max(min_extension_m, extension_m)
-        extension_contact_effort = 80.0 # to avoid stopping due to contact
+        extension_contact_effort = 32.9 #effort_pct # to avoid stopping due to contact
         pose = {'wrist_extension': (extension_m, extension_contact_effort)}
         self.move_to_pose(pose, custom_contact_thresholds=True)
         rospy.sleep(1.0) # Give it time to backoff before the next move. Otherwise it may not backoff.
