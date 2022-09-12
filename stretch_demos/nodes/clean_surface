@@ -135,8 +135,8 @@ class CleanSurfaceNode(hm.HelloNode):
                     self.lower_tool_until_contact()
                 else: 
                     lift_m = self.lift_position - (above_surface_m - 0.02)
-                    lift_contact_effort = 20.0 #20.0 from funmap
-                    extension_contact_effort = 40.0 #40.0 from funmap
+                    lift_contact_effort = 33.7 #effort_pct #20.0 from funmap
+                    extension_contact_effort = 16.45 #effort_pct #40.0 from funmap
                     pose = {'joint_lift': (lift_m, lift_contact_effort)}
                     self.move_to_pose(pose, custom_contact_thresholds=True)
                     

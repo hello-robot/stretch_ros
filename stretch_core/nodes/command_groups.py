@@ -347,8 +347,8 @@ class ArmCommandGroup(SimpleCommandGroup):
             robot.arm.move_by(extension_error_m,
                               v_m=self.goal['velocity'],
                               a_m=self.goal['acceleration'],
-                              contact_thresh_pos_N=self.goal['contact_threshold'],
-                              contact_thresh_neg_N=-self.goal['contact_threshold'] \
+                              contact_thresh_pos=self.goal['contact_threshold'],
+                              contact_thresh_neg=-self.goal['contact_threshold'] \
                                                    if self.goal['contact_threshold'] is not None else None)
             self.retracted = extension_error_m < 0.0
 
@@ -370,7 +370,7 @@ class ArmCommandGroup(SimpleCommandGroup):
         arm_status = robot_status['arm']
         arm_backlash_correction = self.retracted_offset_m if self.retracted else 0.0
         pos = arm_status['pos'] + arm_backlash_correction
-        return (pos, arm_status['vel'], arm_status['motor']['effort'])
+        return (pos, arm_status['vel'], arm_status['motor']['effort_pct'])
 
 
 class LiftCommandGroup(SimpleCommandGroup):
@@ -392,8 +392,8 @@ class LiftCommandGroup(SimpleCommandGroup):
             robot.lift.move_by(self.update_execution(robot_status)[1],
                                v_m=self.goal['velocity'],
                                a_m=self.goal['acceleration'],
-                               contact_thresh_pos_N=self.goal['contact_threshold'],
-                               contact_thresh_neg_N=-self.goal['contact_threshold'] \
+                               contact_thresh_pos=self.goal['contact_threshold'],
+                               contact_thresh_neg=-self.goal['contact_threshold'] \
                                                     if self.goal['contact_threshold'] is not None else None)
 
     def update_execution(self, robot_status, **kwargs):
@@ -410,7 +410,7 @@ class LiftCommandGroup(SimpleCommandGroup):
 
     def joint_state(self, robot_status, **kwargs):
         lift_status = robot_status['lift']
-        return (lift_status['pos'], lift_status['vel'], lift_status['motor']['effort'])
+        return (lift_status['pos'], lift_status['vel'], lift_status['motor']['effort_pct'])
 
 
 class MobileBaseCommandGroup(SimpleCommandGroup):
@@ -556,17 +556,17 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
                     robot.base.translate_by(mobile_base_error_m,
                                             v_m=self.goal_translate_mobile_base['velocity'],
                                             a_m=self.goal_translate_mobile_base['acceleration'],
-                                            contact_thresh_N=self.goal_translate_mobile_base['contact_threshold'])
+                                            contact_thresh=self.goal_translate_mobile_base['contact_threshold'])
                 elif mobile_base_error_rad is not None:
                     robot.base.rotate_by(mobile_base_error_rad,
                                          v_r=self.goal_rotate_mobile_base['velocity'],
                                          a_r=self.goal_rotate_mobile_base['acceleration'],
-                                         contact_thresh_N=self.goal_rotate_mobile_base['contact_threshold'])
+                                         contact_thresh=self.goal_rotate_mobile_base['contact_threshold'])
             else:
                 robot.base.translate_by(self.update_execution(robot_status)[1],
                                         v_m=self.goal['velocity'],
                                         a_m=self.goal['acceleration'],
-                                        contact_thresh_N=self.goal['contact_threshold'])
+                                        contact_thresh=self.goal['contact_threshold'])
 
     def update_execution(self, robot_status, **kwargs):
         success_callback = kwargs['success_callback'] if 'success_callback' in kwargs.keys() else None
