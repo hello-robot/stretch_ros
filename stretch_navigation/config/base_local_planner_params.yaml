@@ -1,40 +1,37 @@
-DWAPlannerROS:
-    # Robot Configuration Parameters
-    max_vel_x: 0.1
-    min_vel_x: -0.01
-    max_vel_theta: 0.1
-    min_in_place_vel_theta: -0.05
+# Base profile
+TrajectoryPlannerROS:
+  acc_lim_x: 1.0
+  acc_lim_y: 0.0
+  acc_lim_theta: 1.0
+  max_vel_x: 0.3
+  min_vel_x: 0.0
+  max_vel_y: 0.0
+  min_vel_y: 0.0
+  max_vel_theta: 1.0
+  min_vel_theta: -1.0
+  min_in_place_vel_theta: 0
+  holonomic_robot: false
 
-    acc_lim_theta: 1.0
-    acc_lim_x: 1.0
-    acc_lim_y: 0.0
+  # Goal Tolerance Parameters
+  yaw_goal_tolerance: 0.09          # (5 degrees) The tolerance in radians for the controller in yaw/rotation when achieving its goal
+  xy_goal_tolerance: 0.10           # (10cm) The tolerance in meters for the controller in the x & y distance when achieving a goal
+  latch_xy_goal_tolerance: false    # If goal tolerance is latched, if the robot ever reaches the goal xy location it will simply rotate in place, even if it ends up outside the goal tolerance while it is doing so.
 
-    ## Goal Tolerance Parameters
-    yaw_goal_tolerance: 0.09 # (5 degrees) The tolerance in radians for the controller in yaw/rotation when achieving its goal
-    xy_goal_tolerance: 0.10 # (10cm) The tolerance in meters for the controller in the x & y distance when achieving a goal
-    latch_xy_goal_tolerance: false #If goal tolerance is latched, if the robot ever reaches the goal xy location it will simply rotate in place, even if it ends up outside the goal tolerance while it is doing so.
 
-    ## Forward Simulation Parameters
-    sim_time: 3 # The amount of time to forward-simulate trajectories in seconds
-    sim_granularity: 0.025 # The step size, in meters, to take between points on a given trajectory
+  # forward simulation
+  sim_time: 1.7
+  sim_granularity: 0.025
+  angular_sim_granularity: 0.025
+  vx_samples: 5
+  vtheta_samples: 20
 
-    vx_samples: 30 # The number of samples to use when exploring the x velocity space
-    vy_samples: 0 # The number of samples to use when exploring the y velocity space
-    vtheta_samples: 40 # The number of samples to use when exploring the theta velocity space
+  ## scoring (defaults)
+  meter_scoring: true
+  path_distance_bias: 1.0 # 3 # 0.5
+  goal_distance_bias: 0.8 #1.5 #0.75
+  occdist_scale: 0.02 #0.00625
+  heading_lookahead: 0.325
+  heading_scoring_timestep: 0.8
+  heading_scoring: true
+  dwa: True
 
-    penalize_negative_x: false # Whether to penalize trajectories that have negative x velocities.
-
-    ## Trajectory Scoring Parameters
-    path_distance_bias: 50.0 # The weighting for how much the controller should stay close to the path it was given
-    goal_distance_bias: 20.0 # The weighting for how much the controller should attempt to reach its local goal, also controls speed
-    occdist_scale: 0.02 # The weighting for how much the controller should attempt to avoid obstacles
-
-    forward_point_distance: 0.325 # The distance from the center point of the robot to place an additional scoring point, in meters
-    stop_time_buffer: 0.2 # The amount of time that the robot must stop before a collision in order for a trajectory to be considered valid in seconds
-    scaling_speed: 0.25 # The absolute value of the veolicty at which to start scaling the robot's footprint, in m/s
-    max_scaling_factor: 0.1 # The maximum factor to scale the robot's footprint by
-
-    ## Global Plan Parameters
-    prune_plan: true # Defines whether or not to eat up the plan as the robot moves along the path. If set to true, points will fall off the end of the plan once the robot moves 1 meter past them.
-    oscillation_reset_dist: 0.05 # How far the robot must travel in meters before oscillation flags are reset
-    meter_scoring: true
