@@ -46,8 +46,8 @@
     name="joint_laser"
     type="fixed">
     <origin
-      xyz="0.000502800000000914 0 0.1664"
-      rpy="0 0 -3.14159265358979" />
+      xyz="0.004 0 0.1664"
+      rpy="0 0 3.1416" />
     <parent
       link="base_link" />
     <child
