@@ -1,0 +1,9 @@
+NavfnROS:
+    allow_unknown: false
+    use_dijkstra: true
+    orientation_mode: 2
+    weight_kinematics_forward_drive: 0.0
+    global_plan_overwrite_orientation: true
+    allow_init_with_backwards_motion: true
+
+   
