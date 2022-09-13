@@ -11,6 +11,7 @@ TrajectoryPlannerROS:
   min_vel_theta: -1.0
   min_in_place_vel_theta: 0
   holonomic_robot: false
+  dwa: false
 
   # Goal Tolerance Parameters
   yaw_goal_tolerance: 0.09          # (5 degrees) The tolerance in radians for the controller in yaw/rotation when achieving its goal
@@ -27,11 +28,16 @@ TrajectoryPlannerROS:
 
   ## scoring (defaults)
   meter_scoring: true
-  path_distance_bias: 1.5 # 3 # 0.5
-  goal_distance_bias: 0.8 #1.5 #0.75
+  path_distance_bias: 5.0 # 3 # 0.5
+  goal_distance_bias: 5.0 #1.5 #0.75
   occdist_scale: 0.02 #0.00625
+
+  pdist_scale: 5.0
+  gdist_scale: 5.0
+  occdist_scale: 0.01
+
   heading_lookahead: 0.325
   heading_scoring_timestep: 0.8
   heading_scoring: true
-  dwa: True
+
 
