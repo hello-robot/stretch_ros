@@ -24,7 +24,6 @@ import argparse as ap
 
 import hello_helpers.hello_misc as hm
 import stretch_funmap.navigate as nv
-from stretch_body.robot_params import RobotParams
 
 class OpenDrawerNode(hm.HelloNode):
 
@@ -58,9 +57,7 @@ class OpenDrawerNode(hm.HelloNode):
         max_reach_m = 0.4
         extension_m = self.wrist_position + max_reach_m
         extension_m = min(extension_m, max_extension_m)
-        extension_contact_effort = 40 #effort_pct #42.0 #40.0 from funmap
-        if RobotParams.get_params()[1]['robot']['model_name']=='RE1V0':
-            extension_contact_effort = 18.5
+        extension_contact_effort = 18.5 #effort_pct #42.0 #40.0 from funmap
         pose = {'wrist_extension': (extension_m, extension_contact_effort)}
         self.move_to_pose(pose, custom_contact_thresholds=True)
 
