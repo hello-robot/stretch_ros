@@ -1,3 +1,45 @@
+# Base profile
+TrajectoryPlannerROS:
+  acc_lim_x: 1.0
+  acc_lim_y: 0.0
+  acc_lim_theta: 1.0
+  max_vel_x: 0.3
+  min_vel_x: 0.0
+  max_vel_y: 0.0
+  min_vel_y: 0.0
+  max_vel_theta: 1.0
+  min_vel_theta: -1.0
+  min_in_place_vel_theta: 0
+  holonomic_robot: false
+  dwa: true
+
+  # Goal Tolerance Parameters
+  yaw_goal_tolerance: 0.03          # (5 degrees) The tolerance in radians for the controller in yaw/rotation when achieving its goal
+  xy_goal_tolerance: 0.02           # (10cm) The tolerance in meters for the controller in the x & y distance when achieving a goal
+  latch_xy_goal_tolerance: false    # If goal tolerance is latched, if the robot ever reaches the goal xy location it will simply rotate in place, even if it ends up outside the goal tolerance while it is doing so.
+
+
+  # forward simulation
+  sim_time: 1.7
+  sim_granularity: 0.025
+  angular_sim_granularity: 0.025
+  vx_samples: 5
+  vtheta_samples: 20
+
+  ## scoring (defaults)
+  meter_scoring: true
+  path_distance_bias: 5.0 # 3 # 0.5
+  goal_distance_bias: 5.0 #1.5 #0.75
+  occdist_scale: 0.02 #0.00625
+
+  pdist_scale: 5.0
+  gdist_scale: 5.0
+  occdist_scale: 0.01
+
+  heading_lookahead: 0.325
+  heading_scoring_timestep: 0.8
+  heading_scoring: true
+
 DWAPlannerROS:
     # Robot Configuration Parameters
     max_vel_trans: 0.5
@@ -55,56 +97,56 @@ DWAPlannerROS:
     use_dwa: true
 
 
-# Base profile
-TrajectoryPlannerROS:
-  acc_lim_x: 1.0
-  acc_lim_y: 0.0
-  acc_lim_theta: 1.0
-  max_vel_x: 0.1
-  min_vel_x: -0.1
-  max_vel_y: 0.0
-  min_vel_y: 0.0
-  max_vel_theta: 0.2
-  min_vel_theta: -0.2
-  min_in_place_vel_theta: -0.2
-  holonomic_robot: false
+# # Base profile
+# TrajectoryPlannerROS:
+#   acc_lim_x: 1.0
+#   acc_lim_y: 0.0
+#   acc_lim_theta: 1.0
+#   max_vel_x: 0.1
+#   min_vel_x: -0.1
+#   max_vel_y: 0.0
+#   min_vel_y: 0.0
+#   max_vel_theta: 0.2
+#   min_vel_theta: -0.2
+#   min_in_place_vel_theta: -0.2
+#   holonomic_robot: false
 
-# Recovery behaviors
-recovery_behavior_enabled: true
-recovery_behaviors:
-  - name: "conservative_reset"
-    type: "clear_costmap_recovery/ClearCostmapRecovery"
-  - name: "rotate_recovery"
-    type: "rotate_recovery/RotateRecovery"
-  - name: "aggressive_reset"
-    type: "clear_costmap_recovery/ClearCostmapRecovery"
-conservative_reset:
-  reset_distance: 3.0
-rotate_recovery:
-  frequency: 20.0
-  sim_granularity: 0.017
-aggressive_reset: 
-  reset_distance: 0.5
+# # Recovery behaviors
+# recovery_behavior_enabled: true
+# recovery_behaviors:
+#   - name: "conservative_reset"
+#     type: "clear_costmap_recovery/ClearCostmapRecovery"
+#   - name: "rotate_recovery"
+#     type: "rotate_recovery/RotateRecovery"
+#   - name: "aggressive_reset"
+#     type: "clear_costmap_recovery/ClearCostmapRecovery"
+# conservative_reset:
+#   reset_distance: 3.0
+# rotate_recovery:
+#   frequency: 20.0
+#   sim_granularity: 0.017
+# aggressive_reset: 
+#   reset_distance: 0.5
 
-  yaw_goal_tolerance: 0.045
-  xy_goal_tolerance: 0.015
-  latch_xy_goal_tolerance: false
-  # forward simulation
-  sim_time: 1.0
-  sim_granularity: 0.025
-  angular_sim_granularity: 0.025
-  vx_samples: 3
-  vtheta_samples: 10
-  # scoring (defaults)
-  meter_scoring: true
-  path_distance_bias: 0.5
-  goal_distance_bias: 0.75
-  occdist_scale: 0.00625
-  heading_lookahead: 0.325
-  heading_scoring_timestep: 0.8
-  heading_scoring: true
-  dwa: true
-  # other
-  oscillation_reset_dist: 0.05
-  # debug
-  publish_cost_grid_pc: false
+#   yaw_goal_tolerance: 0.045
+#   xy_goal_tolerance: 0.015
+#   latch_xy_goal_tolerance: false
+#   # forward simulation
+#   sim_time: 1.0
+#   sim_granularity: 0.025
+#   angular_sim_granularity: 0.025
+#   vx_samples: 3
+#   vtheta_samples: 10
+#   # scoring (defaults)
+#   meter_scoring: true
+#   path_distance_bias: 0.5
+#   goal_distance_bias: 0.75
+#   occdist_scale: 0.00625
+#   heading_lookahead: 0.325
+#   heading_scoring_timestep: 0.8
+#   heading_scoring: true
+#   dwa: true
+#   # other
+#   oscillation_reset_dist: 0.05
+#   # debug
+#   publish_cost_grid_pc: false 

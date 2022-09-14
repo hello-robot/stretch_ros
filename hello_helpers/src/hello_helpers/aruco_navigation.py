@@ -22,7 +22,6 @@ from trajectory_msgs.msg import JointTrajectoryPoint
 import actionlib
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
 
-
 class ArucoNavigationNode(hm.HelloNode):
     def __init__(self):
         
@@ -31,12 +30,16 @@ class ArucoNavigationNode(hm.HelloNode):
         self.joint_state = None
         
         self.file_path = rospy.get_param("/file_path")
-        saved_file = open(self.file_path + "/saved_poses.json", 'w')
+        
         try:
+            saved_file = open(self.file_path + "/saved_poses.json")
             self.pose_dict = json.load(saved_file)
+            saved_file.close()
         except:
             self.pose_dict = {}
-        saved_file.close()
+        
+
+        self.main()
 
     def pose_to_list(self, pose):
         '''
