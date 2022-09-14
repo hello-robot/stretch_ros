@@ -30,8 +30,8 @@ echo ""
 echo "Replace the mesh file locations in the exported URDF with local directories."
 OLD_NAME="package://stretch_description/"
 NEW_NAME="./"
-echo "rpl -Ri $OLD_NAME $NEW_NAME ./exported_urdf/stretch.urdf"
-rpl -Ri $OLD_NAME $NEW_NAME ./exported_urdf/stretch.urdf
+echo "rpl $OLD_NAME $NEW_NAME ./exported_urdf/stretch.urdf"
+rpl $OLD_NAME $NEW_NAME ./exported_urdf/stretch.urdf
 echo ""
 
 # Copy D435i mesh from the realsense2_description ROS package to the exported URDF.
@@ -39,7 +39,7 @@ echo "Copy D435i mesh from the realsense2_description ROS package to the exporte
 echo "cp `rospack find realsense2_description`/meshes/d435.dae ./exported_urdf/meshes/"
 cp `rospack find realsense2_description`/meshes/d435.dae ./exported_urdf/meshes/
 echo "rpl -Ri "package://realsense2_description/" "./" ./exported_urdf/stretch.urdf"
-rpl -Ri "package://realsense2_description/" "./" ./exported_urdf/stretch.urdf
+rpl "package://realsense2_description/" "./" ./exported_urdf/stretch.urdf
 echo ""
 
 # copy controller calibration file used by stretch ROS
