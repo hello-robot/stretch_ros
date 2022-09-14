@@ -1,11 +1,43 @@
+# Base profile
 TrajectoryPlannerROS:
-    max_vel_x: 0.1
-    min_vel_x: 0.01
-    max_vel_theta: 0.1
-    min_in_place_vel_theta: 0.05
+  acc_lim_x: 1.0
+  acc_lim_y: 0.0
+  acc_lim_theta: 1.0
+  max_vel_x: 0.3
+  min_vel_x: 0.0
+  max_vel_y: 0.0
+  min_vel_y: 0.0
+  max_vel_theta: 1.0
+  min_vel_theta: -1.0
+  min_in_place_vel_theta: 0
+  holonomic_robot: false
+  dwa: false
 
-    acc_lim_theta: 1.0
-    acc_lim_x: 1.0
-    acc_lim_y: 1.0
+  # Goal Tolerance Parameters
+  yaw_goal_tolerance: 0.09          # (5 degrees) The tolerance in radians for the controller in yaw/rotation when achieving its goal
+  xy_goal_tolerance: 0.10           # (10cm) The tolerance in meters for the controller in the x & y distance when achieving a goal
+  latch_xy_goal_tolerance: false    # If goal tolerance is latched, if the robot ever reaches the goal xy location it will simply rotate in place, even if it ends up outside the goal tolerance while it is doing so.
 
-    holonomic_robot: false
+
+  # forward simulation
+  sim_time: 1.7
+  sim_granularity: 0.025
+  angular_sim_granularity: 0.025
+  vx_samples: 5
+  vtheta_samples: 20
+
+  ## scoring (defaults)
+  meter_scoring: true
+  path_distance_bias: 5.0 # 3 # 0.5
+  goal_distance_bias: 5.0 #1.5 #0.75
+  occdist_scale: 0.02 #0.00625
+
+  pdist_scale: 5.0
+  gdist_scale: 5.0
+  occdist_scale: 0.01
+
+  heading_lookahead: 0.325
+  heading_scoring_timestep: 0.8
+  heading_scoring: true
+
+
