@@ -38,7 +38,7 @@ echo ""
 echo "Copy D435i mesh from the realsense2_description ROS package to the exported URDF."
 echo "cp `rospack find realsense2_description`/meshes/d435.dae ./exported_urdf/meshes/"
 cp `rospack find realsense2_description`/meshes/d435.dae ./exported_urdf/meshes/
-echo "rpl -Ri "package://realsense2_description/" "./" ./exported_urdf/stretch.urdf"
+echo "rpl "package://realsense2_description/" "./" ./exported_urdf/stretch.urdf"
 rpl "package://realsense2_description/" "./" ./exported_urdf/stretch.urdf
 echo ""
 
