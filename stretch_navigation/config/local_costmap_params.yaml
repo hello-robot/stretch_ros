@@ -8,5 +8,5 @@ local_costmap:
   width: 3.0
   height: 3.0
   resolution: 0.05
-  inflation_radius: 0.15 # reduce it according to the tight spaces
-  cost_scaling_factor: 1.5
+  #inflation_radius: 0.15 # reduce it according to the tight spaces
+  #cost_scaling_factor: 1.5

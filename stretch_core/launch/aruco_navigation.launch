@@ -15,7 +15,7 @@
   <include file="$(find stretch_core)/launch/rplidar.launch" />
 
   <!-- REALSENSE D435i -->
-  <include file="$(find stretch_core)/launch/d435i_low_resolution.launch"></include>
+  <include file="$(find stretch_core)/launch/d435i_high_resolution.launch"></include>
 
   <!-- ARUCO MARKER DETECTOR -->
   <rosparam command="load" file="$(find stretch_core)/config/stretch_marker_dict.yaml" />
@@ -31,8 +31,8 @@
     <rosparam file="$(find stretch_navigation)/config/local_costmap_params.yaml" command="load" />
     <rosparam file="$(find stretch_navigation)/config/global_costmap_params_withmap.yaml" command="load" />
     <rosparam file="$(find stretch_navigation)/config/base_local_planner_params.yaml" command="load" />
-    <!-- <rosparam file="$(find stretch_navigation)/config/base_global_planner_params.yaml" command="load" /> -->
     <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    <param name="base_global_planner" value="global_planner/GlobalPlanner" />
     <remap from="/cmd_vel" to="/stretch/cmd_vel" />
   </node>
 
