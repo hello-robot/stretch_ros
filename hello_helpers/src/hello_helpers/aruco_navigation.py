@@ -107,7 +107,7 @@ class ArucoNavigationNode(hm.HelloNode):
         out. If the frame is found, a tf_listener finds the pose of the base_link in the requested frame and saves it in the translation and rotation variables for use in the next functions.
         '''
 
-        self.switch_to_position_mode()
+        # self.switch_to_position_mode()
 
         min_rotation = -4.05
         max_rotation = 1.78
@@ -155,10 +155,10 @@ class ArucoNavigationNode(hm.HelloNode):
     
             if count >= 2:
                 rospy.loginfo("Timed Out Looking for Tag")
-                self.switch_to_navigation_mode()
+                # self.switch_to_navigation_mode()
                 return False
 
-        self.switch_to_navigation_mode()
+        # self.switch_to_navigation_mode()
         return True
 
     
@@ -168,13 +168,10 @@ class ArucoNavigationNode(hm.HelloNode):
         in the requested frame.
         '''
 
-        pose_name = pose_id
-        requested_tag = frame_id
-
-        if self.find_tag(requested_tag):
+        if self.find_tag(frame_id):
         
             pose = PoseStamped()
-            pose.header.frame_id = requested_tag
+            pose.header.frame_id = frame_id
             
             pose.pose.position.x = self.translation[0]
             pose.pose.position.y = self.translation[1]
@@ -186,7 +183,7 @@ class ArucoNavigationNode(hm.HelloNode):
             pose.pose.orientation.w = self.rotation[3]
 
             saved_file = open(self.file_path + "/saved_poses.json","w")
-            self.pose_dict[pose_name.lower()] = self.pose_to_list(pose)
+            self.pose_dict[pose_id.lower()] = self.pose_to_list(pose)
             json.dump(self.pose_dict,saved_file)
             saved_file.close()
 
@@ -224,7 +221,7 @@ class ArucoNavigationNode(hm.HelloNode):
             map_goal = MoveBaseGoal()
             while True:
                 try:
-                    map_goal.target_pose = tf_buffer.transform(pose_goal, 'map', rospy.Duration(1))
+                    map_goal.target_pose = tf_buffer.transform(pose_goal, 'map', rospy.Duration(0))
                     break
                 except: 
                     if not self.find_tag(tag):
