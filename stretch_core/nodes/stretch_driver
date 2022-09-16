@@ -24,11 +24,10 @@ from std_srvs.srv import Trigger, TriggerResponse
 from std_srvs.srv import SetBool, SetBoolResponse
 
 from nav_msgs.msg import Odometry
-from sensor_msgs.msg import JointState, Imu, MagneticField
+from sensor_msgs.msg import JointState, Imu, MagneticField, BatteryState
 from std_msgs.msg import Header
 
 from joint_trajectory_server import JointTrajectoryAction
-
 
 class StretchBodyNode:
 
@@ -81,6 +80,15 @@ class StretchBodyNode:
         #current_time = rospy.Time.from_sec(robot_time)
         current_time = rospy.Time.now()
         robot_status = self.robot.get_status()
+
+        # Publish battery voltage
+        b = BatteryState()
+        b.header.stamp = current_time
+        b.voltage = robot_status['pimu']['voltage']        
+        self.battery_voltage_pub.publish(b)
+        if b.voltage <= 10.7:
+            self.robot.pimu.trigger_beep()
+            self.robot.push_command()
 
         # obtain odometry
         base_status = robot_status['base']
@@ -158,8 +166,9 @@ class StretchBodyNode:
                 joint_state.position.append(pos)
                 joint_state.velocity.append(vel)
                 joint_state.effort.append(effort)
-
+        
         self.joint_state_pub.publish(joint_state)
+        self.robot.end_of_arm.step_sentry(self.robot)
 
         ##################################################
         # publish IMU sensor data
@@ -203,8 +212,8 @@ class StretchBodyNode:
         i.linear_acceleration.z = az
         self.imu_wrist_pub.publish(i)
         ##################################################
-
-        self.robot_mode_rwlock.release_read()
+	
+        self.robot_mode_rwlock.release_read()	
 
     ######## CHANGE MODES #########
 
@@ -346,8 +355,8 @@ class StretchBodyNode:
         rospy.loginfo("{0} started".format(self.node_name))
 
         self.robot = rb.Robot()
-        self.robot.startup()
-
+        self.robot.startup() 
+        
         mode = rospy.get_param('~mode', "position")
         rospy.loginfo('mode = ' + str(mode))
         if mode == "position":
@@ -408,6 +417,8 @@ class StretchBodyNode:
         self.magnetometer_mobile_base_pub = rospy.Publisher('magnetometer_mobile_base', MagneticField, queue_size=1)
         self.imu_wrist_pub = rospy.Publisher('imu_wrist', Imu, queue_size=1)
 
+        self.battery_voltage_pub = rospy.Publisher('/stretch/battery', BatteryState, queue_size=1)
+
         rospy.Subscriber("cmd_vel", Twist, self.set_mobile_base_velocity_callback)
 
         # ~ symbol gets parameter from private namespace
@@ -453,17 +464,16 @@ class StretchBodyNode:
         self.runstop_service = rospy.Service('/runstop',
                                               SetBool,
                                               self.runstop_service_callback)
-
         try:
             # start loop to command the mobile base velocity, publish
             # odometry, and publish joint states
             while not rospy.is_shutdown():
+                self.robot.pimu.set_fan_on()
                 self.command_mobile_base_velocity_and_publish_state()
                 command_base_velocity_and_publish_joint_state_rate.sleep()
         except (rospy.ROSInterruptException, ThreadServiceExit):
             self.robot.stop()
             rospy.signal_shutdown("stretch_driver shutdown")
-
 
 if __name__ == '__main__':
     node = StretchBodyNode()
