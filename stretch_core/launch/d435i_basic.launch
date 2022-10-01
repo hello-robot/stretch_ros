@@ -1,5 +1,8 @@
 <launch>
 
+  <arg name="rs_initial_preset" default="$(find stretch_core)/config/HighAccuracyPreset.json" doc="filepath to json defining a visual preset for the depth image" />
+  <arg name="rs_initial_reset"  default="true"                                                doc="whether to reset camera before streaming, useful if the camera got into a bad state in the last session" />
+
   <!-- REDUCE RATE AND USE NUC TIME -->
   <node name="d435i_accel_correction" pkg="stretch_core" type="d435i_accel_correction" output="screen" />
 
@@ -18,6 +21,8 @@
     <arg name="enable_infra1" value="false"/>
     <arg name="enable_infra2" value="false"/>
     <arg name="enable_accel" value="true"/>
+    <arg name="enable_color" value="true"/>
+    <arg name="enable_depth" value="true"/>
 
     <arg name="depth_width" value="$(arg depth_width)"/>
     <arg name="depth_height" value="$(arg depth_height)"/>
@@ -56,9 +61,12 @@
          properly and due to firmware issues needs to reset. If set to
          true, the device will reset prior to usage."
          https://github.com/intel-ros/realsense -->
-    <!--<arg name="initial_reset" value="true"/>-->
+    <arg name="initial_reset" value="$(arg rs_initial_reset)"/>
     
     <!--<arg name="unite_imu_method" value="copy"/> linear_interpolation-->
+
+    <!-- configure the depth image to the high accuracy visual preset -->
+    <arg name="json_file_path" value="$(arg rs_initial_preset)" />
   </include>
 
 </launch>

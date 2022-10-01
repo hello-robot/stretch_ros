@@ -56,19 +56,6 @@ class D435iConfigureNode:
                                                                Trigger,
                                                                self.high_accuracy_mode_service_callback)
 
-        initial_mode = rospy.get_param('~initial_mode')
-        
-        rospy.loginfo("initial_mode = {0}".format(initial_mode))
-
-        if initial_mode == 'High Accuracy':
-            self.turn_on_high_accuracy_mode()
-        elif initial_mode == 'Default':
-            self.turn_on_default_mode()
-        else:
-            error_string = 'initial_mode = {0} not recognized. Setting to D435i to Default mode.'.format(initial_mode)
-            rospy.logerr(error_string)
-            self.turn_on_default_mode()
-        
         rate = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
             rate.sleep()
