@@ -31,12 +31,9 @@ from joint_trajectory_server import JointTrajectoryAction
 from stretch_diagnostics import StretchDiagnostics
 
 
-class StretchBodyNode:
+class StretchDriverNode:
 
     def __init__(self):
-        self.use_robotis_head = True
-        self.use_robotis_end_of_arm = True
-
         self.default_goal_timeout_s = 10.0
         self.default_goal_timeout_duration = rospy.Duration(self.default_goal_timeout_s)
 
@@ -45,6 +42,10 @@ class StretchBodyNode:
 
         self.robot_mode_rwlock = RWLock()
         self.robot_mode = None
+
+        self.voltage_history = []
+        self.charging_state_history = [BatteryState.POWER_SUPPLY_STATUS_UNKNOWN] * 10
+        self.charging_state = BatteryState.POWER_SUPPLY_STATUS_UNKNOWN
 
     ###### MOBILE BASE VELOCITY METHODS #######
 
@@ -122,17 +123,37 @@ class StretchBodyNode:
         odom.twist.twist.angular.z = theta_vel
         self.odom_pub.publish(odom)
 
-        # TODO: Add way to determine if the robot is charging
-        # TODO: Calculate the percentage
-        battery_state = BatteryState()
         invalid_reading = float('NaN')
+        v = float(robot_status['pimu']['voltage'])
+        self.voltage_history.append(v)
+        if len(self.voltage_history) > 100:
+            self.voltage_history.pop(0)
+            self.charging_state_history.pop(0)
+            if v > np.mean(self.voltage_history) + 3 * np.std(self.voltage_history):
+                self.charging_state_history.append(BatteryState.POWER_SUPPLY_STATUS_CHARGING)
+            elif v < np.mean(self.voltage_history) - 3 * np.std(self.voltage_history):
+                self.charging_state_history.append(BatteryState.POWER_SUPPLY_STATUS_DISCHARGING)
+            else:
+                self.charging_state_history.append(BatteryState.POWER_SUPPLY_STATUS_UNKNOWN)
+        filtered_charging_state = max(set(self.charging_state_history), key=self.charging_state_history.count)
+        if filtered_charging_state != BatteryState.POWER_SUPPLY_STATUS_UNKNOWN:
+            self.charging_state = filtered_charging_state
+
+        i = invalid_reading
+        if self.charging_state == BatteryState.POWER_SUPPLY_STATUS_CHARGING:
+            i = float(robot_status['pimu']['current'])
+        elif self.charging_state == BatteryState.POWER_SUPPLY_STATUS_DISCHARGING:
+            i = -1 * float(robot_status['pimu']['current'])
+
+        battery_state = BatteryState()
         battery_state.header.stamp = current_time
-        battery_state.voltage = float(robot_status['pimu']['voltage'])
-        battery_state.current = float(robot_status['pimu']['current'])
+        battery_state.voltage = v
+        battery_state.current = i
         battery_state.charge = invalid_reading
         battery_state.capacity = invalid_reading
-        battery_state.percentage = invalid_reading
+        battery_state.percentage = invalid_reading # TODO: Calculate the percentage
         battery_state.design_capacity = 18.0
+        battery_state.power_supply_status = self.charging_state
         battery_state.present = True
         self.power_pub.publish(battery_state)
 
@@ -467,5 +488,5 @@ class StretchBodyNode:
 
 
 if __name__ == '__main__':
-    node = StretchBodyNode()
+    node = StretchDriverNode()
     node.main()
