@@ -1,6 +1,6 @@
 ![](../images/banner.png)
 
-## Overview
+# Overview
 
 *stretch_core* provides the core ROS interfaces to the Stretch RE1 mobile manipulator from Hello Robot Inc. It includes the following nodes:
 
@@ -12,7 +12,21 @@
 
 *keyboard_teleop* : node that provides a keyboard interface to control the robot's joints
 
-## Testing
+# API
+
+## Nodes
+
+### [stretch_driver](./nodes/stretch_driver)
+
+#### Published Topics
+
+##### /battery ([sensor_msgs/BatteryState](https://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/BatteryState.html))
+
+This topic publishes Stretch's battery and charge status. Charging status, the `power_supply_status` field, is estimated by looking at changes in voltage readings over time, where plugging-in causes the voltage to jump up (i.e. status becomes 'charging') and pulling the plug out is detected by a voltage dip (i.e. status becomes 'discharging'). Therefore, charging status is unknown at boot of this node. Consequently, the `current` field is positive at boot of this node, regardless of whether the robot is charging/discharging. After a charging state change, there is a ~10 second timeout where state changes won't be detected. Additionally, outlier voltage readings can slip past the filters and incorrectly indicate a charging state change (albeit rarely). Finally, voltage readings are affected by power draw (e.g. the onboard computer starts a computationally taxing program), which can lead to incorrect indications of charging state change. Stretch RE2s have a hardware switch in the charging port that can detect when a plug has been plugged in, regardless of whether the plug is providing any power. Therefore, this node combines the previous voltage-based estimate with readings from this hardware switch to make better charging state estimates on RE2s (effectively eliminating the false positive case where a computational load draws more power).
+
+Since a battery is always present on a Stretch system, we instead misuse the `present` field to indicate whether a plug is plugged in to the charging port (regardless of whether it's providing power) on RE2 robots. This field is always false on RE1s. The unmeasured fields (e.g. charge in Ah) return a NaN, or 'not a number'.
+
+# Testing
 
 The primary testing framework being used within *stretch_ros* is pytest. Pytest is an open source testing framework that scales well and takes a functional approach resulting in minimal boiler plate code. First we should ensure that pytest is installed and up to date:
 
@@ -122,6 +136,6 @@ Results can be visualized by typing in the following command:
 This will show descriptive messages based on how many tests were run, errors, failures, skipped tests, and the respective package where the failure occurred. However, when running tests with *catkin_tools* some plugins will lose functionality such as Pytest Clarity.
 
 
-## License
+# License
 
 For license information, please see the LICENSE files.
