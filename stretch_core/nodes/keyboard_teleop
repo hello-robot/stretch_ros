@@ -15,13 +15,14 @@ import hello_helpers.hello_misc as hm
 
 class GetKeyboardCommands:
 
-    def __init__(self, mapping_on, hello_world_on, open_drawer_on, clean_surface_on, grasp_object_on, deliver_object_on):
+    def __init__(self, mapping_on, hello_world_on, open_drawer_on, clean_surface_on, grasp_object_on, deliver_object_on, docking_on):
         self.mapping_on = mapping_on
         self.hello_world_on = hello_world_on
         self.open_drawer_on = open_drawer_on
         self.clean_surface_on = clean_surface_on
         self.grasp_object_on = grasp_object_on
         self.deliver_object_on = deliver_object_on
+        self.docking_on = docking_on
 
         self.step_size = 'medium'
         self.rad_per_deg = math.pi/180.0
@@ -210,6 +211,11 @@ class GetKeyboardCommands:
             trigger_result = node.trigger_deliver_object_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
+        if ((c == 'n') or (c == 'N')) and self.docking_on:
+            trigger_request = TriggerRequest()
+            trigger_result = node.trigger_dock_robot_service(trigger_request)
+            rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+
             
         ####################################################
         ## BASIC KEYBOARD TELEOPERATION COMMANDS
@@ -294,9 +300,9 @@ class GetKeyboardCommands:
 
 class KeyboardTeleopNode(hm.HelloNode):
 
-    def __init__(self, mapping_on=False, hello_world_on=False, open_drawer_on=False, clean_surface_on=False, grasp_object_on=False, deliver_object_on=False):
+    def __init__(self, mapping_on=False, hello_world_on=False, open_drawer_on=False, clean_surface_on=False, grasp_object_on=False, deliver_object_on=False, docking_on=False):
         hm.HelloNode.__init__(self)
-        self.keys = GetKeyboardCommands(mapping_on, hello_world_on, open_drawer_on, clean_surface_on, grasp_object_on, deliver_object_on)
+        self.keys = GetKeyboardCommands(mapping_on, hello_world_on, open_drawer_on, clean_surface_on, grasp_object_on, deliver_object_on, docking_on)
         self.rate = 10.0
         self.joint_state = None
         self.mapping_on = mapping_on
@@ -305,6 +311,7 @@ class KeyboardTeleopNode(hm.HelloNode):
         self.clean_surface_on = clean_surface_on
         self.grasp_object_on = grasp_object_on
         self.deliver_object_on = deliver_object_on
+        self.docking_on = docking_on
 
     def joint_states_callback(self, joint_state):
         self.joint_state = joint_state
@@ -396,6 +403,11 @@ class KeyboardTeleopNode(hm.HelloNode):
             rospy.loginfo('Node ' + self.node_name + ' connected to /deliver_object/trigger_deliver_object.')
             self.trigger_deliver_object_service = rospy.ServiceProxy('/deliver_object/trigger_deliver_object', Trigger)
 
+        if self.docking_on:
+            rospy.wait_for_service('/dock_robot/trigger_dock_robot')
+            rospy.loginfo('Node ' + self.node_name + ' connected to /dock_robot/trigger_dock_robot.')
+            self.trigger_dock_robot_service = rospy.ServiceProxy('/dock_robot/trigger_dock_robot', Trigger)
+
         rospy.Subscriber('/stretch/joint_states', JointState, self.joint_states_callback)
 
         rate = rospy.Rate(self.rate)
@@ -418,6 +430,7 @@ if __name__ == '__main__':
         parser.add_argument('--clean_surface_on', action='store_true', help='Enable Clean Surface trigger, which requires connection to the appropriate clean_surface service.')
         parser.add_argument('--grasp_object_on', action='store_true', help='Enable Grasp Object trigger, which requires connection to the appropriate grasp_object service.')
         parser.add_argument('--deliver_object_on', action='store_true', help='Enable Deliver Object trigger, which requires connection to the appropriate deliver_object service.')
+        parser.add_argument('--docking_on', action='store_true', help='Enable Dock Robot trigger, which requires connection to the appropriate dock_robot service.')
 
         args, unknown = parser.parse_known_args()
         mapping_on = args.mapping_on
@@ -426,8 +439,9 @@ if __name__ == '__main__':
         clean_surface_on = args.clean_surface_on
         grasp_object_on = args.grasp_object_on
         deliver_object_on = args.deliver_object_on
+        docking_on = args.docking_on
 
-        node = KeyboardTeleopNode(mapping_on, hello_world_on, open_drawer_on, clean_surface_on, grasp_object_on, deliver_object_on)
+        node = KeyboardTeleopNode(mapping_on, hello_world_on, open_drawer_on, clean_surface_on, grasp_object_on, deliver_object_on, docking_on)
         node.main()
     except KeyboardInterrupt:
         rospy.loginfo('interrupt received, so shutting down')

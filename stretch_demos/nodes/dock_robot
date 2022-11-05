@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+
+import rospy
+from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
+
+import argparse as ap
+import hello_helpers.hello_misc as hm
+
+
+class DockRobotNode(hm.HelloNode):
+
+    def __init__(self):
+        hm.HelloNode.__init__(self)
+        self.rate = 10.0
+        self.debug_directory = None
+        
+    def trigger_dock_robot_callback(self, request):
+        return TriggerResponse(
+            success=False,
+            message='Not Implemented'
+            )
+
+    def main(self):
+        hm.HelloNode.main(self, 'dock_robot', 'dock_robot', wait_for_first_pointcloud=False)
+
+        self.debug_directory = rospy.get_param('~debug_directory')
+        rospy.loginfo('Using the following directory for debugging files: {0}'.format(self.debug_directory))
+
+        self.trigger_grasp_object_service = rospy.Service('/dock_robot/trigger_dock_robot',
+                                                          Trigger,
+                                                          self.trigger_dock_robot_callback)
+
+        default_service = '/camera/switch_to_default_mode'
+        high_accuracy_service = '/camera/switch_to_high_accuracy_mode'
+        rospy.loginfo('Node ' + self.node_name + ' waiting to connect to ' + default_service + ' and ' + high_accuracy_service)
+        rospy.wait_for_service(default_service)
+        rospy.loginfo('Node ' + self.node_name + ' connected to ' + default_service)
+        self.trigger_d435i_default_mode_service = rospy.ServiceProxy(default_service, Trigger)
+        rospy.wait_for_service(high_accuracy_service)
+        rospy.loginfo('Node ' + self.node_name + ' connected to'  + high_accuracy_service)
+        self.trigger_d435i_high_accuracy_mode_service = rospy.ServiceProxy(high_accuracy_service, Trigger)
+        
+        rate = rospy.Rate(self.rate)
+        while not rospy.is_shutdown():
+            rate.sleep()
+
+
+if __name__ == '__main__':
+    try:
+        parser = ap.ArgumentParser(description='Dock Robot behavior for stretch.')
+        args, unknown = parser.parse_known_args()
+        node = DockRobotNode()
+        node.main()
+    except KeyboardInterrupt:
+        rospy.loginfo('interrupt received, so shutting down')
