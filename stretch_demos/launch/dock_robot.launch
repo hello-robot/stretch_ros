@@ -1,5 +1,6 @@
 <launch>
 
+  <arg name="rviz" default="false" doc="whether to show Rviz" />
   <arg name="debug_directory" value="$(env HELLO_FLEET_PATH)/debug/"/>
 
   <!-- REALSENSE D435i -->
@@ -35,6 +36,10 @@
 
   <!-- KEYBOARD TELEOP -->
   <node name="keyboard_teleop" pkg="stretch_core" type="keyboard_teleop" output="screen" args='--mapping_on --docking_on'/>
+  <!-- -->
+
+  <!-- VISUALIZE -->
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_demos)/rviz/dock_robot.rviz" if="$(arg rviz)" />
   <!-- -->
 
 </launch>
