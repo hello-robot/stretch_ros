@@ -2,7 +2,10 @@
 
 import rospy
 from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
+from sensor_msgs.msg import BatteryState
 
+import copy
+import threading
 import argparse as ap
 import hello_helpers.hello_misc as hm
 
@@ -13,33 +16,77 @@ class DockRobotNode(hm.HelloNode):
         hm.HelloNode.__init__(self)
         self.rate = 10.0
         self.debug_directory = None
-        
+        self.battery_state = None
+        self.battery_state_lock = threading.Lock()
+
+    def battery_state_callback(self, battery_state):
+        with self.battery_state_lock:
+            self.battery_state = battery_state
+
     def trigger_dock_robot_callback(self, request):
+        # 1. Check predocking conditions (e.g. not already docked, arm stowed, etc.)
+        with self.battery_state_lock:
+            battery_state = copy.copy(self.battery_state)
+        rospy.logdebug(f'{self.node_name} got battery_state={battery_state}')
+        if battery_state.present:
+            rospy.logerr('Already plugged into charger')
+            return TriggerResponse(
+                success=False,
+                message='Already plugged into charger'
+            )
+        if battery_state.power_supply_status == BatteryState.POWER_SUPPLY_STATUS_CHARGING:
+            rospy.logerr('Already charging')
+            return TriggerResponse(
+                success=False,
+                message='Already charging'
+            )
+        stow_trigger_request = TriggerRequest()
+        stow_trigger_result = self.trigger_stow_the_robot_service(stow_trigger_request)
+        if not stow_trigger_result.success:
+            rospy.logerr(f'Robot driver failed to stow arm with msg={stow_trigger_result.message}')
+            return TriggerResponse(
+                success=False,
+                message=stow_trigger_result.message
+            )
+
+        # 2. Perform a head scan, looking for the docking station's ArUco marker
+        # 3. Ask FUNMAP to plan and execute the mobile base to a pose in front of the docking station
+        # 4. Back up until charging detected
+
         return TriggerResponse(
             success=False,
             message='Not Implemented'
-            )
+        )
 
     def main(self):
         hm.HelloNode.main(self, 'dock_robot', 'dock_robot', wait_for_first_pointcloud=False)
 
         self.debug_directory = rospy.get_param('~debug_directory')
-        rospy.loginfo('Using the following directory for debugging files: {0}'.format(self.debug_directory))
+        rospy.logdebug(f'Using the following directory for debugging files: {self.debug_directory}')
+
+        self.battery_state_subscriber = rospy.Subscriber('/battery', BatteryState, self.battery_state_callback)
+
+        stow_service_name = '/stow_the_robot'
+        rospy.logdebug(f'{self.node_name} waiting to connect to service {stow_service_name}')
+        rospy.wait_for_service(stow_service_name)
+        self.trigger_stow_the_robot_service = rospy.ServiceProxy(stow_service_name, Trigger)
+        rospy.logdebug(f'{self.node_name} connected to {stow_service_name}')
 
         self.trigger_grasp_object_service = rospy.Service('/dock_robot/trigger_dock_robot',
                                                           Trigger,
                                                           self.trigger_dock_robot_callback)
 
-        default_service = '/camera/switch_to_default_mode'
-        high_accuracy_service = '/camera/switch_to_high_accuracy_mode'
-        rospy.loginfo('Node ' + self.node_name + ' waiting to connect to ' + default_service + ' and ' + high_accuracy_service)
-        rospy.wait_for_service(default_service)
-        rospy.loginfo('Node ' + self.node_name + ' connected to ' + default_service)
-        self.trigger_d435i_default_mode_service = rospy.ServiceProxy(default_service, Trigger)
-        rospy.wait_for_service(high_accuracy_service)
-        rospy.loginfo('Node ' + self.node_name + ' connected to'  + high_accuracy_service)
-        self.trigger_d435i_high_accuracy_mode_service = rospy.ServiceProxy(high_accuracy_service, Trigger)
-        
+        default_camera_preset_service_name = '/camera/switch_to_default_mode'
+        high_accuracy_camera_preset_service_name = '/camera/switch_to_high_accuracy_mode'
+        rospy.logdebug(f'{self.node_name} waiting to connect to services {default_camera_preset_service_name} and {high_accuracy_camera_preset_service_name}')
+        rospy.wait_for_service(default_camera_preset_service_name)
+        self.trigger_d435i_default_preset_service = rospy.ServiceProxy(default_camera_preset_service_name, Trigger)
+        rospy.logdebug(f'{self.node_name} connected to {default_camera_preset_service_name}')
+        rospy.wait_for_service(high_accuracy_camera_preset_service_name)
+        self.trigger_d435i_high_accuracy_preset_service = rospy.ServiceProxy(high_accuracy_camera_preset_service_name, Trigger)
+        rospy.logdebug(f'{self.node_name} connected to {high_accuracy_camera_preset_service_name}')
+
+        rospy.loginfo(f'{self.node_name} ready!')
         rate = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
             rate.sleep()
