@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import yaml
+import copy
 import numpy as np
 import threading
 from rwlock import RWLock
@@ -291,6 +292,16 @@ class StretchDriverNode:
             self.robot.home()
         self.change_mode('calibration', code_to_run)
 
+    def stow_the_robot(self):
+        self.robot_mode_rwlock.acquire_read()
+        last_robot_mode = copy.copy(self.robot_mode)
+        self.robot_mode_rwlock.release_read()
+        def code_to_run():
+            pass
+        self.change_mode('stowing', code_to_run)
+        self.robot.stow()
+        self.change_mode(last_robot_mode, code_to_run)
+
     ######## SERVICE CALLBACKS #######
 
     def stop_the_robot_callback(self, request):
@@ -320,6 +331,14 @@ class StretchDriverNode:
         return TriggerResponse(
             success=True,
             message='Calibrated.'
+        )
+
+    def stow_the_robot_callback(self, request):
+        rospy.loginfo('Recevied stow_the_robot service call.')
+        self.stow_the_robot()
+        return TriggerResponse(
+            success=True,
+            message='Stowed.'
         )
 
     def navigation_mode_service_callback(self, request):
@@ -483,6 +502,10 @@ class StretchDriverNode:
         self.calibrate_the_robot_service = rospy.Service('/calibrate_the_robot',
                                                          Trigger,
                                                          self.calibrate_callback)
+
+        self.stow_the_robot_service = rospy.Service('/stow_the_robot',
+                                                    Trigger,
+                                                    self.stow_the_robot_callback)
 
         self.runstop_service = rospy.Service('/runstop',
                                               SetBool,
