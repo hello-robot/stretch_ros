@@ -288,9 +288,14 @@ class StretchDriverNode:
         self.change_mode('position', code_to_run)
 
     def calibrate(self):
+        self.robot_mode_rwlock.acquire_read()
+        last_robot_mode = copy.copy(self.robot_mode)
+        self.robot_mode_rwlock.release_read()
         def code_to_run():
-            self.robot.home()
+            pass
         self.change_mode('calibration', code_to_run)
+        self.robot.home()
+        self.change_mode(last_robot_mode, code_to_run)
 
     def stow_the_robot(self):
         self.robot_mode_rwlock.acquire_read()
