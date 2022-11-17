@@ -1,0 +1,20 @@
+<launch>
+
+    <param name="robot_description" command="xacro $(find stretch_description)/urdf/stretch_description.xacro" />
+
+    <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" >
+        <param name="rate" value="15.0"/>
+        <rosparam>
+            zeros:
+                joint_lift: 0.2
+                joint_wrist_yaw: 3.4
+        </rosparam>
+    </node>
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+        <param name="publish_frequency" value="15.0"/>
+    </node>
+
+    <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_description)/rviz/stretch.rviz" />
+
+</launch>
