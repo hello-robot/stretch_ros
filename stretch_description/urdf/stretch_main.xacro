@@ -100,7 +100,7 @@
       link="link_right_wheel" />
     <axis
       xyz="0 0 -1" />
-    <dynamics damping="${joint_damping}" friction="${joint_friction}" spring_reference="${joint_spring_reference}" spring_stiffness="{joint_spring_stiffness}"/>
+    <dynamics damping="${joint_damping}" friction="${joint_friction}" spring_reference="${joint_spring_reference}" spring_stiffness="${joint_spring_stiffness}"/>
   </joint>
 
   <link
@@ -156,7 +156,7 @@
       link="link_left_wheel" />
     <axis
       xyz="0 0 -1" />
-    <dynamics damping="${joint_damping}" friction="${joint_friction}" spring_reference="${joint_spring_reference}" spring_stiffness="{joint_spring_stiffness}"/>
+    <dynamics damping="${joint_damping}" friction="${joint_friction}" spring_reference="${joint_spring_reference}" spring_stiffness="${joint_spring_stiffness}"/>
   </joint>
 
   <link name="caster_link">
