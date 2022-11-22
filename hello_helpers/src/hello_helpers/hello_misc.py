@@ -70,6 +70,12 @@ class HelloNode:
         self.joint_state = None
         self.point_cloud = None
 
+    @classmethod
+    def quick_create(cls, name, wait_for_first_pointcloud=False):
+        i = cls()
+        i.main(name, name, wait_for_first_pointcloud)
+        return i
+
     def joint_states_callback(self, joint_state):
         self.joint_state = joint_state
 
@@ -89,7 +95,7 @@ class HelloNode:
         if custom_full_goal:
             pose_correct = all([len(joint_goal)==4 for joint_goal in pose.values()])
             if not pose_correct:
-                rospy.logerr(f"{self.node_name}(HelloNode).move_to_pose: Not sending trajectory due to improper pose. The 'custom_full_goal' option requires tuple with 4 values (pose_target, velocity, acceleration, contact_threshold_effort) for each joint name, but pose = {pose}")
+                rospy.logerr(f"{self.node_name}'s HelloNode.move_to_pose: Not sending trajectory due to improper pose. The 'custom_full_goal' option requires tuple with 4 values (pose_target, velocity, acceleration, contact_threshold_effort) for each joint name, but pose = {pose}")
                 return
             point.positions = [joint_goal[0] for joint_goal in pose.values()]
             point.velocities = [joint_goal[1] for joint_goal in pose.values()]
@@ -98,14 +104,14 @@ class HelloNode:
         elif custom_contact_thresholds:
             pose_correct = all([len(joint_goal)==2 for joint_goal in pose.values()])
             if not pose_correct:
-                rospy.logerr(f"{self.node_name}(HelloNode).move_to_pose: Not sending trajectory due to improper pose. The 'custom_contact_thresholds' option requires tuple with 2 values (pose_target, contact_threshold_effort) for each joint name, but pose = {pose}")
+                rospy.logerr(f"{self.node_name}'s HelloNode.move_to_pose: Not sending trajectory due to improper pose. The 'custom_contact_thresholds' option requires tuple with 2 values (pose_target, contact_threshold_effort) for each joint name, but pose = {pose}")
                 return
             point.positions = [joint_goal[0] for joint_goal in pose.values()]
             point.effort = [joint_goal[1] for joint_goal in pose.values()]
         else:
             pose_correct = all([isinstance(joint_position, numbers.Real) for joint_position in pose.values()])
             if not pose_correct:
-                rospy.logerr(f"{self.node_name}(HelloNode).move_to_pose: Not sending trajectory due to improper pose. The default option requires 1 value, pose_target as integer, for each joint name, but pose = {pose}")
+                rospy.logerr(f"{self.node_name}'s HelloNode.move_to_pose: Not sending trajectory due to improper pose. The default option requires 1 value, pose_target as integer, for each joint name, but pose = {pose}")
                 return
             point.positions = [joint_position for joint_position in pose.values()]
 
@@ -113,7 +119,7 @@ class HelloNode:
         self.trajectory_client.send_goal(trajectory_goal)
         if not return_before_done:
             self.trajectory_client.wait_for_result()
-            rospy.logdebug(f"{self.node_name}(HelloNode).move_to_pose: got result {self.trajectory_client.get_result()}")
+            rospy.logdebug(f"{self.node_name}'s HelloNode.move_to_pose: got result {self.trajectory_client.get_result()}")
 
     def get_robot_floor_pose_xya(self, floor_frame='odom'):
         # Returns the current estimated x, y position and angle of the

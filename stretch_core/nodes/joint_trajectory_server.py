@@ -77,7 +77,7 @@ class JointTrajectoryAction:
 
         num_valid_points = sum([c.get_num_valid_commands() for c in self.command_groups])
         if num_valid_points <= 0:
-            err_str = ("Received a command without any valid joint names."
+            err_str = ("Received a command without any valid joint names. "
                        "Received joint names = {0}").format(commanded_joint_names)
             self.invalid_joints_callback(err_str)
             self.node.robot_mode_rwlock.release_read()
