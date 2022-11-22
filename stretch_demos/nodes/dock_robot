@@ -8,6 +8,7 @@ import copy
 import threading
 import argparse as ap
 import hello_helpers.hello_misc as hm
+import stretch_body.hello_utils as hu
 
 
 class DockRobotNode(hm.HelloNode):
@@ -48,6 +49,14 @@ class DockRobotNode(hm.HelloNode):
                 success=False,
                 message=stow_trigger_result.message
             )
+        position_mode_trigger_request = TriggerRequest()
+        position_mode_trigger_result = self.trigger_position_mode_service(position_mode_trigger_request)
+        if not position_mode_trigger_result.success:
+            rospy.logerr(f'Robot driver failed to switch into position mode with msg={position_mode_trigger_result.message}')
+            return TriggerResponse(
+                success=False,
+                message=position_mode_trigger_result.message
+            )
 
         # 2. Perform a head scan, looking for the docking station's ArUco marker
         # 3. Ask FUNMAP to plan and execute the mobile base to a pose in front of the docking station
@@ -61,20 +70,22 @@ class DockRobotNode(hm.HelloNode):
     def main(self):
         hm.HelloNode.main(self, 'dock_robot', 'dock_robot', wait_for_first_pointcloud=False)
 
-        self.debug_directory = rospy.get_param('~debug_directory')
+        self.debug_directory = rospy.get_param('~debug_directory', hu.get_stretch_directory('debug'))
         rospy.logdebug(f'Using the following directory for debugging files: {self.debug_directory}')
 
         self.battery_state_subscriber = rospy.Subscriber('/battery', BatteryState, self.battery_state_callback)
+
+        position_mode_service_name = '/switch_to_position_mode'
+        rospy.logdebug(f'{self.node_name} waiting to connect to service {position_mode_service_name}')
+        rospy.wait_for_service(position_mode_service_name)
+        self.trigger_position_mode_service = rospy.ServiceProxy(position_mode_service_name, Trigger)
+        rospy.logdebug(f'{self.node_name} connected to {position_mode_service_name}')
 
         stow_service_name = '/stow_the_robot'
         rospy.logdebug(f'{self.node_name} waiting to connect to service {stow_service_name}')
         rospy.wait_for_service(stow_service_name)
         self.trigger_stow_the_robot_service = rospy.ServiceProxy(stow_service_name, Trigger)
         rospy.logdebug(f'{self.node_name} connected to {stow_service_name}')
-
-        self.trigger_grasp_object_service = rospy.Service('/dock_robot/trigger_dock_robot',
-                                                          Trigger,
-                                                          self.trigger_dock_robot_callback)
 
         default_camera_preset_service_name = '/camera/switch_to_default_mode'
         high_accuracy_camera_preset_service_name = '/camera/switch_to_high_accuracy_mode'
@@ -85,6 +96,10 @@ class DockRobotNode(hm.HelloNode):
         rospy.wait_for_service(high_accuracy_camera_preset_service_name)
         self.trigger_d435i_high_accuracy_preset_service = rospy.ServiceProxy(high_accuracy_camera_preset_service_name, Trigger)
         rospy.logdebug(f'{self.node_name} connected to {high_accuracy_camera_preset_service_name}')
+
+        self.trigger_grasp_object_service = rospy.Service('/dock_robot/trigger_dock_robot',
+                                                          Trigger,
+                                                          self.trigger_dock_robot_callback)
 
         rospy.loginfo(f'{self.node_name} ready!')
         rate = rospy.Rate(self.rate)
