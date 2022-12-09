@@ -520,8 +520,8 @@ class StretchDriverNode:
             # start loop to command the mobile base velocity, publish
             # odometry, and publish joint states
             while not rospy.is_shutdown():
-                self.robot.pimu.set_fan_on()
-                self.robot.push_command()
+                # self.robot.pimu.set_fan_on()
+                # self.robot.push_command()
                 self.command_mobile_base_velocity_and_publish_state()
                 command_base_velocity_and_publish_joint_state_rate.sleep()
         except (rospy.ROSInterruptException, ThreadServiceExit):
