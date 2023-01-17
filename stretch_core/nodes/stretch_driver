@@ -189,7 +189,7 @@ class StretchDriverNode:
             joint_state.velocity.append(vel)
             joint_state.effort.append(effort)
 
-        # add telescoping joints to joint state
+        # add telescoping joints and wrist_extension to joint state
         arm_cg = self.joint_trajectory_action.arm_cg
         joint_state.name.extend(arm_cg.telescoping_joints)
         pos, vel, effort = arm_cg.joint_state(robot_status)
@@ -197,6 +197,10 @@ class StretchDriverNode:
             joint_state.position.append(pos / len(arm_cg.telescoping_joints))
             joint_state.velocity.append(vel / len(arm_cg.telescoping_joints))
             joint_state.effort.append(effort)
+        joint_state.name.append(arm_cg.wrist_extension_name)
+        joint_state.position.append(pos)
+        joint_state.velocity.append(vel)
+        joint_state.effort.append(effort)
 
         # add gripper joints to joint state
         gripper_cg = self.joint_trajectory_action.gripper_cg
@@ -452,8 +456,6 @@ class StretchDriverNode:
 
         self.linear_velocity_mps = 0.0 # m/s ROS SI standard for cmd_vel (REP 103)
         self.angular_velocity_radps = 0.0 # rad/s ROS SI standard for cmd_vel (REP 103)
-
-        self.max_arm_height = 1.1
 
         self.odom_pub = rospy.Publisher('odom', Odometry, queue_size=1)
 

@@ -69,16 +69,16 @@ self.move_to_pose({'joint_lift': 0.5})
 
 Internally, this dictionary is converted into a [FollowJointTrajectoryGoal](http://docs.ros.org/en/diamondback/api/control_msgs/html/msg/FollowJointTrajectoryGoal.html) that is sent to a [FollowJointTrajectory action](http://docs.ros.org/en/noetic/api/control_msgs/html/action/FollowJointTrajectory.html) server in stretch_driver. This method waits by default for the server to report that the goal has completed executing. However, you can return before the goal has completed by setting the `return_before_done` argument to True. This can be useful for preempting goals.
 
-There are two additional arguments that enable you to customize how the pose is executed. If you set `custom_contact_thresholds` to True, this method expects a different format dictionary: string/tuple key/value pairs, where the keys are still joint names, but the values are `(position_goal, effort_threshold)`. The addition of a effort threshold enables you to detect when a joint has made contact with something in the environment, which is useful for manipulation or safe movements. For example, `{'wrist_extension': (0.5, 20)}` commands the telescoping arm fully out (the arm is nearly fully extended at 0.5 meters) but with a low enough effort threshold (20% of the arm motor's max effort) that the motor will stop when the end of arm has made contact with something. Again, in a node, this would look like:
+There are two additional arguments that enable you to customize how the pose is executed. If you set `custom_contact_thresholds` to True, this method expects a different format dictionary: string/tuple key/value pairs, where the keys are still joint names, but the values are `(position_goal, effort_threshold)`. The addition of a effort threshold enables you to detect when a joint has made contact with something in the environment, which is useful for manipulation or safe movements. For example, `{'joint_arm': (0.5, 20)}` commands the telescoping arm fully out (the arm is nearly fully extended at 0.5 meters) but with a low enough effort threshold (20% of the arm motor's max effort) that the motor will stop when the end of arm has made contact with something. Again, in a node, this would look like:
 
 ```python
-self.move_to_pose({'wrist_extension': (0.5, 40)}, custom_contact_thresholds=True)
+self.move_to_pose({'joint_arm': (0.5, 40)}, custom_contact_thresholds=True)
 ```
 
 If you set `custom_full_goal` to True, the dictionary format is string/tuple key/value pairs, where keys are joint names again, but values are `(position_goal, velocity, acceleration, effort_threshold)`. The velocity and acceleration components allow you to customize the trajectory profile the joint follows while moving to the goal position. In the following example, the arm telescopes out slowly until contact is detected:
 
 ```python
-self.move_to_pose({'wrist_extension': (0.5, 0.01, 0.01, 40)}, custom_full_goal=True)
+self.move_to_pose({'joint_arm': (0.5, 0.01, 0.01, 40)}, custom_full_goal=True)
 ```
 
 ##### `get_robot_floor_pose_xya(floor_frame='odom')`
