@@ -371,7 +371,7 @@ class ArmCommandGroup(SimpleCommandGroup):
         arm_status = robot_status['arm']
         arm_backlash_correction = self.retracted_offset_m if self.retracted else 0.0
         pos = arm_status['pos'] + arm_backlash_correction
-        return (pos, arm_status['vel'], arm_status['motor']['effort'])
+        return (pos, arm_status['vel'], arm_status['motor']['effort_pct'])
 
 
 class LiftCommandGroup(SimpleCommandGroup):
@@ -411,7 +411,7 @@ class LiftCommandGroup(SimpleCommandGroup):
 
     def joint_state(self, robot_status, **kwargs):
         lift_status = robot_status['lift']
-        return (lift_status['pos'], lift_status['vel'], lift_status['motor']['effort'])
+        return (lift_status['pos'], lift_status['vel'], lift_status['motor']['effort_pct'])
 
 
 class MobileBaseCommandGroup(SimpleCommandGroup):
@@ -644,5 +644,5 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
         base_status = robot_status['base']
         if robot_mode == "manipulation":
             pos = base_status['x'] - manipulation_origin['x']
-            return (pos, base_status['x_vel'], base_status['effort'][0])
+            return (pos, base_status['x_vel'], base_status['effort_pct'][0])
         return (0.0, 0.0, 0.0)
