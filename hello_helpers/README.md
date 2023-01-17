@@ -32,7 +32,7 @@ import hello_helpers.hello_ros_viz as hr
 
 This class is a convenience class for creating a ROS node for Stretch. The most common way to use this class is to extend it. In your extending class, the main funcion would call `HelloNode`'s main function. This would look like:
 
-```
+```python
 import hello_helpers.hello_misc as hm
 
 class MyNode(hm.HelloNode):
@@ -49,8 +49,8 @@ node.main()
 
 There is also a one-liner class method for instantiating a `HelloNode` for easy prototyping. One example where this is handy is sending pose commands from iPython:
 
-```
-# roslaunch the stretch_driver launch file beforehand
+```python
+# roslaunch the stretch launch file beforehand
 
 import hello_helpers.hello_misc as hm
 temp = hm.HelloNode.quick_create('temp')
@@ -59,31 +59,100 @@ temp.move_to_pose({'joint_lift': 0.4})
 
 #### Methods
 
-##### `move_to_pose(pose, return_before_done=False, custom_full_goal=False, custom_contact_thresholds=False)`
+##### `move_to_pose(pose, return_before_done=False, custom_contact_thresholds=False, custom_full_goal=False)`
 
-This method takes in a dictionary that describes a desired pose for the robot and moves the executes it.
+This method takes in a dictionary that describes a desired pose for the robot and communicates with [stretch_driver](../stretch_core/README.md#stretchdrivernodesstretchdriver) to execute it. The basic format of this dictionary is string/number key/value pairs, where the keys are joint names and the values are desired position goals. For example, `{'joint_lift': 0.5}` would put the lift at 0.5m in its joint range. A full list of command-able joints is published to the `/stretch/joint_states` topic. Used within a node extending `HelloNode`, calling this method would look like:
 
-#### Published Topics
+```python
+self.move_to_pose({'joint_lift': 0.5})
+```
 
-##### /battery ([sensor_msgs/BatteryState](https://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/BatteryState.html))
+Internally, this dictionary is converted into a [FollowJointTrajectoryGoal](http://docs.ros.org/en/diamondback/api/control_msgs/html/msg/FollowJointTrajectoryGoal.html) that is sent to a [FollowJointTrajectory action](http://docs.ros.org/en/noetic/api/control_msgs/html/action/FollowJointTrajectory.html) server in stretch_driver. This method waits by default for the server to report that the goal has completed executing. However, you can return before the goal has completed by setting the `return_before_done` argument to True. This can be useful for preempting goals.
 
-This topic publishes Stretch's battery and charge status. Charging status, the `power_supply_status` field, is estimated by looking at changes in voltage readings over time, where plugging-in causes the voltage to jump up (i.e. status becomes 'charging') and pulling the plug out is detected by a voltage dip (i.e. status becomes 'discharging'). Estimation of charging status is most reliable when the charger is in SUPPLY mode (see [docs here](https://docs.hello-robot.com/0.2/stretch-hardware-guides/docs/battery_maintenance_guide_re1/#charger) for how to change charging modes). Charging status is unknown at boot of this node. Consequently, the `current` field is positive at boot of this node, regardless of whether the robot is charging/discharging. After a charging state change, there is a ~10 second timeout where state changes won't be detected. Additionally, outlier voltage readings can slip past the filters and incorrectly indicate a charging state change (albeit rarely). Finally, voltage readings are affected by power draw (e.g. the onboard computer starts a computationally taxing program), which can lead to incorrect indications of charging state change. Stretch RE2s have a hardware switch in the charging port that can detect when a plug has been plugged in, regardless of whether the plug is providing any power. Therefore, this node combines the previous voltage-based estimate with readings from this hardware switch to make better charging state estimates on RE2s (effectively eliminating the false positive case where a computational load draws more power).
+There are two additional arguments that enable you to customize how the pose is executed. If you set `custom_contact_thresholds` to True, this method expects a different format dictionary: string/tuple key/value pairs, where the keys are still joint names, but the values are `(position_goal, effort_threshold)`. The addition of a effort threshold enables you to detect when a joint has made contact with something in the environment, which is useful for manipulation or safe movements. For example, `{'joint_arm': (0.5, 20)}` commands the telescoping arm fully out (the arm is nearly fully extended at 0.5 meters) but with a low enough effort threshold (20% of the arm motor's max effort) that the motor will stop when the end of arm has made contact with something. Again, in a node, this would look like:
 
-Since a battery is always present on a Stretch system, we instead misuse the `present` field to indicate whether a plug is plugged in to the charging port (regardless of whether it's providing power) on RE2 robots. This field is always false on RE1s. The unmeasured fields (e.g. charge in Ah) return a NaN, or 'not a number'.
+```python
+self.move_to_pose({'joint_arm': (0.5, 20)}, custom_contact_thresholds=True)
+```
 
-#### Published Services
+If you set `custom_full_goal` to True, the dictionary format is string/tuple key/value pairs, where keys are joint names again, but values are `(position_goal, velocity, acceleration, effort_threshold)`. The velocity and acceleration components allow you to customize the trajectory profile the joint follows while moving to the goal position. In the following example, the arm telescopes out slowly until contact is detected:
 
-##### /calibrate_the_robot ([std_srvs/Trigger](https://docs.ros.org/en/noetic/api/std_srvs/html/srv/Trigger.html))
+```python
+self.move_to_pose({'joint_arm': (0.5, 0.01, 0.01, 20)}, custom_full_goal=True)
+```
 
-This service will start Stretch's homing procedure, where every joint's zero is found. Robots with relative encoders (vs absolute encoders) need a homing procedure when they power on. For Stretch, it's a 30-second procedure that must occur everytime the robot wakes up before you may send motion commands to or read correct joint positions from Stretch's prismatic and multiturn revolute joints. When this service is triggered, the [mode topic](#mode-std_msgsstring) will reflect that the robot is in "calibration" mode, and after the homing procedure is complete, will switch back to whatever mode the robot was in before this service was triggered. While stretch_driver is in "calibration" mode, no commands to the [cmd_vel topic](#TODO) or the [follow joint trajectory action service](#TODO) will be accepted.
+##### `get_robot_floor_pose_xya(floor_frame='odom')`
 
-Other ways to home the robot include using the `stretch_robot_home.py` CLI tool from a terminal, or calling [`robot.home()`](https://docs.hello-robot.com/0.2/stretch-tutorials/stretch_body/tutorial_stretch_body_api/#stretch_body.robot.Robot.home) from Stretch's Python API.
+Returns the current estimated x, y position and angle of the robot on the floor. This is typically called with respect to the odom frame or the map frame. x and y are in meters and the angle is in radians.
 
-##### /stow_the_robot ([std_srvs/Trigger](https://docs.ros.org/en/noetic/api/std_srvs/html/srv/Trigger.html))
+##### `main(node_name, node_topic_namespace, wait_for_first_pointcloud=True)`
 
-This service will start Stretch's stowing procedure, where the arm is stowed into the footprint of the mobile base. This service is more convenient than sending a [follow joint trajectory command](#TODO) since it knows what gripper is installed at the end of arm and stows these additional joints automatically.
+When extending the `HelloNode` class, call this method at the very beginning of your `main()` method. This method handles setting up a few ROS components, including registering the node with the ROS server, creating a TF listener, creating a [FollowJointTrajectory](http://docs.ros.org/en/noetic/api/control_msgs/html/action/FollowJointTrajectory.html) client for the [`move_to_pose()`](#movetoposepose-returnbeforedonefalse-customcontactthresholdsfalse-customfullgoalfalse) method, subscribing to depth camera point cloud topic, and connecting to the quick-stop service.
 
-Other ways to stow the robot include using the `stretch_robot_stow.py` CLI tool from a terminal, or calling [`robot.stow()`](https://docs.hello-robot.com/0.2/stretch-tutorials/stretch_body/tutorial_stretch_body_api/#stretch_body.robot.Robot.stow) from Stretch's Python API.
+Since it takes up to 30 seconds for the head camera to start streaming data, the `wait_for_first_pointcloud` argument will get the node to wait until it has seen camera data, which is helpful if your node is processing camera data.
+
+##### `quick_create(name, wait_for_first_pointcloud=False)`
+
+A class level method for quick testing. This allows you to avoid having to extend `HelloNode` to use it.
+
+```python
+# roslaunch the stretch launch file beforehand
+
+import hello_helpers.hello_misc as hm
+temp = hm.HelloNode.quick_create('temp')
+temp.move_to_pose({'joint_lift': 0.4})
+```
+
+#### Subscribed Topics
+
+##### /camera/depth/color/points ([sensor_msgs/PointCloud2](http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/PointCloud2.html))
+
+Provides a point cloud as currently seen by the Realsense depth camera in Stretch's head. Accessible from the `self.point_cloud` attribute.
+
+```python
+# roslaunch the stretch launch file beforehand
+
+import hello_helpers.hello_misc as hm
+temp = hm.HelloNode.quick_create('temp', wait_for_first_pointcloud=True)
+print(temp.point_cloud)
+```
+
+#### Subscribed Services
+
+##### /stop_the_robot ([std_srvs/Trigger](https://docs.ros.org/en/noetic/api/std_srvs/html/srv/Trigger.html))
+
+Provides a service to quickly stop any motion currently executing on the robot.
+
+```python
+# roslaunch the stretch launch file beforehand
+
+from std_srvs.srv import TriggerRequest
+import hello_helpers.hello_misc as hm
+temp = hm.HelloNode.quick_create('temp')
+temp.stop_the_robot_service(TriggerRequest())
+```
+
+#### Other
+
+##### TF Listener
+
+Provides a [tf2](http://wiki.ros.org/tf2) listener that buffers [transforms](https://docs.ros.org/en/noetic/api/geometry_msgs/html/msg/TransformStamped.html) under the `self.tf2_buffer` attribute. For example, we can do forward kinematics from the base_link to the link between the gripper fingers, link_grasp_center, using:
+
+```python
+# roslaunch the stretch launch file beforehand
+
+import rospy
+import hello_helpers.hello_misc as hm
+temp = hm.HelloNode.quick_create('temp')
+rate = rospy.Rate(10.0)
+while True:
+    try:
+        t = temp.tf2_buffer.lookup_transform('link_grasp_center', 'base_link', rospy.Time())
+        print(t.transform.translation, t.transform.rotation)
+    except:
+        continue
+    rate.sleep()
+```
 
 ## License
 

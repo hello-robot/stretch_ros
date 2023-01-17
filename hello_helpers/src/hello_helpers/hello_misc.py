@@ -82,7 +82,7 @@ class HelloNode:
     def point_cloud_callback(self, point_cloud):
         self.point_cloud = point_cloud
     
-    def move_to_pose(self, pose, return_before_done=False, custom_full_goal=False, custom_contact_thresholds=False):
+    def move_to_pose(self, pose, return_before_done=False, custom_contact_thresholds=False, custom_full_goal=False):
         point = JointTrajectoryPoint()
         point.time_from_start = rospy.Duration(0.0)
         trajectory_goal = FollowJointTrajectoryGoal()
