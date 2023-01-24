@@ -3,10 +3,8 @@ from __future__ import print_function
 
 import math
 import keyboard as kb
-import argparse as ap
 
 import rospy
-from std_srvs.srv import Trigger, TriggerRequest
 from sensor_msgs.msg import JointState
 from control_msgs.msg import FollowJointTrajectoryGoal, FollowJointTrajectoryAction
 from trajectory_msgs.msg import JointTrajectoryPoint
@@ -234,6 +232,7 @@ class KeyboardTeleopNode:
             trajectory_goal.trajectory.points = [point]
             trajectory_goal.trajectory.header.stamp = rospy.Time.now()
             self.trajectory_client.send_goal(trajectory_goal)
+            self.trajectory_client.wait_for_result()
 
     def trajectory_client_selector(self, command):
         self.trajectory_client = None
