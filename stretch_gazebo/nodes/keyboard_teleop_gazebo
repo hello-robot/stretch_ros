@@ -27,7 +27,6 @@ class GetKeyboardCommands:
         self.big_deg = 12.0
         self.big_rad = self.rad_per_deg * self.big_deg
         self.big_translate = 0.06
-        self.mode = 'position'  # 'manipulation' #'navigation'
 
     def get_deltas(self):
         if self.step_size == 'small':
@@ -111,28 +110,19 @@ class GetKeyboardCommands:
         # 2 or down arrow
         if c == '2' or c == '\x1b[B':
             command = {'joint': 'joint_lift', 'delta': -self.get_deltas()['translate']}
-        if self.mode == 'manipulation':
-            # 4 or left arrow
-            if c == '4' or c == '\x1b[D':
-                command = {'joint': 'joint_mobile_base_translation', 'delta': self.get_deltas()['translate']}
-            # 6 or right arrow
-            if c == '6' or c == '\x1b[C':
-                command = {'joint': 'joint_mobile_base_translation', 'delta': -self.get_deltas()['translate']}
-        elif self.mode == 'position':
-            # 4 or left arrow
-            if c == '4' or c == '\x1b[D':
-                command = {'joint': 'translate_mobile_base', 'inc': self.get_deltas()['translate']}
-            # 6 or right arrow
-            if c == '6' or c == '\x1b[C':
-                command = {'joint': 'translate_mobile_base', 'inc': -self.get_deltas()['translate']}
-            # 1 or end key
-            if c == '7' or c == '\x1b[H':
-                command = {'joint': 'rotate_mobile_base', 'inc': self.get_deltas()['rad']}
-            # 3 or pg down 5~
-            if c == '9' or c == '\x1b[5':
-                command = {'joint': 'rotate_mobile_base', 'inc': -self.get_deltas()['rad']}
-        elif self.mode == 'navigation':
-            rospy.loginfo('ERROR: Navigation mode is not currently supported.')
+
+        # 4 or left arrow
+        if c == '4' or c == '\x1b[D':
+            command = {'joint': 'translate_mobile_base', 'inc': self.get_deltas()['translate']}
+        # 6 or right arrow
+        if c == '6' or c == '\x1b[C':
+            command = {'joint': 'translate_mobile_base', 'inc': -self.get_deltas()['translate']}
+        # 1 or end key
+        if c == '7' or c == '\x1b[H':
+            command = {'joint': 'rotate_mobile_base', 'inc': self.get_deltas()['rad']}
+        # 3 or pg down 5~
+        if c == '9' or c == '\x1b[5':
+            command = {'joint': 'rotate_mobile_base', 'inc': -self.get_deltas()['rad']}
 
         if c == 'w' or c == 'W':
             command = {'joint': 'wrist_extension', 'delta': self.get_deltas()['translate']}
@@ -292,7 +282,6 @@ class KeyboardTeleopNode:
 
 if __name__ == '__main__':
     try:
-
         node = KeyboardTeleopNode()
         node.main()
     except KeyboardInterrupt:
