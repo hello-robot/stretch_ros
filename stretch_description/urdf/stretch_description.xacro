@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="stretch">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="stretch_description">
 
-  <xacro:include filename="stretch_gripper.xacro" />
+  <xacro:include filename="stretch_dex_wrist.xacro" />
+  <!--<xacro:include filename="stretch_gripper.xacro" /> -->
   <!--<xacro:include filename="stretch_gripper_with_puller.xacro" />-->
   <!--<xacro:include filename="stretch_dry_erase_marker.xacro" />-->
     
