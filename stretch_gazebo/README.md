@@ -53,6 +53,16 @@ This will launch an Rviz instance that visualizes the sensors and an empty world
 
 ![](../images/gazebo.png)
 
+#### Running Demo with Keyboard Teleop node
+*keyboard_teleop_gazebo* : node that provides a keyboard interface to control the robot's joints within the gazebo simulation.
+
+```bash
+# Terminal 1:
+roslaunch stretch_gazebo gazebo.launch rviz:=true
+# Terminal 2:
+rosrun stretch_gazebo keyboard_teleop_gazebo
+```
+
 ## Running Gazebo with MoveIt! and Stretch
 
 ```bash
