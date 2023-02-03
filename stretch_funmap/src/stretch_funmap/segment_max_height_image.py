@@ -15,7 +15,7 @@ from stretch_funmap.numba_height_image import numba_create_segment_image_uint8
 import hello_helpers.fit_plane as fp
 
 
-def find_object_to_grasp(height_image, display_on=False): 
+def find_object_to_grasp(height_image, display_on=False):
     h_image = height_image.image
     m_per_unit = height_image.m_per_height_unit
     m_per_pix = height_image.m_per_pix
@@ -251,9 +251,11 @@ def find_closest_flat_surface(height_image, robot_xy_pix, display_on=False):
     segments_image, segment_info, height_to_segment_id = segment(image, m_per_unit, zero_height, segmentation_scale, verbose=False)
     if segment_info is None:
         return None, None
-        
+
     floor_id, floor_mask = find_floor(segment_info, segments_image, verbose=False)
-    
+    if floor_mask is None:
+        return None, None
+
     remove_floor = True
     if remove_floor:
         segments_image[floor_mask > 0] = 0
@@ -1030,15 +1032,9 @@ def find_floor(segment_info, segments_image, verbose=False):
         height_m = segment_info[i]['height_m']
         bin_value = segment_info[i]['bin_value']
 
-        # Old values changed on June 3, 2021 due to no floor segment
-        # being within the bounds, which resulted in an error.
-        
-        #min_floor_m = -0.02
-        #max_floor_m = 0.1
-
-        # New values set on June 3, 2021.
-        min_floor_m = -0.05
-        max_floor_m = 0.05
+        # New values set on June 14, 2022.
+        min_floor_m = -0.1
+        max_floor_m = 0.1
 
         if verbose: 
             print('segment = {0}, histogram bin_value = {1}, height_m = {2}, min_floor_m = {3}, max_floor_m = {4}'.format(i, bin_value, height_m, min_floor_m, max_floor_m))
@@ -1061,8 +1057,7 @@ def find_floor(segment_info, segments_image, verbose=False):
             print('floor_id =', floor_id)
             print('max_bin_value =', max_bin_value)
     else:
-        if verbose: 
-            print('segment_max_height_image.py : no floor segment found...')
+        print('segment_max_height_image.py : no floor segment found...')
     return floor_id, floor_mask
 
 
