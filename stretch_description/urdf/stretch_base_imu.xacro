@@ -1,3 +1,6 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="stretch_base_imu">
+
 <link
     name="base_imu">
     <inertial>
@@ -51,3 +54,7 @@
     <axis
       xyz="0 0 0" />
   </joint>
+
+
+
+
