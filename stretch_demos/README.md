@@ -34,7 +34,7 @@ Now that the robot is ready, launch the demo with the following command:
 roslaunch stretch_demos grasp_object.launch
 ```
 
-Then, press the key with ‘ and “ on it while in the terminal to initiate a grasp attempt.
+Then, press the key with " (quotes) on it while in the terminal to initiate a grasp attempt.
 
 While attempting the grasp the demo will save several images under the ./stretch_user/debug/ directory within various grasping related directories. You can view these images to see some of what the robot did to make its decisions.
 
