@@ -247,9 +247,11 @@ class GripperCommandGroup(SimpleCommandGroup):
 
 class ArmCommandGroup(SimpleCommandGroup):
     def __init__(self, range_m=None, calibrated_retracted_offset_m=None, node=None):
-        SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.008, node=node)
+        SimpleCommandGroup.__init__(self, 'joint_arm', range_m, acceptable_joint_error=0.008, node=node)
         self.telescoping_joints = ['joint_arm_l3', 'joint_arm_l2', 'joint_arm_l1', 'joint_arm_l0']
         self.is_telescoping = False
+        self.wrist_extension_name = 'wrist_extension'
+        self.is_named_wrist_extension = False
         if calibrated_retracted_offset_m is None:
             calibrated_retracted_offset_m = node.controller_parameters['arm_retracted_offset']
         self.retracted_offset_m = calibrated_retracted_offset_m
@@ -278,16 +280,26 @@ class ArmCommandGroup(SimpleCommandGroup):
         self.is_telescoping = False
         self.index = None
         active_telescoping_joint_names = list(set(commanded_joint_names) & set(self.telescoping_joints))
-        if self.name in commanded_joint_names:
-            if len(active_telescoping_joint_names) == 0:
-                self.index = commanded_joint_names.index(self.name)
-                self.active = True
-            else:
-                err_str = ("Received a command for the wrist_extension joint and one or more telescoping_joints. "
+        if self.name in commanded_joint_names or self.wrist_extension_name in commanded_joint_names:
+            if self.name in commanded_joint_names and self.wrist_extension_name in commanded_joint_names:
+                err_str = ("Received a command for the joint_arm and wrist_extension joints. "
                            "These are mutually exclusive options. The joint names in the received command = "
                            "{0}").format(commanded_joint_names)
                 invalid_joints_callback(err_str)
                 return False
+            if len(active_telescoping_joint_names) != 0:
+                err_str = ("Received a command for the joint_arm/wrist_extension joint and one or more telescoping_joints. "
+                           "These are mutually exclusive options. The joint names in the received command = "
+                           "{0}").format(commanded_joint_names)
+                invalid_joints_callback(err_str)
+                return False
+            if self.name in commanded_joint_names:
+                self.index = commanded_joint_names.index(self.name)
+                self.active = True
+            else:
+                self.index = commanded_joint_names.index(self.wrist_extension_name)
+                self.is_named_wrist_extension = True
+                self.active = True
         elif len(active_telescoping_joint_names) != 0:
             if len(active_telescoping_joint_names) == len(self.telescoping_joints):
                 self.active = True
@@ -328,14 +340,14 @@ class ArmCommandGroup(SimpleCommandGroup):
             if goal_pos is None:
                 err_str = ("Received goal point with positions array length={0}. "
                            "This joint ({1})'s index is {2}. Length of array must cover all joints listed "
-                           "in commanded_joint_names.").format(len(point.positions), self.name, self.index)
+                           "in commanded_joint_names.").format(len(point.positions), self.name if not self.is_named_wrist_extension else self.wrist_extension_name, self.index)
                 invalid_goal_callback(err_str)
                 return False
 
             self.goal['position'] = hm.bound_ros_command(self.range, goal_pos, fail_out_of_range_goal)
             if self.goal['position'] is None:
                 err_str = ("Received {0} goal point that is out of bounds. "
-                            "Range = {1}, but goal point = {2}.").format(self.name, self.range, goal_pos)
+                            "Range = {1}, but goal point = {2}.").format(self.name if not self.is_named_wrist_extension else self.wrist_extension_name, self.range, goal_pos)
                 invalid_goal_callback(err_str)
                 return False
 
@@ -343,7 +355,7 @@ class ArmCommandGroup(SimpleCommandGroup):
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            _, extension_error_m = self.update_execution(robot_status)
+            _, extension_error_m = self.update_execution(robot_status, force_single=True)
             robot.arm.move_by(extension_error_m,
                               v_m=self.goal['velocity'],
                               a_m=self.goal['acceleration'],
@@ -354,15 +366,22 @@ class ArmCommandGroup(SimpleCommandGroup):
 
     def update_execution(self, robot_status, **kwargs):
         success_callback = kwargs['success_callback'] if 'success_callback' in kwargs.keys() else None
+        force_single = kwargs['force_single'] if 'force_single' in kwargs.keys() else False
         self.error = None
         if self.active:
             if success_callback and robot_status['arm']['motor']['in_guarded_event']:
-                success_callback("{0} contact detected.".format(self.name))
+                success_callback("{0} contact detected.".format(self.name if not self.is_named_wrist_extension else self.wrist_extension_name))
                 return True
             arm_backlash_correction = self.retracted_offset_m if self.retracted else 0.0
             extension_current = robot_status['arm']['pos'] + arm_backlash_correction
             self.error = self.goal['position'] - extension_current
-            return (self.telescoping_joints, self.error) if self.is_telescoping else (self.name, self.error)
+            if force_single:
+                return self.name, self.error
+            else:
+                if self.is_telescoping:
+                    return [(telescoping_joint, self.error / len(self.telescoping_joints)) for telescoping_joint in self.telescoping_joints]
+                else:
+                    return [(self.name, self.error), (self.wrist_extension_name, self.error)]
 
         return None
 

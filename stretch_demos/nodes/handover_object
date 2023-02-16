@@ -163,12 +163,12 @@ class HandoverObjectNode(hm.HelloNode):
 
             
     def trigger_handover_object_callback(self, request):
-        with self.move_lock: 
+        with self.move_lock:
             # First, retract the wrist in preparation for handing out an object.
             pose = {'wrist_extension': 0.005}
             self.move_to_pose(pose)
 
-            if self.handover_goal_ready: 
+            if self.handover_goal_ready:
                 pose = {'joint_lift': self.lift_goal_m}
                 self.move_to_pose(pose)
                 tolerance_distance_m = 0.01
@@ -177,9 +177,14 @@ class HandoverObjectNode(hm.HelloNode):
                 self.move_to_pose(pose)
                 self.handover_goal_ready = False
 
-            return TriggerResponse(
-                success=True,
-                message='Completed object handover!'
+                return TriggerResponse(
+                    success=True,
+                    message='Completed object handover!'
+                )
+            else:
+                return TriggerResponse(
+                    success=False,
+                    message='Failed to find handover goal'
                 )
 
     
