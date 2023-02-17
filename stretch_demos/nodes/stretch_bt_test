@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+
+import py_trees
+import py_trees_ros
+import py_trees.console as console
+import rospy
+import sys
+from std_srvs.srv import Trigger, TriggerRequest
+import functools
+
+
+class trigger_service_behaviour(py_trees.behaviour.Behaviour):
+    def __init__(self, name, service_name):
+        super(trigger_service_behaviour, self).__init__(name=name)
+        self.service_name = service_name
+        self.service = rospy.ServiceProxy(service_name, Trigger)
+        self.feedback_message = f"Initializing {self.__class__.__name__}.{service_name} Trigger."
+        print(f"{self.feedback_message}")
+
+    def setup(self, timeout):
+        rospy.wait_for_service(self.service_name, timeout=timeout)
+        self.feedback_message = f"Connected with {self.service_name}"
+        return True
+
+    def update(self):
+        self.logger.debug("%s.update()" % self.__class__.__name__)
+        self.feedback_message = f"{self.__class__.__name__}.{self.service_name} : FAILURE"
+        try:
+            req = TriggerRequest()
+            result = self.service(req)
+            if result.success == True:
+                self.feedback_message = f"{self.__class__.__name__}.{self.service_name} : SUCESS"
+                print(self.feedback_message)
+                return py_trees.common.Status.SUCCESS
+            else:
+                print(self.feedback_message)
+                return py_trees.common.Status.FAILURE
+        except Exception as e:
+            rospy.logerr(e)
+            print(self.feedback_message)
+            return py_trees.common.Status.FAILURE
+
+
+def create_root():
+    # behaviours
+    root = py_trees.composites.Sequence("test")
+    stow_robot = trigger_service_behaviour(name='RobotStow', service_name='/stow_the_robot')
+
+    # tree
+    root.add_children([stow_robot])
+    return root
+
+
+def shutdown(behaviour_tree):
+    behaviour_tree.interrupt()
+
+
+##############################################################################
+# Main
+##############################################################################
+
+
+def main():
+    """
+    Entry point for the demo script.
+    """
+    rospy.init_node("tree")
+    root = create_root()
+    behaviour_tree = py_trees_ros.trees.BehaviourTree(root)
+    rospy.on_shutdown(functools.partial(shutdown, behaviour_tree))
+    if not behaviour_tree.setup(timeout=15):
+        console.logerror("failed to setup the tree, aborting.")
+        sys.exit(1)
+    behaviour_tree.tick_tock(500)
+
+
+if __name__ == '__main__':
+    main()
