@@ -1,6 +1,6 @@
 <launch>
 
-  <node pkg="rqt_py_trees" name="rqt_py_trees" type="rqt_py_trees"/>
+
 
   <arg name="rviz" default="false" doc="whether to show Rviz" />
   <arg name="debug_directory" value="$(env HELLO_FLEET_PATH)/debug/"/>
@@ -43,5 +43,10 @@
   <!-- VISUALIZE -->
   <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_demos)/rviz/dock_robot.rviz" if="$(arg rviz)" />
   <!-- -->
+
+  <!-- BT nodes -->
+  <node pkg="rqt_py_trees" name="rqt_py_trees" type="rqt_py_trees"/>
+
+<!--  <node pkg="stretch_demos" name="stretch_bt_test" type="stretch_bt_test" output="screen"/>-->
 
 </launch>

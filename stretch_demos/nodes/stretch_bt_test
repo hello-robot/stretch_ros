@@ -2,12 +2,13 @@
 
 import py_trees
 import py_trees_ros
+import py_trees_ros
 import py_trees.console as console
 import rospy
 import sys
 from std_srvs.srv import Trigger, TriggerRequest
 import functools
-
+from std_msgs.msg import Bool
 
 class trigger_service_behaviour(py_trees.behaviour.Behaviour):
     def __init__(self, name, service_name):
@@ -27,8 +28,9 @@ class trigger_service_behaviour(py_trees.behaviour.Behaviour):
         self.feedback_message = f"{self.__class__.__name__}.{self.service_name} : FAILURE"
         try:
             req = TriggerRequest()
+            print(f"Triggered service: {self.service_name} ....")
             result = self.service(req)
-            if result.success == True:
+            if result.success:
                 self.feedback_message = f"{self.__class__.__name__}.{self.service_name} : SUCESS"
                 print(self.feedback_message)
                 return py_trees.common.Status.SUCCESS
@@ -40,14 +42,26 @@ class trigger_service_behaviour(py_trees.behaviour.Behaviour):
             print(self.feedback_message)
             return py_trees.common.Status.FAILURE
 
+    def terminate(self, new_status):
+        self.logger.debug("  %s [Foo::terminate().terminate()][%s->%s]" % (self.name, self.status, new_status))
+
 
 def create_root():
     # behaviours
     root = py_trees.composites.Sequence("test")
-    stow_robot = trigger_service_behaviour(name='RobotStow', service_name='/stow_the_robot')
-
+    home_check = py_trees.composites.Selector("home_check")
+    stow_robot = trigger_service_behaviour(name='robot_stow', service_name='/stow_the_robot')
+    home_robot = trigger_service_behaviour(name='robot_home', service_name='/calibrate_the_robot')
+    head_scan = trigger_service_behaviour(name='head_scan', service_name='/funmap/trigger_head_scan')
+    is_calibrated = py_trees_ros.subscribers.CheckData(
+        name="is_calibrated?",
+        topic_name='/is_calibrated',
+        expected_value=True,
+        topic_type=Bool,
+        fail_if_no_data=True,fail_if_bad_comparison=True)
     # tree
-    root.add_children([stow_robot])
+    root.add_children([home_check, stow_robot, head_scan])
+    home_check.add_children([is_calibrated, home_robot])
     return root
 
 
@@ -71,7 +85,12 @@ def main():
     if not behaviour_tree.setup(timeout=15):
         console.logerror("failed to setup the tree, aborting.")
         sys.exit(1)
-    behaviour_tree.tick_tock(500)
+    N_ticks = 1 # Set number of ticks depending on the iterations required
+    for i in range(N_ticks):
+        print(f"Tick:{i}")
+        print( "------")
+        behaviour_tree.tick()
+    # behaviour_tree.tick_tock(500)  # Continuously runs ticks with a interval
 
 
 if __name__ == '__main__':
