@@ -504,7 +504,7 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
                     self.index_rotate_mobile_base = commanded_joint_names.index('rotate_mobile_base')
             else:
                 err_str = ("MobileBaseCommandGroup.update: Must be in position mode to receive a command for the {0} joint(s). "
-                           "Current mode = {1}.").format(active_positioning_joint_names, robot_mode)
+                           "Current mode = {1}.").format(active_incrementing_joint_names, robot_mode)
                 invalid_joints_callback(err_str)
                 return False
 
