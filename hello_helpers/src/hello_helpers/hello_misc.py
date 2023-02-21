@@ -153,6 +153,16 @@ class HelloNode:
 
         return [r0[0], r0[1], r_ang], timestamp
 
+    def get_tf(self, from_frame, to_frame):
+        """Get current transform between 2 frames. Blocking.
+        """
+        rate = rospy.Rate(10.0)
+        while True:
+            try:
+                return self.tf2_buffer.lookup_transform(to_frame, from_frame, rospy.Time())
+            except:
+                continue
+            rate.sleep()
 
     def main(self, node_name, node_topic_namespace, wait_for_first_pointcloud=True):
         rospy.init_node(node_name)
