@@ -50,7 +50,7 @@ Other ways to stow the robot include using the `stretch_robot_stow.py` CLI tool 
 
 See [stretch_driver.launch's TF docs](#TODO) to learn about the full Stretch TF tree. The stretch_driver node, which is part of stretch_driver.launch, is responsible for publishing the "odom" to "base_link" transform if the [broadcast_odom_tf parameter](#broadcastodomtf) is set to true. Odometry for the robot is calculated within the underlying Stretch Body Python SDK within the [update method in the Base class](https://github.com/hello-robot/stretch_body/blob/ea987c3d4f21a65ce4e85c6c92cd5d2efb832c41/body/stretch_body/base.py#L555-L651) by looking at the encoders for the left and right wheels. Note: Odometry calculated from wheel encoders is susceptible to drift for a variety of reasons (e.g. wheel slip, misalignment, loose belt tension, time dilation). A reasonable amount of drift is ~1cm per meter translated by the mobile base. A common remedy is to use a localization library to correct for the drift by integrating other sensors into the calculation of the odometry. For example, [AMCL](http://wiki.ros.org/amcl) is a particle filter ROS package for using Lidar scans + wheel odometry to correct for drift.
 
-If you use [HelloNode](../hello_helpers/README.md#hellonodesrchellohelpershellomiscpy), you can get the odometry using:
+If you use [HelloNode](../hello_helpers/README.md#hellonode), you can get the odometry using:
 
 ```python
 # roslaunch the stretch launch file beforehand
@@ -58,7 +58,7 @@ If you use [HelloNode](../hello_helpers/README.md#hellonodesrchellohelpershellom
 import rospy
 import hello_helpers.hello_misc as hm
 temp = hm.HelloNode.quick_create('temp')
-t = temp.get_tf('base_link', 'odom')
+t = temp.get_tf('odom', 'base_link')
 print(t.transform.translation)
 ```
 
