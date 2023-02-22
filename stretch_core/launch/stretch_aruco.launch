@@ -2,7 +2,7 @@
 
   <!-- ARUCO MARKER DETECTOR -->
   <rosparam command="load" file="$(find stretch_core)/config/stretch_marker_dict.yaml" />
-  <node name="detect_aruco_markers" pkg="stretch_core" type="detect_aruco_markers" output="screen"/>
+  <node name="detect_aruco_markers" pkg="stretch_core" type="detect_aruco_markers.py" output="screen"/>
   <!-- -->
 
 </launch>
