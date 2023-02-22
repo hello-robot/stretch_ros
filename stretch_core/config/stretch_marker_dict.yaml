@@ -40,7 +40,7 @@
   '245':
     'length_mm': 88.0
     'use_rgb_only': False
-    'name': 'link_docking_station'
+    'name': 'docking_station'
     'link': None
   '246':
     'length_mm': 179.0
