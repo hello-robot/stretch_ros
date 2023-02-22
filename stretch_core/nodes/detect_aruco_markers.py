@@ -528,6 +528,8 @@ class ArucoHeadScan(hm.HelloNode):
         self.aruco_found = False
         self.markers = MarkerArray().markers
         self.joint_state = JointState()
+        self.listener = tf.TransformListener()
+        self.tf_broadcaster = tf.TransformBroadcaster()
 
     def execute_cb(self, goal):
         self.goal = goal
@@ -535,6 +537,7 @@ class ArucoHeadScan(hm.HelloNode):
         self.tilt_angle = self.goal.tilt_angle
         self.fill_in_blindspot_with_second_scan = self.goal.fill_in_blindspot_with_second_scan
         self.fast_scan = self.goal.fast_scan
+        self.publish_to_map = self.goal.publish_to_map
         pan_angle = 0.0
 
         scan_point = JointTrajectoryPoint()
@@ -555,13 +558,26 @@ class ArucoHeadScan(hm.HelloNode):
 
         # TODO: check distance of aruco to base_link < 2m
         for pan_angle in np.arange(-3.69, 1.66, 0.35):
-            time.sleep(1.0)
+            time.sleep(2.0)
             markers = self.markers
             rospy.loginfo("Markers found: {}".format(markers))
+            
             if markers != []:
                 for marker in markers:
                     if marker.id == self.aruco_id:
                         self.aruco_found = True
+                        self.aruco_name = marker.text
+                        if self.publish_to_map:
+                            (trans,rot) = self.listener.lookupTransform('map', self.aruco_name, rospy.Time(0))
+                            rospy.loginfo("trans: {}".format(trans))
+                            rospy.loginfo("rot: {}".format(rot))
+                            self.broadcast_tf(trans, rot, self.aruco_name, 'map')
+                            if self.aruco_name == 'docking_station':
+                                rospy.loginfo("Publishing predock pose")
+                                self.broadcast_tf([0.0, -0.249, 1.0], [0.0, 0.0, 0.0, 1.0], 'predock_pose', 'docking_station')
+                                rospy.loginfo("Publishing dock pose")
+                                self.broadcast_tf([0.0, -0.249, 0.25], [0.0, 0.0, 0.0, 1.0], 'dock_pose', 'docking_station')
+            
             if not self.aruco_found:
                 self.feedback.pan_angle = pan_angle
                 self.server.publish_feedback(self.feedback)
@@ -587,6 +603,13 @@ class ArucoHeadScan(hm.HelloNode):
         else:
             rospy.loginfo("Could not find aruco marker {}".format(str))
             self.server.set_aborted(self.result)
+
+    def broadcast_tf(self, pos, rot, name, ref):
+        self.tf_broadcaster.sendTransform(pos,
+                                     rot,
+                                     rospy.Time.now(),
+                                     name,
+                                     ref)
 
     def aruco_callback(self, msg):
         self.markers = msg.markers
