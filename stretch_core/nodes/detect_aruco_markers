@@ -5,6 +5,7 @@ import rospy
 import cv2
 import numpy as np
 import math
+import click
 
 import message_filters
 from std_msgs.msg import Header
@@ -22,8 +23,10 @@ import tf
 from tf.transformations import quaternion_from_euler, euler_from_quaternion, quaternion_from_matrix
 
 import struct
+import cv2
 import cv2.aruco as aruco
 import hello_helpers.fit_plane as fp
+from hello_helpers.hello_misc import compare_versions
 import threading
 from collections import deque
 
@@ -715,6 +718,11 @@ class DetectArucoNode:
 
 
 if __name__ == '__main__':
+    if compare_versions(cv2.__version__,'4.7') == -1:
+        txt = f"[ERROR] Found unsupported cv2 version({cv2.__version__}), Requires opencv-contrib-python>=4.7.0 " \
+              f"\n\t\t\tShutting down node detect_aruco_markers"
+        rospy.logerr(click.style(txt,fg='red'))
+        sys.exit()
     node = DetectArucoNode()
     node.main()
     try:
