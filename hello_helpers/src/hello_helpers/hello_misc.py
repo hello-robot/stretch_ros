@@ -272,3 +272,37 @@ def bound_ros_command(bounds, ros_pos, fail_out_of_range_goal, clip_ros_toleranc
             return bounds[1]
 
     return ros_pos
+
+
+def detect_sensor_shift(data, shift_period, d_shift_thresh=0.15):
+    """
+    Detects the timeseries trend of a given sensor values with timestamps if the change in trend
+    happens within the given shift period.
+
+    Args
+        data: list of tuple of timestamp and sensor value
+        shift_period: Estimated shift period(s)
+        d_shift_thresh: Shift threshold of sensor value
+    returns
+        0 No shift detected
+        1 Upward shift
+        -1 downward shift
+    """
+    try:
+        total_ts = data[-1][0] - data[0][0]
+        tsp = total_ts / len(data)
+        window_size = int(shift_period / tsp)
+        d = np.array([v[1] for v in data])
+        for i in range(len(data)):
+            try:
+                curr_window = d[i:i + window_size]
+                if abs(curr_window[0] - curr_window[-1]) > d_shift_thresh:
+                    if curr_window[0] < curr_window[-1]:
+                        return 1
+                    else:
+                        return -1
+            except Exception as e:
+                pass
+    except ZeroDivisionError as e:
+        pass
+    return 0

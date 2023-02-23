@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
+import time
 
+import click
 import yaml
 import copy
 import numpy as np
@@ -30,6 +32,8 @@ from std_msgs.msg import Bool, Header, String
 
 from joint_trajectory_server import JointTrajectoryAction
 from stretch_diagnostics import StretchDiagnostics
+from hello_helpers.hello_misc import detect_sensor_shift
+
 
 
 class StretchDriverNode:
@@ -44,7 +48,7 @@ class StretchDriverNode:
         self.robot_mode_rwlock = RWLock()
         self.robot_mode = None
 
-        self.voltage_history = []
+        self.voltage_history_ts = []
         self.charging_state_history = [BatteryState.POWER_SUPPLY_STATUS_UNKNOWN] * 10
         self.charging_state = BatteryState.POWER_SUPPLY_STATUS_UNKNOWN
 
@@ -127,17 +131,21 @@ class StretchDriverNode:
         pimu_hardware_id = self.robot.pimu.board_info['hardware_id']
         invalid_reading = float('NaN')
         v = float(robot_status['pimu']['voltage'])
-        self.voltage_history.append(v)
-        if len(self.voltage_history) > 100:
-            self.voltage_history.pop(0)
+        self.voltage_history_ts.append((time.time(), v))
+        if len(self.voltage_history_ts) > 200:
+            self.voltage_history_ts.pop(0)
             self.charging_state_history.pop(0)
-            if v > np.mean(self.voltage_history) + 3 * np.std(self.voltage_history):
-                self.charging_state_history.append(BatteryState.POWER_SUPPLY_STATUS_CHARGING)
-            elif v < np.mean(self.voltage_history) - 3 * np.std(self.voltage_history):
-                self.charging_state_history.append(BatteryState.POWER_SUPPLY_STATUS_DISCHARGING)
-            else:
-                self.charging_state_history.append(BatteryState.POWER_SUPPLY_STATUS_UNKNOWN)
+
+        charging_trend = detect_sensor_shift(self.voltage_history_ts, shift_period=6)
+        if charging_trend==1:
+            self.charging_state_history.append(BatteryState.POWER_SUPPLY_STATUS_CHARGING)
+        elif charging_trend==-1:
+            self.charging_state_history.append(BatteryState.POWER_SUPPLY_STATUS_DISCHARGING)
+        else:
+            self.charging_state_history.append(BatteryState.POWER_SUPPLY_STATUS_UNKNOWN)
+
         filtered_charging_state = max(set(self.charging_state_history), key=self.charging_state_history.count)
+
         if filtered_charging_state != BatteryState.POWER_SUPPLY_STATUS_UNKNOWN:
             if pimu_hardware_id == 0:
                 self.charging_state = filtered_charging_state
