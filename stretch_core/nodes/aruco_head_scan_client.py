@@ -5,6 +5,7 @@ import sys
 from detect_aruco_markers import ArucoHeadScan
 
 def main():
+    rospy.init_node('aruco_head_scan_client')
     aruco_head_scan_client = actionlib.SimpleActionClient('ArucoHeadScan', ArucoHeadScanAction)
     server_reached = aruco_head_scan_client.wait_for_server(timeout=rospy.Duration(10.0))
     if not server_reached:
@@ -23,6 +24,5 @@ def main():
 
 
 if __name__ == '__main__':
-    head_scan = ArucoHeadScan()
     rospy.loginfo('Ensure stretch_driver is launched before executing')
     main()
