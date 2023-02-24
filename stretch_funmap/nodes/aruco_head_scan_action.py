@@ -2,7 +2,7 @@
 
 import rospy
 from visualization_msgs.msg import MarkerArray
-from geometry_msgs.msg import Transform, TransformStamped
+from geometry_msgs.msg import Transform, TransformStamped, Pose
 import ros_numpy
 import numpy as np
 import tf2_ros
@@ -34,6 +34,7 @@ class ArucoHeadScan(hm.HelloNode):
         self.result = ArucoHeadScanResult()
         self.aruco_marker_array = rospy.Subscriber('aruco/marker_array', MarkerArray, self.aruco_callback)
         self.joint_states_sub = rospy.Subscriber('/stretch/joint_states', JointState, self.joint_state_callback)
+        self.predock_pose_pub = rospy.Publisher('/predock_pose', Pose, queue_size=10)
         self.server.start()
         self.aruco_id = 1000 # Placeholder value, can never be true
         self.aruco_found = False
@@ -186,6 +187,7 @@ class ArucoHeadScan(hm.HelloNode):
         self.tf2_broadcaster = tf2_ros.TransformBroadcaster()
 
         self.map_to_odom_transform_mat = np.identity(4)
+        predock_pose = Pose()
         while not rospy.is_shutdown():
             self.tf2_broadcaster.sendTransform(
                 create_map_to_odom_transform(self.map_to_odom_transform_mat))
@@ -196,6 +198,14 @@ class ArucoHeadScan(hm.HelloNode):
                 self.predock_tf.header.stamp = rospy.Time.now()
                 self.tf2_broadcaster.sendTransform(self.aruco_tf)
                 self.tf2_broadcaster.sendTransform(self.predock_tf)
+                predock_pose.position.x = self.predock_tf.transform.translation.x
+                predock_pose.position.y = self.predock_tf.transform.translation.y
+                predock_pose.position.z = self.predock_tf.transform.translation.z
+                predock_pose.orientation.x = self.predock_tf.transform.rotation.x
+                predock_pose.orientation.y = self.predock_tf.transform.rotation.y
+                predock_pose.orientation.z = self.predock_tf.transform.rotation.z
+                predock_pose.orientation.w = self.predock_tf.transform.rotation.w
+                self.predock_pose_pub.publish(predock_pose)
             except AttributeError:
                 pass
             rate.sleep()
