@@ -98,17 +98,18 @@ class ArucoHeadScan(hm.HelloNode):
                                 if self.aruco_name == 'docking_station':
                                     # Transform the docking station frame such that x-axis points out of the aruco plane and 0.5 m in the front of the dock
                                     # This facilitates passing the goal pose as this predock frame so that the robot can back up into the dock
-                                    t = Transform()
-                                    t.translation.x = 0.0
-                                    t.translation.y = -0.25
-                                    t.translation.z = 0.5
-                                    t.rotation.x = 0.5
-                                    t.rotation.y = 0.5
-                                    t.rotation.z = 0.5
-                                    t.rotation.w = -0.5
-                                    tran = self.broadcast_tf(t, 'predock_pose', self.aruco_name)
+                                    saved_pose = Transform()
+                                    saved_pose.translation.x = 0.0
+                                    saved_pose.translation.y = -0.45
+                                    saved_pose.translation.z = 0.47
+                                    saved_pose.rotation.x = -0.382
+                                    saved_pose.rotation.y = -0.352
+                                    saved_pose.rotation.z = -0.604
+                                    saved_pose.rotation.w = 0.604
+                                    tran = self.broadcast_tf(saved_pose, 'predock_pose', 'docking_station')
                                     self.tf2_broadcaster.sendTransform(tran)
                                     trans = self.tfBuffer.lookup_transform('map', 'predock_pose', rospy.Time())
+                                    # Bring predock_frame at base_link level
                                     trans.transform.translation.z = 0
                                     trans.header.stamp = rospy.Time.now()
                                     self.predock_tf = trans
