@@ -40,8 +40,6 @@ class ArucoHeadScan(hm.HelloNode):
         self.markers = MarkerArray().markers
         self.joint_state = JointState()
         self.merged_map = None
-        self.aruco_tf = None
-        self.predock_tf = None
 
     def execute_cb(self, goal):
         self.goal = goal
@@ -54,6 +52,8 @@ class ArucoHeadScan(hm.HelloNode):
 
     def scan_and_detect(self):
         node = self
+        self.aruco_tf = None
+        self.predock_tf = None
 
         far_right_pan = -3.6 
         far_left_pan = 1.45 
@@ -73,11 +73,16 @@ class ArucoHeadScan(hm.HelloNode):
         node.move_to_pose(pose)
         
         pan_left = np.linspace(far_right_pan, far_left_pan, num_pan_steps)
+        markers = []
         for pan_ang in pan_left:
             pose = {'joint_head_pan': pan_ang}
             head_scan.capture_point_clouds(node, pose, capture_params)
             
-            markers = self.markers
+            for i in range(20):
+                if self.markers:
+                    markers = self.markers
+                    break
+
             rospy.loginfo("Markers found: {}".format(markers))
             
             if markers != []:
@@ -91,7 +96,6 @@ class ArucoHeadScan(hm.HelloNode):
                                 self.aruco_tf = self.broadcast_tf(trans.transform, self.aruco_name, 'map')
                                 rospy.loginfo("Pose published to tf")
                                 if self.aruco_name == 'docking_station':
-                                    rospy.loginfo("Publishing predock pose")
                                     # Transform the docking station frame such that x-axis points out of the aruco plane and 0.5 m in the front of the dock
                                     # This facilitates passing the goal pose as this predock frame so that the robot can back up into the dock
                                     t = Transform()
@@ -102,11 +106,13 @@ class ArucoHeadScan(hm.HelloNode):
                                     t.rotation.y = 0.5
                                     t.rotation.z = 0.5
                                     t.rotation.w = -0.5
-                                    self.predock_tf = self.broadcast_tf(t, 'predock_pose', self.aruco_name)
-                                    time.sleep(1.0)
+                                    tran = self.broadcast_tf(t, 'predock_pose', self.aruco_name)
+                                    self.tf2_broadcaster.sendTransform(tran)
                                     trans = self.tfBuffer.lookup_transform('map', 'predock_pose', rospy.Time())
                                     trans.transform.translation.z = 0
-                                    self.predock_tf = self.broadcast_tf(trans, 'predock_pose', 'map')
+                                    trans.header.stamp = rospy.Time.now()
+                                    self.predock_tf = trans
+                                    rospy.loginfo("Published predock pose")
                             except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
                                 rospy.loginfo("Could not publish pose to tf")
                                 pass
