@@ -35,6 +35,7 @@ class ArucoHeadScan(hm.HelloNode):
         self.aruco_marker_array = rospy.Subscriber('aruco/marker_array', MarkerArray, self.aruco_callback)
         self.joint_states_sub = rospy.Subscriber('/stretch/joint_states', JointState, self.joint_state_callback)
         self.predock_pose_pub = rospy.Publisher('/predock_pose', Pose, queue_size=10)
+        self.dock_pose_pub = rospy.Publisher('/dock_pose', Pose, queue_size=10)
         self.server.start()
         self.aruco_id = 1000 # Placeholder value, can never be true
         self.aruco_found = False
@@ -187,6 +188,7 @@ class ArucoHeadScan(hm.HelloNode):
         self.tf2_broadcaster = tf2_ros.TransformBroadcaster()
 
         self.map_to_odom_transform_mat = np.identity(4)
+        dock_pose = Pose()
         predock_pose = Pose()
         while not rospy.is_shutdown():
             self.tf2_broadcaster.sendTransform(
@@ -197,15 +199,24 @@ class ArucoHeadScan(hm.HelloNode):
                 self.aruco_tf.header.stamp = rospy.Time.now()
                 self.predock_tf.header.stamp = rospy.Time.now()
                 self.tf2_broadcaster.sendTransform(self.aruco_tf)
-                self.tf2_broadcaster.sendTransform(self.predock_tf)
-                predock_pose.position.x = self.predock_tf.transform.translation.x
-                predock_pose.position.y = self.predock_tf.transform.translation.y
-                predock_pose.position.z = self.predock_tf.transform.translation.z
-                predock_pose.orientation.x = self.predock_tf.transform.rotation.x
-                predock_pose.orientation.y = self.predock_tf.transform.rotation.y
-                predock_pose.orientation.z = self.predock_tf.transform.rotation.z
-                predock_pose.orientation.w = self.predock_tf.transform.rotation.w
-                self.predock_pose_pub.publish(predock_pose)
+                if self.aruco_name == 'docking_station':
+                    dock_pose.position.x = self.aruco_tf.transform.translation.x
+                    dock_pose.position.y = self.aruco_tf.transform.translation.y
+                    dock_pose.position.z = self.aruco_tf.transform.translation.z
+                    dock_pose.orientation.x = self.aruco_tf.transform.rotation.x
+                    dock_pose.orientation.y = self.aruco_tf.transform.rotation.y
+                    dock_pose.orientation.z = self.aruco_tf.transform.rotation.z
+                    dock_pose.orientation.w = self.aruco_tf.transform.rotation.w
+                    self.dock_pose_pub.publish(dock_pose)
+                    self.tf2_broadcaster.sendTransform(self.predock_tf)
+                    predock_pose.position.x = self.predock_tf.transform.translation.x
+                    predock_pose.position.y = self.predock_tf.transform.translation.y
+                    predock_pose.position.z = self.predock_tf.transform.translation.z
+                    predock_pose.orientation.x = self.predock_tf.transform.rotation.x
+                    predock_pose.orientation.y = self.predock_tf.transform.rotation.y
+                    predock_pose.orientation.z = self.predock_tf.transform.rotation.z
+                    predock_pose.orientation.w = self.predock_tf.transform.rotation.w
+                    self.predock_pose_pub.publish(predock_pose)
             except AttributeError:
                 pass
             rate.sleep()
