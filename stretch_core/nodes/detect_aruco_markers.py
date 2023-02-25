@@ -26,6 +26,14 @@ import cv2.aruco as aruco
 import hello_helpers.fit_plane as fp
 import threading
 from collections import deque
+import actionlib
+from stretch_core.msg import ArucoHeadScanAction, ArucoHeadScanGoal, ArucoHeadScanFeedback, ArucoHeadScanResult
+from control_msgs.msg import FollowJointTrajectoryGoal
+from sensor_msgs.msg import JointState
+from trajectory_msgs.msg import JointTrajectoryPoint
+import hello_helpers.hello_misc as hm
+import time
+
 
 class ArucoMarker:
     def __init__(self, aruco_id, marker_info, show_debug_images=False):
@@ -505,7 +513,111 @@ class ArucoMarker:
         return markers
         
 
-        
+class ArucoHeadScan(hm.HelloNode):
+    def __init__(self):
+        hm.HelloNode.__init__(self)
+        hm.HelloNode.main(self, 'aruco_head_scan', 'aruco_head_scan', wait_for_first_pointcloud=False)
+        self.server = actionlib.SimpleActionServer('ArucoHeadScan', ArucoHeadScanAction, self.execute_cb, False)
+        self.goal = ArucoHeadScanGoal()
+        self.feedback = ArucoHeadScanFeedback()
+        self.result = ArucoHeadScanResult()
+        self.aruco_marker_array = rospy.Subscriber('aruco/marker_array', MarkerArray, self.aruco_callback)
+        self.joint_states_sub = rospy.Subscriber('/stretch/joint_states', JointState, self.joint_state_callback)
+        self.server.start()
+        self.aruco_id = 1000 # Placeholder value, can never be true
+        self.aruco_found = False
+        self.markers = MarkerArray().markers
+        self.joint_state = JointState()
+        self.listener = tf.TransformListener()
+        self.tf_broadcaster = tf.TransformBroadcaster()
+
+    def execute_cb(self, goal):
+        self.goal = goal
+        self.aruco_id = self.goal.aruco_id
+        self.tilt_angle = self.goal.tilt_angle
+        self.fill_in_blindspot_with_second_scan = self.goal.fill_in_blindspot_with_second_scan
+        self.fast_scan = self.goal.fast_scan
+        self.publish_to_map = self.goal.publish_to_map
+        pan_angle = 0.0
+
+        scan_point = JointTrajectoryPoint()
+        scan_point.time_from_start = rospy.Duration(3.0)
+        scan_point.positions = [self.tilt_angle, -3.69]
+
+        trajectory_goal = FollowJointTrajectoryGoal()
+        trajectory_goal.trajectory.joint_names = ['joint_head_tilt', 'joint_head_pan']
+        trajectory_goal.trajectory.points = [scan_point]
+        trajectory_goal.trajectory.header.stamp = rospy.Time.now()
+        trajectory_goal.trajectory.header.frame_id = 'base_link'
+
+        self.trajectory_client.send_goal(trajectory_goal)
+        self.trajectory_client.wait_for_result()
+
+        self.feedback.pan_angle = pan_angle
+        self.server.publish_feedback(self.feedback)
+
+        # TODO: check distance of aruco to base_link < 2m
+        for pan_angle in np.arange(-3.69, 1.66, 0.35):
+            time.sleep(2.0)
+            markers = self.markers
+            rospy.loginfo("Markers found: {}".format(markers))
+            
+            if markers != []:
+                for marker in markers:
+                    if marker.id == self.aruco_id:
+                        self.aruco_found = True
+                        self.aruco_name = marker.text
+                        if self.publish_to_map:
+                            (trans,rot) = self.listener.lookupTransform('map', self.aruco_name, rospy.Time(0))
+                            rospy.loginfo("trans: {}".format(trans))
+                            rospy.loginfo("rot: {}".format(rot))
+                            self.broadcast_tf(trans, rot, self.aruco_name, 'map')
+                            if self.aruco_name == 'docking_station':
+                                rospy.loginfo("Publishing predock pose")
+                                self.broadcast_tf([0.0, -0.249, 1.0], [0.0, 0.0, 0.0, 1.0], 'predock_pose', 'docking_station')
+                                rospy.loginfo("Publishing dock pose")
+                                self.broadcast_tf([0.0, -0.249, 0.25], [0.0, 0.0, 0.0, 1.0], 'dock_pose', 'docking_station')
+            
+            if not self.aruco_found:
+                self.feedback.pan_angle = pan_angle
+                self.server.publish_feedback(self.feedback)
+                
+                scan_point.time_from_start = rospy.Duration(3.0)
+                scan_point.positions = [self.tilt_angle, pan_angle]
+                trajectory_goal.trajectory.points = [scan_point]
+                trajectory_goal.trajectory.header.stamp = rospy.Time.now()
+                trajectory_goal.trajectory.header.frame_id = 'base_link'
+
+                self.trajectory_client.send_goal(trajectory_goal)
+                self.trajectory_client.wait_for_result()
+            else:
+                break
+                
+        self.result_cb(self.aruco_found, "after headscan")
+
+    def result_cb(self, aruco_found, str=None):
+        self.result.aruco_found = aruco_found
+        if aruco_found:    
+            rospy.loginfo("Aruco marker found")
+            self.server.set_succeeded(self.result)
+        else:
+            rospy.loginfo("Could not find aruco marker {}".format(str))
+            self.server.set_aborted(self.result)
+
+    def broadcast_tf(self, pos, rot, name, ref):
+        self.tf_broadcaster.sendTransform(pos,
+                                     rot,
+                                     rospy.Time.now(),
+                                     name,
+                                     ref)
+
+    def aruco_callback(self, msg):
+        self.markers = msg.markers
+
+    def joint_state_callback(self, msg):
+        pass
+
+
 class ArucoMarkerCollection:
     def __init__(self, marker_info, show_debug_images=False):
         self.show_debug_images = show_debug_images
