@@ -93,7 +93,10 @@
   <exec_depend>joy</exec_depend>
   <exec_depend>teleop_twist_joy</exec_depend>
   <exec_depend>teleop_twist_keyboard</exec_depend>
+  <exec_depend>message_generation</exec_depend>
   <test_depend>rostest</test_depend>
+
+
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

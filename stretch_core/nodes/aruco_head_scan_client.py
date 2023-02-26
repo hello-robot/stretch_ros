@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from stretch_core.msg import ArucoHeadScanGoal, ArucoHeadScanAction
 import actionlib
 import rospy
