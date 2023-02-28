@@ -6,7 +6,7 @@ from geometry_msgs.msg import Transform, TransformStamped, Pose
 import ros_numpy
 import numpy as np
 import tf2_ros
-
+import stretch_funmap.navigate as nv
 import actionlib
 from stretch_core.msg import ArucoHeadScanAction, ArucoHeadScanGoal, ArucoHeadScanFeedback, ArucoHeadScanResult
 from sensor_msgs.msg import JointState
@@ -42,6 +42,7 @@ class ArucoHeadScan(hm.HelloNode):
         self.markers = MarkerArray().markers
         self.joint_state = JointState()
         self.merged_map = None
+        self.move_base = nv.MoveBase(self, None)
 
     def execute_cb(self, goal):
         self.goal = goal
@@ -51,6 +52,21 @@ class ArucoHeadScan(hm.HelloNode):
         self.fast_scan = self.goal.fast_scan
         self.publish_to_map = self.goal.publish_to_map
         self.scan_and_detect()
+        if self.fill_in_blindspot_with_second_scan:
+            # blindspot due to its mast.
+            turn_ang = (70.0 / 180.0) * np.pi
+
+            # Command the robot to turn to point to the next
+            # waypoint.
+            rospy.loginfo('robot turn angle in degrees =' +
+                          str(turn_ang * (180.0 / np.pi)))
+            at_goal = self.move_base.turn(
+                turn_ang, publish_visualizations=True)
+            if not at_goal:
+                message_text = 'Failed to reach turn goal.'
+                rospy.loginfo(message_text)
+            self.scan_and_detect()
+        self.result_cb(self.aruco_found, "after headscan")
 
     def scan_and_detect(self):
         node = self
@@ -123,7 +139,7 @@ class ArucoHeadScan(hm.HelloNode):
             if not self.aruco_found:
                 self.feedback.pan_angle = pan_ang
                 self.server.publish_feedback(self.feedback)
-            
+
         look_at_self = True
         if look_at_self:
             head_tilt = -1.2
@@ -138,7 +154,6 @@ class ArucoHeadScan(hm.HelloNode):
         head_scan.make_robot_footprint_unobserved()
 
         self.merged_map = head_scan
-        self.result_cb(self.aruco_found, "after headscan")
 
     def result_cb(self, aruco_found, str=None):
         self.result.aruco_found = aruco_found

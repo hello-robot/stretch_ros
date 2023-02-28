@@ -18,7 +18,7 @@ def main():
     goal.aruco_id = 245
     goal.tilt_angle = -0.68
     goal.publish_to_map = True
-    goal.fill_in_blindspot_with_second_scan = False
+    goal.fill_in_blindspot_with_second_scan = True
     goal.fast_scan = False
 
     aruco_head_scan_client.send_goal(goal)
