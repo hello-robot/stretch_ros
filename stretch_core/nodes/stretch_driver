@@ -146,6 +146,11 @@ class StretchDriverNode:
                     self.charging_state = BatteryState.POWER_SUPPLY_STATUS_CHARGING
                 elif robot_status['pimu']['charger_connected'] == False and filtered_charging_state == BatteryState.POWER_SUPPLY_STATUS_DISCHARGING:
                     self.charging_state = BatteryState.POWER_SUPPLY_STATUS_DISCHARGING
+            elif pimu_hardware_id == 2:
+                if robot_status['pimu']['charger_connected'] == True and filtered_charging_state == BatteryState.POWER_SUPPLY_STATUS_CHARGING:
+                    self.charging_state = BatteryState.POWER_SUPPLY_STATUS_CHARGING
+                elif robot_status['pimu']['charger_connected'] == False and filtered_charging_state == BatteryState.POWER_SUPPLY_STATUS_DISCHARGING:
+                    self.charging_state = BatteryState.POWER_SUPPLY_STATUS_DISCHARGING
 
         i = float(robot_status['pimu']['current'])
         if self.charging_state == BatteryState.POWER_SUPPLY_STATUS_CHARGING:
@@ -166,7 +171,7 @@ class StretchDriverNode:
         # misuse the 'present' flag to indicated whether the barrel jack button is pressed (i.e. charger is present, but may or may not be providing power)
         if pimu_hardware_id == 0:
             battery_state.present = False
-        elif pimu_hardware_id == 1:
+        elif pimu_hardware_id == 1 or pimu_hardware_id == 2:
             battery_state.present = robot_status['pimu']['charger_connected']
         self.power_pub.publish(battery_state)
 
