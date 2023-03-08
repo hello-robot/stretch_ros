@@ -54,6 +54,16 @@ roslaunch stretch_demos clean_surface.launch
 
 Then, press the key with the / and ? on it while in the terminal to initiate a surface cleaning attempt.
 
+### Autodocking with Nav Stack
+
+For this demo, the robot will look for a docking station with an ArUco marker, align itself to the docking station using the ROS Nav Stack, and then back up into the docking station using an error-based controller. Prior to running this demo, you should stow the robot, ensure that you have a pregenerated map and the docking station is resting against a wall. Go through [this]() tutorial to understand how the demo works.
+
+You can launch this demo using the following command:
+
+```
+roslaunch stretch_demos autodocking.launch
+```
+
 ## License
 
 For license information, please see the LICENSE files. 
