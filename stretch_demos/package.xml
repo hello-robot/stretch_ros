@@ -81,6 +81,8 @@
   <exec_depend>tf</exec_depend>
   <exec_depend>tf2</exec_depend>
   <exec_depend>ros_numpy</exec_depend>
+  <build_depend>py_trees_ros</build_depend>
+  <build_depend>rqt_py_trees</build_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

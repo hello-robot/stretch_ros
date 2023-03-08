@@ -1,0 +1,19 @@
+# goal
+# target frame defines the transform frame that needs to be compared with source_frame
+string target_frame
+
+# target frame defines the transform frame that needs to be compared with target_frame
+string source_frame
+
+---
+# result
+# result is the success flag
+bool result
+
+---
+# feedback
+# angle error is the angular error between source and target frames
+float64 angle_error
+
+# distance error is the euclidean error between source and target frames
+float64 distance_error
