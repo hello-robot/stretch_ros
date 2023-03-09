@@ -3,6 +3,7 @@
     <arg name="rviz"            default="true"                                     doc="whether to show Rviz" />
     <arg name="map_yaml"        default="$(env HELLO_FLEET_PATH)/maps/xyz.yaml"    doc="previously captured map (optional)" />
     <arg name="debug_directory" default="$(env HELLO_FLEET_PATH)/debug/"           doc="directory where debug imagery is saved" />
+    <arg name="trees_viz"       default="true"                                     doc="whether to visualize BT in rqt" />
 
     <!-- REALSENSE D435i -->
     <include file="$(find stretch_core)/launch/d435i_high_resolution.launch"></include>
@@ -50,6 +51,7 @@
 
     <!-- VISUALIZE -->
     <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find stretch_navigation)/rviz/navigation.rviz" if="$(arg rviz)" />
+    <node pkg="rqt_py_trees" name="rqt_py_trees" type="rqt_py_trees" if="$(arg trees_viz)"/>
     
     <!-- ARUCO ACTION SERVER -->
     <node name="aruco_head_scan" pkg="stretch_demos" type="aruco_head_scan_action.py" output="screen" />
