@@ -51,6 +51,7 @@ Next add the xacro for the particular tool to `/stretch_description/urdf/stretch
 ```bash
 >>$ cd ~/catkin_ws/src/stretch_ros/stretch_description/urdf
 >>$ cp stretch.urdf stretch.urdf.bak
+>>$ roscore # run in a new terminal before running the next command
 >>$ rosrun stretch_calibration update_urdf_after_xacro_change.sh
 ```
 
