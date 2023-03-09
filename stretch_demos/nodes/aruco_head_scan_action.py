@@ -9,7 +9,7 @@ import tf2_ros
 import time
 
 import actionlib
-from stretch_core.msg import ArucoHeadScanAction, ArucoHeadScanGoal, ArucoHeadScanFeedback, ArucoHeadScanResult
+from stretch_demos.msg import ArucoHeadScanAction, ArucoHeadScanGoal, ArucoHeadScanFeedback, ArucoHeadScanResult
 from trajectory_msgs.msg import JointTrajectoryPoint
 from control_msgs.msg import FollowJointTrajectoryGoal
 from tf.transformations import euler_from_quaternion, quaternion_from_euler

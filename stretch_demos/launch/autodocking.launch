@@ -52,12 +52,12 @@
     <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find stretch_navigation)/rviz/navigation.rviz" if="$(arg rviz)" />
     
     <!-- ARUCO ACTION SERVER -->
-    <node name="aruco_head_scan" pkg="autodocking" type="aruco_head_scan_action.py" output="screen" />
+    <node name="aruco_head_scan" pkg="stretch_demos" type="aruco_head_scan_action.py" output="screen" />
 
     <!-- VISUAL SERVOING ACTION SERVER -->
-    <node name="visual_servoing" pkg="autodocking" type="visual_servoing_action.py" output="screen" />
+    <node name="visual_servoing" pkg="stretch_demos" type="visual_servoing_action.py" output="screen" />
 
     <!-- AUTODOCKING -->
-    <node name="autodocking" pkg="autodocking" type="autodocking_bt.py" output="screen" />
+    <node name="autodocking" pkg="stretch_demos" type="autodocking_bt.py" output="screen" />
 
 </launch>

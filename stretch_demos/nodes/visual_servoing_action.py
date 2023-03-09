@@ -13,7 +13,7 @@ from geometry_msgs.msg import Twist
 from trajectory_msgs.msg import JointTrajectoryPoint
 from control_msgs.msg import FollowJointTrajectoryGoal
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
-from autodocking.msg import VisualServoAction, VisualServoGoal, VisualServoResult, VisualServoFeedback
+from stretch_demos.msg import VisualServoAction, VisualServoGoal, VisualServoResult, VisualServoFeedback
 
 from sensor_msgs.msg import JointState
 from sensor_msgs.msg import PointCloud2

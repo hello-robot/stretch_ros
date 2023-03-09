@@ -6,10 +6,10 @@ import py_trees.console as console
 import rospy
 import sys
 import functools
-from autodocking.autodocking_behaviours import MoveBaseActionClient
-from autodocking.autodocking_behaviours import CheckTF
-from autodocking.autodocking_behaviours import VisualServoing
-from stretch_core.msg import ArucoHeadScanAction, ArucoHeadScanGoal
+from stretch_demos.autodocking_behaviours import MoveBaseActionClient
+from stretch_demos.autodocking_behaviours import CheckTF
+from stretch_demos.autodocking_behaviours import VisualServoing
+from stretch_demos.msg import ArucoHeadScanAction, ArucoHeadScanGoal
 from geometry_msgs.msg import Pose
 from sensor_msgs.msg import BatteryState
 import hello_helpers.hello_misc as hm

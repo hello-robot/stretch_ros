@@ -7,7 +7,7 @@ from actionlib_msgs.msg import GoalStatus
 from math import sqrt, pow
 from geometry_msgs.msg import Pose, TransformStamped
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-from autodocking.msg import VisualServoAction, VisualServoGoal, VisualServoResult, VisualServoFeedback
+from stretch_demos.msg import VisualServoAction, VisualServoGoal, VisualServoResult, VisualServoFeedback
 import tf2_ros
 
 class MoveBaseActionClient(py_trees.behaviour.Behaviour):
