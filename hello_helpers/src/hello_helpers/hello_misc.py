@@ -167,32 +167,38 @@ class HelloNode:
     def main(self, node_name, node_topic_namespace, wait_for_first_pointcloud=True):
         rospy.init_node(node_name)
         self.node_name = rospy.get_name()
-        rospy.loginfo("{0} started".format(self.node_name))
+        rospy.loginfo(f"{self.node_name} started")
 
-        self.trajectory_client = actionlib.SimpleActionClient('/stretch_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
+        fjt_actionserver_name = '/stretch_controller/follow_joint_trajectory'
+        rospy.logdebug(f'{self.node_name} waiting to connect to action server {fjt_actionserver_name}')
+        self.trajectory_client = actionlib.SimpleActionClient(fjt_actionserver_name, FollowJointTrajectoryAction)
         server_reached = self.trajectory_client.wait_for_server(timeout=rospy.Duration(60.0))
         if not server_reached:
-            rospy.signal_shutdown('Unable to connect to arm action server. Timeout exceeded.')
+            rospy.logerr(f'{self.node_name} unable to connect to robot action server. Timeout exceeded.')
+            rospy.signal_shutdown('Unable to connect to robot action server. Timeout exceeded.')
             sys.exit()
-        
+        rospy.logdebug(f'{self.node_name} connected to {fjt_actionserver_name}')
+
         self.tf2_buffer = tf2_ros.Buffer()
         self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
-        
+
         self.point_cloud_subscriber = rospy.Subscriber('/camera/depth/color/points', PointCloud2, self.point_cloud_callback)
         self.point_cloud_pub = rospy.Publisher('/' + node_topic_namespace + '/point_cloud2', PointCloud2, queue_size=1)
 
-        rospy.wait_for_service('/stop_the_robot')
-        rospy.loginfo('Node ' + self.node_name + ' connected to /stop_the_robot service.')
-        self.stop_the_robot_service = rospy.ServiceProxy('/stop_the_robot', Trigger)
-        
+        stop_robot_service_name = '/stop_the_robot'
+        rospy.logdebug(f'{self.node_name} waiting to connect to service {stop_robot_service_name}')
+        rospy.wait_for_service(stop_robot_service_name)
+        self.stop_the_robot_service = rospy.ServiceProxy(stop_robot_service_name, Trigger)
+        rospy.logdebug(f'{self.node_name} connected to {stop_robot_service_name}')
+
         if wait_for_first_pointcloud:
             # Do not start until a point cloud has been received
             point_cloud_msg = self.point_cloud
-            print('Node ' + node_name + ' waiting to receive first point cloud.')
+            rospy.logdebug(f'{self.node_name} waiting to receive first point cloud')
             while point_cloud_msg is None:
                 rospy.sleep(0.1)
                 point_cloud_msg = self.point_cloud
-            print('Node ' + node_name + ' received first point cloud, so continuing.')
+            rospy.logdebug(f'{self.node_name} received first point cloud, so continuing')
 
 
 def create_time_string():
