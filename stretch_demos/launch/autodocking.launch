@@ -1,0 +1,65 @@
+<launch>
+
+    <arg name="rviz"            default="true"                                     doc="whether to show Rviz" />
+    <arg name="map_yaml"        default="$(env HELLO_FLEET_PATH)/maps/xyz.yaml"    doc="previously captured map (optional)" />
+    <arg name="debug_directory" default="$(env HELLO_FLEET_PATH)/debug/"           doc="directory where debug imagery is saved" />
+    <arg name="trees_viz"       default="true"                                     doc="whether to visualize BT in rqt" />
+
+    <!-- REALSENSE D435i -->
+    <include file="$(find stretch_core)/launch/d435i_high_resolution.launch"></include>
+    <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen">
+        <!--<param name="initial_mode" type="string" value="Default"/>-->
+        <param name="initial_mode" type="string" value="High Accuracy"/>
+    </node>
+    <!-- -->
+
+    <!-- FRUSTUM FIELD OF VIEW VISUALIZATION -->
+    <node name="d435i_frustum_visualizer" pkg="stretch_core" type="d435i_frustum_visualizer" output="screen" />
+    <!-- -->
+
+    <!-- STRETCH DRIVER -->
+    <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="true"/>
+    <param name="/stretch_driver/mode" type="string" value="navigation" />
+    <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true"/>
+    <!-- -->
+
+    <!-- CENTERED BASE LINK -->
+    <node name="centered_base_link_tf_publisher" pkg="tf" type="static_transform_publisher" args="-0.1 0 0 0 0 0 1 /base_link /centered_base_link 100" />
+
+    <!-- LASER RANGE FINDER -->
+    <include file="$(find stretch_core)/launch/rplidar.launch" />
+
+    <!-- MAP SERVER -->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_yaml)" />
+
+    <!-- LOCALIZATION -->
+    <include file="$(find amcl)/examples/amcl_diff.launch" />
+
+    <!-- ARUCO DETECTION -->
+    <include file="$(find stretch_core)/launch/stretch_aruco.launch" />
+
+    <!-- NAVIGATION -->
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+        <rosparam file="$(find stretch_navigation)/config/common_costmap_params.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find stretch_navigation)/config/common_costmap_params.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find stretch_navigation)/config/local_costmap_params.yaml" command="load" />
+        <rosparam file="$(find stretch_navigation)/config/global_costmap_params_withmap.yaml" command="load" />
+        <rosparam file="$(find stretch_navigation)/config/base_local_planner_params.yaml" command="load" />
+
+        <remap from="/cmd_vel" to="/stretch/cmd_vel" />
+    </node>
+
+    <!-- VISUALIZE -->
+    <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find stretch_navigation)/rviz/navigation.rviz" if="$(arg rviz)" />
+    <node pkg="rqt_py_trees" name="rqt_py_trees" type="rqt_py_trees" if="$(arg trees_viz)"/>
+    
+    <!-- ARUCO ACTION SERVER -->
+    <node name="aruco_head_scan" pkg="stretch_demos" type="aruco_head_scan_action.py" output="screen" />
+
+    <!-- VISUAL SERVOING ACTION SERVER -->
+    <node name="visual_servoing" pkg="stretch_demos" type="visual_servoing_action.py" output="screen" />
+
+    <!-- AUTODOCKING -->
+    <node name="autodocking" pkg="stretch_demos" type="autodocking_bt.py" output="screen" />
+
+</launch>

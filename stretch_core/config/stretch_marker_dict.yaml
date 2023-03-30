@@ -37,6 +37,11 @@
     'use_rgb_only': False
     'name': 'shoulder_top'
     'link': 'link_aruco_shoulder'
+  '245':
+    'length_mm': 88.0
+    'use_rgb_only': False
+    'name': 'docking_station'
+    'link': None
   '246':
     'length_mm': 179.0
     'use_rgb_only': False
