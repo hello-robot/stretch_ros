@@ -1,0 +1,62 @@
+import hello_helpers.hello_misc as hm
+import rospy
+import tf.transformations
+from geometry_msgs.msg import TransformStamped, PointStamped
+from tf2_ros import StaticTransformBroadcaster
+
+
+class Reachtomarkernode(hm.HelloNode):
+      def __init__(self):
+            hm.HelloNode.__init__(self)
+            self.tagtoreachto = "Test_tag"
+            self.br = StaticTransformBroadcaster()
+      
+      def main(self):
+            hm.HelloNode.main(self, 'reach_to_marker_node', 'reach_to_marker_node', wait_for_first_pointcloud=False)
+            # my_node's main logic goes here
+            
+            self.rate = rospy.Rate(10)
+            """
+            link_tag = TransformStamped()
+            
+            link_tag.header.stamp = rospy.Time.now()
+            link_tag.header.frame_id = self.tagtoreachto
+            link_tag.child_frame_id = 'new_tag'
+            
+            link_tag.transform.translation.x = 0.0
+            link_tag.transform.translation.y = 0.0
+            link_tag.transform.translation.z = 0.1
+            
+            link_tag.transform.rotation.x = 0.0
+            link_tag.transform.rotation.y = 0.0
+            link_tag.transform.rotation.z = 0.0
+            link_tag.transform.rotation.w = 1.0
+
+      
+            self.br.sendTransform([link_tag])   
+            t = self.get_tf('map', 'new_tag')
+            print(t.transform.translation)
+            
+            """
+            point = PointStamped()
+            
+            point.header.stamp = rospy.Time.now()
+            point.header.frame_id = 'map'
+            
+            point.point.x = 0
+            point.point.y = 0
+            point.point.z = 0
+            
+            print(point)
+
+            self.point_pub = rospy.Publisher('/clicked_point', PointStamped, queue_size=10)
+            self.point_pub.publish(point)
+      
+            while not rospy.is_shutdown():
+                  self.rate.sleep()
+                  print('sleeping')
+            
+            
+if __name__ == "__main__":
+      node = Reachtomarkernode()
+      node.main()
