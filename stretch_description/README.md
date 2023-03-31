@@ -26,7 +26,12 @@ Sometimes a stretch_uncalibrated.urdf file will reside with the urdf directory. 
 
 Sometimes a URDF is useful outside of ROS, such as for simulations and analysis. Running the *export_urdf.sh* script in the urdf directory will export a full URDF model of the robot based on stretch.urdf. 
 
-The exported URDF will be found within an exported_urdf directory. It is also copied to a directory for your specific robot found under ~/stretch_user. The exported URDF includes meshes and controller calibration YAML files. The exported URDF can be visualized using `stretch_robot_urdf_visualizer.py`, which is part of the stretch_body Python code.
+```
+roscd stretch_description/urdf
+./export_urdf.sh
+```
+
+The exported URDF will be in your "stretch_user" directory at the following path: `~/stretch_user/$HELLO_FLEET_ID/exported_urdf`. The exported URDF includes meshes and controller calibration YAML files. The exported URDF can be visualized using `stretch_robot_urdf_visualizer.py`, which is part of the stretch_body Python code.
 
 ## Changing the Tool
 
