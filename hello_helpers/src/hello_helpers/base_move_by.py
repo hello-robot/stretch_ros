@@ -17,7 +17,6 @@ class BaseMoveBy(hm.HelloNode):
         hm.HelloNode.__init__(self)
         self.joint_state = None
         self.robot_pose = None
-        self.command_sent = False
 
     def base_translate(self, trans):
         print('Base translate command received')
@@ -114,8 +113,6 @@ class BaseMoveBy(hm.HelloNode):
                 else: # Could cause a bug where if the goal is overshot, the robot keeps turning
                     theta_err = -(abs(command['inc']) - theta_travelled)
 
-                print(theta_err)
-
             self.twist.angular.z = 0.0
             self.base_vel.publish(self.twist)
 
@@ -149,23 +146,20 @@ class BaseMoveBy(hm.HelloNode):
         rospy.Subscriber('/stretch/joint_states', JointState, self.joint_states_callback)
         rospy.Subscriber('/pose2D', Pose2D, self.pose2d_callback)
         self.base_vel = rospy.Publisher('/stretch/cmd_vel', Twist, queue_size=1) #/stretch_diff_drive_controller/cmd_vel for gazebo
-
-        self.command_sent = False
         
-        for i in range(5):
+        while not rospy.is_shutdown():
             time.sleep(2)
             self.base_translate(0.5)
             time.sleep(2)
-            self.base_rotate(-3.14)
+            self.base_rotate(-1.57)
+            self.base_rotate(-1.57)
             time.sleep(2)
             self.base_translate(0.5)
             time.sleep(2)
-            self.base_rotate(-3.14)
+            self.base_rotate(-1.57)
+            self.base_rotate(-1.57)
 
 
 if __name__ == '__main__':
-    try:
-        base = BaseMoveBy()
-        base.main()
-    except KeyboardInterrupt:
-        rospy.loginfo('interrupt received, so shutting down')
+    base = BaseMoveBy()
+    base.main()
