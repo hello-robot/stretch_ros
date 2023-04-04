@@ -22,7 +22,7 @@ The *robot_description* parameter is commonly used in Rviz and robot_state_publi
 
 ### [keyboard_teleop.launch](./launch/keyboard_teleop.launch)
 
-This launch file provides an easy to keyboard teleoperate Stretch's joints. It includes the [stretch_driver.launch](#stretch_driverlaunch) launch file and the [keyboard_teleop](#keyboard_teleop) node.
+This launch file enables easy keyboard teleoperation of Stretch's joints. It internally launches the [stretch_driver.launch](#stretch_driverlaunch) launch file, as well as the [keyboard_teleop](./nodes/keyboard_teleop) node.
 
 ### [rplidar.launch](./launch/rplidar.launch)
 
@@ -112,7 +112,7 @@ TODO
 
 ##### /stretch/cmd_vel (geometry_msgs/Twist)
 
-#### Available Services
+#### Services
 
 ##### /switch_to_position_mode ([std_srvs/Trigger](https://docs.ros.org/en/noetic/api/std_srvs/html/srv/Trigger.html))
 
@@ -142,6 +142,12 @@ This service will start Stretch's stowing procedure, where the arm is stowed int
 
 Other ways to stow the robot include using the `stretch_robot_stow.py` CLI tool from a terminal, or calling [`robot.stow()`](https://docs.hello-robot.com/0.2/stretch-tutorials/stretch_body/tutorial_stretch_body_api/#stretch_body.robot.Robot.stow) from Stretch's Python API.
 
+#### Actions
+
+##### /stretch_controller/follow_joint_trajectory ([control_msgs/FollowJointTrajectory](http://docs.ros.org/en/noetic/api/control_msgs/html/action/FollowJointTrajectory.html))
+
+TODO
+
 #### Transforms
 
 See [stretch_driver.launch's TF docs](#TODO) to learn about the full Stretch TF tree. The stretch_driver node, which is part of stretch_driver.launch, is responsible for publishing the "odom" to "base_link" transform if the [broadcast_odom_tf parameter](#broadcastodomtf) is set to true. Odometry for the robot is calculated within the underlying Stretch Body Python SDK within the [update method in the Base class](https://github.com/hello-robot/stretch_body/blob/ea987c3d4f21a65ce4e85c6c92cd5d2efb832c41/body/stretch_body/base.py#L555-L651) by looking at the encoders for the left and right wheels. Note: Odometry calculated from wheel encoders is susceptible to drift for a variety of reasons (e.g. wheel slip, misalignment, loose belt tension, time dilation). A reasonable amount of drift is ~1cm per meter translated by the mobile base. A common remedy is to use a localization library to correct for the drift by integrating other sensors into the calculation of the odometry. For example, [AMCL](http://wiki.ros.org/amcl) is a particle filter ROS package for using Lidar scans + wheel odometry to correct for drift.
@@ -167,9 +173,5 @@ TODO
 ### [d435i_configure](./nodes/d435i_configure)
 
 This node lets you switch the visual preset of the D435i on the fly.
-
-TODO
-
-### [keyboard_teleop](./nodes/keyboard_teleop)
 
 TODO
