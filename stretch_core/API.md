@@ -1,4 +1,4 @@
-# API for Stretch Core
+# ROS API for Stretch Core
 
 *stretch_core* includes everything needed to interface with the sensors and actuators on Stretch. The API for the launch files, nodes, etc. are documented in this file.
 
@@ -52,11 +52,35 @@ This node communicates with the low-level Python library (stretch_body) to inter
 
 #### Parameters
 
-##### broadcast_odom_tf
+##### mode (string)
+
+TODO
+
+##### broadcast_odom_tf (boolean)
 
 If set to true, stretch_driver will publish an odom to base_link TF.
 
+##### rate (float)
+
+TODO
+
+##### timeout (float)
+
+TODO
+
+##### fail_out_of_range_goal (boolean)
+
+TODO
+
 #### Published Topics
+
+##### /stretch/joint_states (sensor_msgs/JointState)
+
+TODO
+
+##### /odom (nav_msgs/Odometry)
+
+TODO
 
 ##### /battery ([sensor_msgs/BatteryState](https://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/BatteryState.html))
 
@@ -64,7 +88,47 @@ This topic publishes Stretch's battery and charge status. Charging status, the `
 
 Since a battery is always present on a Stretch system, we instead misuse the `present` field to indicate whether a plug is plugged in to the charging port (regardless of whether it's providing power) on RE2 robots. This field is always false on RE1s. The unmeasured fields (e.g. charge in Ah) return a NaN, or 'not a number'.
 
-#### Published Services
+##### /magnetometer_mobile_base (sensor_msgs/MagneticField)
+
+TODO
+
+##### /imu_mobile_base (sensor_msgs/Imu)
+
+TODO
+
+##### /imu_wrist (sensor_msgs/Imu)
+
+TODO
+
+##### /is_calibrated (std_msgs/Bool)
+
+TODO
+
+##### /mode (std_msgs/String)
+
+TODO
+
+#### Subscribed Topics
+
+##### /stretch/cmd_vel (geometry_msgs/Twist)
+
+#### Available Services
+
+##### /switch_to_position_mode ([std_srvs/Trigger](https://docs.ros.org/en/noetic/api/std_srvs/html/srv/Trigger.html))
+
+TODO
+
+##### /switch_to_navigation_mode ([std_srvs/Trigger](https://docs.ros.org/en/noetic/api/std_srvs/html/srv/Trigger.html))
+
+TODO
+
+##### /stop_the_robot ([std_srvs/Trigger](https://docs.ros.org/en/noetic/api/std_srvs/html/srv/Trigger.html))
+
+TODO
+
+##### /runstop ([std_srvs/SetBool](https://docs.ros.org/en/noetic/api/std_srvs/html/srv/SetBool.html))
+
+TODO
 
 ##### /calibrate_the_robot ([std_srvs/Trigger](https://docs.ros.org/en/noetic/api/std_srvs/html/srv/Trigger.html))
 

@@ -480,9 +480,6 @@ class StretchDriverNode:
         rospy.loginfo("{0} rate = {1} Hz".format(self.node_name, self.joint_state_rate))
         rospy.loginfo("{0} timeout = {1} s".format(self.node_name, self.timeout))
 
-        self.use_fake_mechaduinos = rospy.get_param('~use_fake_mechaduinos', False)
-        rospy.loginfo("{0} use_fake_mechaduinos = {1}".format(rospy.get_name(), self.use_fake_mechaduinos))
-
         self.base_frame_id = 'base_link'
         rospy.loginfo("{0} base_frame_id = {1}".format(self.node_name, self.base_frame_id))
         self.odom_frame_id = 'odom'
