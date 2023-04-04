@@ -108,7 +108,7 @@ class JointTrajectoryAction:
             robot_status = self.node.robot.get_status() # uses lock held by robot
             for c in self.command_groups:
                 c.init_execution(self.node.robot, robot_status)
-            self.node.robot.push_command()
+            #self.node.robot.push_command() #Moved to an asynchronous call in stretch_driver
 
             goals_reached = [c.goal_reached() for c in self.command_groups]
             update_rate = rospy.Rate(15.0)

@@ -69,11 +69,11 @@ class StretchDriverNode:
             time_since_last_twist = rospy.get_time() - self.last_twist_time
             if time_since_last_twist < self.timeout:
                 self.robot.base.set_velocity(self.linear_velocity_mps, self.angular_velocity_radps)
-                self.robot.push_command()
+                #self.robot.push_command() #Moved to main
             else:
                 # Watchdog timer stops motion if no communication within timeout
                 self.robot.base.set_velocity(0.0, 0.0)
-                self.robot.push_command()
+                #self.robot.push_command() #Moved to main
 
         # TODO: In the future, consider using time stamps from the robot's
         # motor control boards and other boards. These would need to
@@ -326,7 +326,7 @@ class StretchDriverNode:
             self.robot.base.rotate_by(0.0)
             self.robot.arm.move_by(0.0)
             self.robot.lift.move_by(0.0)
-            self.robot.push_command()
+            #self.robot.push_command() Moved to main
 
             for joint in self.robot.head.joints:
                 self.robot.head.move_by(joint, 0.0)
@@ -378,7 +378,7 @@ class StretchDriverNode:
                 self.robot.base.rotate_by(0.0)
                 self.robot.arm.move_by(0.0)
                 self.robot.lift.move_by(0.0)
-                self.robot.push_command()
+                #self.robot.push_command() Moved to main
 
                 for joint in self.robot.head.joints:
                     self.robot.head.move_by(joint, 0.0)
@@ -528,8 +528,8 @@ class StretchDriverNode:
             # odometry, and publish joint states
             while not rospy.is_shutdown():
                 self.robot.pimu.set_fan_on()
-                self.robot.push_command()
                 self.command_mobile_base_velocity_and_publish_state()
+                self.robot.push_command()
                 command_base_velocity_and_publish_joint_state_rate.sleep()
         except (rospy.ROSInterruptException, ThreadServiceExit):
             self.robot.stop()
