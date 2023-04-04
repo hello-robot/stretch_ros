@@ -411,6 +411,7 @@ class StretchDriverNode:
 
         self.robot = rb.Robot()
         self.robot.startup()
+        self.dirty_command=True
 
         mode = rospy.get_param('~mode', "position")
         rospy.loginfo('mode = ' + str(mode))
@@ -530,6 +531,7 @@ class StretchDriverNode:
                 self.robot.pimu.set_fan_on()
                 self.command_mobile_base_velocity_and_publish_state()
                 self.robot.push_command()
+                self.dirty_command=False
                 command_base_velocity_and_publish_joint_state_rate.sleep()
         except (rospy.ROSInterruptException, ThreadServiceExit):
             self.robot.stop()
