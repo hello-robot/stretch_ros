@@ -6,26 +6,49 @@
 
 ### [stretch_driver.launch](./launch/stretch_driver.launch)
 
-TODO
+This launch file is commonly used by other ROS packages to bring up everything necessary to send joint commands to the robot and read joint state from the robot. It launches the [stretch_driver](#stretch_driver) node (documented below) which plays a critical role in interfacing with the underlying hardware. Supporting nodes like robot_state_publisher, joint_state_publisher, and diagnostics_aggregator are also launched to enable ROS features like TF lookups and diagnostic GUIs.
+
+#### Arguments
+
+##### calibrated_controller_yaml_file
+
+This ROS arg is required and defaults to "$(rospack find stretch_core)/config/controller_calibration_head.yaml", a YAML file that is generated when the robot is calibrated for joint offsets/backlashes through the [Stretch Calibration](../stretch_calibration/) package. The *stretch_driver* node loads in these calibrated offset/backlash parameters, and accounts for them when reporting joint state.
+
+#### Parameters
+
+##### robot_description
+
+The *robot_description* parameter is commonly used in Rviz and robot_state_publisher. This launch file sets the parameter to "$(rospack find stretch_description)/urdf/stretch.urdf".
 
 ### [keyboard_teleop.launch](./launch/keyboard_teleop.launch)
 
-TODO
+This launch file provides an easy to keyboard teleoperate Stretch's joints. It includes the [stretch_driver.launch](#stretch_driverlaunch) launch file and the [keyboard_teleop](#keyboard_teleop) node.
 
-It includes the following nodes:
+### [rplidar.launch](./launch/rplidar.launch)
 
-*stretch_driver* : node that communicates with the low-level Python library (stretch_body) to interface with the Stretch RE1
+This launch file brings up the drivers for the RPLidar A1, a 2D planar lidar that sits on the base of the robot. More info on the RPLidar's ROS drivers can be found in Slamtec's [Github repo](https://github.com/Slamtec/rplidar_ros). This launch file also includes a node to filter out shadows from raw laser scans.
 
-*detect_aruco_markers* : node that detects and estimates the pose of ArUco markers, including the markers on the robot's body
+### [stretch_scan_matcher.launch](./launch/stretch_scan_matcher.launch)
 
-*d435i_** : various nodes to help use the Stretch RE1's 3D camera
+If you have [rplidar.launch](#rplidarlaunch) and [stretch_driver.launch](#stretch_driverlaunch) running, you can use this launch file to get a better estimate of the robot's location as it moves. This is done using the [laser_scan_matcher](http://wiki.ros.org/laser_scan_matcher) package, which fuses laser scans with wheel odometry and publishes the estimated pose of the robot w.r.t to a "odom" frame.
 
-*keyboard_teleop* : node that provides a keyboard interface to control the robot's joints
+### [d435i_high_resolution.launch](./launch/d435i_high_resolution.launch)
 
+This launch file brings up the drivers for the Intel D435i Realsense depth camera. It builds on the [d435i_basic.launch](./launch/d435i_basic.launch) to provide high definition (HD) resolution RGBD imagery under topics in the "/camera" namespace. The camera is launched with the high accurary visual preset, which is defined in a JSON file at "$(rospack find stretch_core)/config/HighAccuraryPreset.json". More details can be found in Intel's realsense-ros [github repo](https://github.com/IntelRealSense/realsense-ros/tree/ros1-legacy#usage-instructions).
+
+### [d435i_low_resolution.launch](./launch/d435i_low_resolution.launch)
+
+This launch file is similar to the [d435i_high_resolution.launch](#d435i_high_resolutionlaunch) launch file, but provides the RGBD imagery at standard definition (SD) resolution instead of HD.
+
+### [stretch_aruco.launch](./launch/stretch_aruco.launch)
+
+If you have one of the [D435i](#d435i_high_resolutionlaunch) launch files and [stretch_driver.launch](#stretch_driverlaunch) launch file running, you can use this launch file to enable Aruco detection from Stretch's head camera. The [detect_aruco_markers](#detect_aruco_markers) node (documented below) plays a critical role in enabling this functionality. The list of known markers lives in a YAML file at "$(rospack find stretch_core)/config/stretch_marker_dict.yaml". Learn how to use this launch file by following the [Aruco Marker Detection](https://docs.hello-robot.com/0.2/stretch-tutorials/ros1/aruco_marker_detection/) tutorial.
 
 ## Nodes
 
 ### [stretch_driver](./nodes/stretch_driver)
+
+This node communicates with the low-level Python library (stretch_body) to interface with the Stretch RE1/2.
 
 #### Parameters
 
@@ -70,3 +93,19 @@ temp = hm.HelloNode.quick_create('temp')
 t = temp.get_tf('odom', 'base_link')
 print(t.transform.translation)
 ```
+
+### [detect_aruco_markers](./nodes/detect_aruco_markers)
+
+This node detects and estimates the pose of ArUco markers, including the markers on the robot's body.
+
+TODO
+
+### [d435i_configure](./nodes/d435i_configure)
+
+This node lets you switch the visual preset of the D435i on the fly.
+
+TODO
+
+### [keyboard_teleop](./nodes/keyboard_teleop)
+
+TODO
