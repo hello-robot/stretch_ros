@@ -113,7 +113,6 @@ class JointTrajectoryAction:
             #We rely on stretch_driver to avoid two push_commands() from two threads that are close together in tie
             #As the pimu.trigger_motor_sync does not support this.
             if self.node.dirty_command:
-                rospy.logerr("{0} joint_traj action: {1}".format(self.node.node_name, "JointTrajectoryAction failed to get a push_command"))
                 self.node.robot.push_command()
 
             for c in self.command_groups:
