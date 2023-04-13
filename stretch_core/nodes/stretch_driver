@@ -47,6 +47,7 @@ class StretchDriverNode:
         self.voltage_history = []
         self.charging_state_history = [BatteryState.POWER_SUPPLY_STATUS_UNKNOWN] * 10
         self.charging_state = BatteryState.POWER_SUPPLY_STATUS_UNKNOWN
+        self.zero_cmd_vel_pushed = False
 
     ###### MOBILE BASE VELOCITY METHODS #######
 
@@ -70,10 +71,14 @@ class StretchDriverNode:
             if time_since_last_twist < self.timeout:
                 self.robot.base.set_velocity(self.linear_velocity_mps, self.angular_velocity_radps)
                 self.robot.push_command()
+                self.zero_cmd_vel_pushed = False
             else:
                 # Watchdog timer stops motion if no communication within timeout
-                self.robot.base.set_velocity(0.0, 0.0)
-                self.robot.push_command()
+                if not self.zero_cmd_vel_pushed:
+                    self.robot.base.set_velocity(0.0, 0.0)
+                    self.robot.push_command()
+                    rospy.loginfo(f"{self.node_name} Zero cmd_vel pushed.")
+                    self.zero_cmd_vel_pushed = True
 
         # TODO: In the future, consider using time stamps from the robot's
         # motor control boards and other boards. These would need to
