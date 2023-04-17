@@ -11,7 +11,12 @@
 # RGB images.
 
 
-'aruco_marker_info': 
+'aruco_marker_info':
+  '0':
+    'length_mm': 47
+    'use_rgb_only': False
+    'name': 'test_tag'
+    'link': 'test_tag'
   '130':
     'length_mm': 47
     'use_rgb_only': False

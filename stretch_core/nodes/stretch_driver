@@ -494,7 +494,7 @@ class StretchDriverNode:
         self.last_twist_time = rospy.get_time()
 
         # start action server for joint trajectories
-        self.fail_out_of_range_goal = rospy.get_param('~fail_out_of_range_goal', True)
+        self.fail_out_of_range_goal = rospy.get_param('~fail_out_of_range_goal', False)
         self.joint_trajectory_action = JointTrajectoryAction(self)
         self.joint_trajectory_action.server.start()
         self.diagnostics = StretchDiagnostics(self, self.robot)
@@ -527,8 +527,8 @@ class StretchDriverNode:
             # start loop to command the mobile base velocity, publish
             # odometry, and publish joint states
             while not rospy.is_shutdown():
-                self.robot.pimu.set_fan_on()
-                self.robot.push_command()
+                #self.robot.pimu.set_fan_on()
+                #self.robot.pimu.push_command()
                 self.command_mobile_base_velocity_and_publish_state()
                 command_base_velocity_and_publish_joint_state_rate.sleep()
         except (rospy.ROSInterruptException, ThreadServiceExit):

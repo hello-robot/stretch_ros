@@ -1,62 +1,103 @@
-import hello_helpers.hello_misc as hm
+#!/usr/bin/env python3
+
 import rospy
-import tf.transformations
-from geometry_msgs.msg import TransformStamped, PointStamped
+import hello_helpers.hello_misc as hm
 from tf2_ros import StaticTransformBroadcaster
 
+from visualization_msgs.msg import MarkerArray
+from geometry_msgs.msg import TransformStamped, PointStamped
 
-class Reachtomarkernode(hm.HelloNode):
-      def __init__(self):
-            hm.HelloNode.__init__(self)
-            self.tagtoreachto = "Test_tag"
-            self.br = StaticTransformBroadcaster()
-      
-      def main(self):
-            hm.HelloNode.main(self, 'reach_to_marker_node', 'reach_to_marker_node', wait_for_first_pointcloud=False)
-            # my_node's main logic goes here
-            
-            self.rate = rospy.Rate(10)
-            """
-            link_tag = TransformStamped()
-            
-            link_tag.header.stamp = rospy.Time.now()
-            link_tag.header.frame_id = self.tagtoreachto
-            link_tag.child_frame_id = 'new_tag'
-            
-            link_tag.transform.translation.x = 0.0
-            link_tag.transform.translation.y = 0.0
-            link_tag.transform.translation.z = 0.1
-            
-            link_tag.transform.rotation.x = 0.0
-            link_tag.transform.rotation.y = 0.0
-            link_tag.transform.rotation.z = 0.0
-            link_tag.transform.rotation.w = 1.0
 
-      
-            self.br.sendTransform([link_tag])   
-            t = self.get_tf('map', 'new_tag')
-            print(t.transform.translation)
-            
-            """
-            point = PointStamped()
-            
-            point.header.stamp = rospy.Time.now()
-            point.header.frame_id = 'map'
-            
-            point.point.x = 0
-            point.point.y = 0
-            point.point.z = 0
-            
-            print(point)
+class ReachToMarkerNode(hm.HelloNode):
+    def __init__(self):
+        hm.HelloNode.__init__(self)
+        # States the locator node can be in:
+        #  0. 'disengaged' - the node is not active
+        #  1. 'searching' - the node is searching for the Aruco tag
+        #  2. 'tracking' - the node is tracking the Aruco tag
+        self.state = 'searching'
+        self.target_aruco = 'test_tag'
+        self.detection_history = [False] * 10
+        self.stable_history = [False] * 20
+        self.last_xerr = None
+        self.last_yerr = None
+        self.pan_target = 0.0
+        self.tilt_target = 0.0
 
-            self.point_pub = rospy.Publisher('/clicked_point', PointStamped, queue_size=10)
-            self.point_pub.publish(point)
-      
-            while not rospy.is_shutdown():
-                  self.rate.sleep()
-                  print('sleeping')
-            
-            
+    def aruco_callback(self, marker_array_msg):
+        if self.state == 'disengaged':
+            return
+
+        seen = False
+        for marker in marker_array_msg.markers:
+            if marker.text == self.target_aruco:
+                seen = True
+
+        self.detection_history.pop(0)
+        self.detection_history.append(seen)
+        detected = max(set(self.detection_history), key=self.detection_history.count)
+        self.state = 'tracking' if detected == True else 'searching'
+
+    def searching(self):
+        if self.state != 'searching':
+            return
+
+        rospy.loginfo("SEARCHING")
+        # reset tracking state variables
+        self.stable_history = [False] * 20
+        self.last_xerr = None
+        self.last_yerr = None
+
+        # self.pan_target = 0.0
+        # self.tilt_target = 0.0
+        self.move_to_pose({'joint_head_pan': self.pan_target, 'joint_head_tilt': self.tilt_target}, return_before_done=True)
+
+    def tracking(self):
+        if self.state != 'tracking':
+            return
+
+        rospy.loginfo("TRACKING")
+        t = self.get_tf('camera_color_frame', self.target_aruco)
+        xerr = -1 * t.transform.translation.z
+        yerr = t.transform.translation.y
+        if (abs(xerr) + abs(yerr) < 0.02):
+            # dead zone since the tag is not moving
+            self.stable_history.pop(0)
+            self.stable_history.append(True)
+        else:
+            self.stable_history.pop(0)
+            self.stable_history.append(False)
+            if self.last_xerr == None or self.last_yerr == None:
+                self.last_xerr = xerr
+                self.last_yerr = yerr
+
+            # PID loop
+            xcorr = 0.2 * xerr + 0.2 * (xerr - self.last_xerr)
+            ycorr = 0.2 * yerr + 0.2 * (yerr - self.last_yerr)
+            self.last_xerr = xerr
+            self.last_yerr = yerr
+
+            # apply correction
+            self.pan_target += xcorr
+            self.tilt_target += ycorr
+            self.move_to_pose({'joint_head_pan': self.pan_target, 'joint_head_tilt': self.tilt_target}, return_before_done=True)
+            rospy.loginfo('pan correction: ' + str(xcorr))
+            rospy.loginfo('tilt correction: ' + str(ycorr))
+
+
+    def main(self):
+        hm.HelloNode.main(self, 'reach_to_marker_node', 'reach_to_marker_node', wait_for_first_pointcloud=False)
+
+        self.br = StaticTransformBroadcaster()
+        rospy.Subscriber('/aruco/marker_array', MarkerArray, self.aruco_callback)
+
+        rate = rospy.Rate(10)
+        while not rospy.is_shutdown():
+            self.searching()
+            self.tracking()
+            rate.sleep()
+
+
 if __name__ == "__main__":
-      node = Reachtomarkernode()
-      node.main()
+    node = ReachToMarkerNode()
+    node.main()
