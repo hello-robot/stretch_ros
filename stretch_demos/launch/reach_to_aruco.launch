@@ -1,0 +1,32 @@
+<launch>
+
+  <arg name="rviz" default="true" doc="whether to show Rviz" />
+
+  <!-- REALSENSE D435i -->
+  <include file="$(find stretch_core)/launch/d435i_high_resolution.launch"></include>
+  <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen">
+    <!--<param name="initial_mode" type="string" value="Default"/>-->
+    <param name="initial_mode" type="string" value="High Accuracy"/>
+  </node>
+  <!-- -->
+
+  <!-- ARUCO MARKER DETECTOR -->
+  <rosparam command="load" file="$(find stretch_demos)/config/reachtoaruco_marker_dict.yaml" />
+  <node name="detect_aruco_markers" pkg="stretch_core" type="detect_aruco_markers" output="screen"/>
+  <!-- -->
+
+  <!-- STRETCH DRIVER -->
+  <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="false"/>
+  <param name="/stretch_driver/fail_out_of_range_goal" type="bool" value="false"/>
+  <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true"/>
+  <!-- -->
+
+  <!-- KEYBOARD TELEOP -->
+  <node name="keyboard_teleop" pkg="stretch_core" type="keyboard_teleop" output="screen" />
+  <!-- -->
+
+  <!-- VISUALIZE -->
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_demos)/rviz/reach_to_aruco.rviz" if="$(arg rviz)" />
+  <!-- -->
+
+</launch>

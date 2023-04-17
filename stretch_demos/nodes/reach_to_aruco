@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import time
 import rospy
 import hello_helpers.hello_misc as hm
 from tf2_ros import StaticTransformBroadcaster
@@ -15,6 +16,7 @@ class ReachToMarkerNode(hm.HelloNode):
         #  0. 'disengaged' - the node is not active
         #  1. 'searching' - the node is searching for the Aruco tag
         #  2. 'tracking' - the node is tracking the Aruco tag
+        #  3. 'settling' - the node can't see the Aruco tag due to momentary jitter
         self.state = 'searching'
         self.target_aruco = 'test_tag'
         self.detection_history = [False] * 10
@@ -23,6 +25,7 @@ class ReachToMarkerNode(hm.HelloNode):
         self.last_yerr = None
         self.pan_target = 0.0
         self.tilt_target = 0.0
+        self.settling_starttime = None
 
     def aruco_callback(self, marker_array_msg):
         if self.state == 'disengaged':
@@ -36,20 +39,28 @@ class ReachToMarkerNode(hm.HelloNode):
         self.detection_history.pop(0)
         self.detection_history.append(seen)
         detected = max(set(self.detection_history), key=self.detection_history.count)
-        self.state = 'tracking' if detected == True else 'searching'
+        if self.state in ['searching', 'settling'] and detected:
+            self.state = 'tracking'
+        if self.state == 'tracking' and not detected:
+            self.state = 'settling'
+            self.settling_starttime = time.time()
+        if self.state == 'settling' and (time.time() > self.settling_starttime + 5.0):
+            self.state = 'searching'
+            self.settling_starttime = None
 
     def searching(self):
         if self.state != 'searching':
             return
 
-        rospy.loginfo("SEARCHING")
-        # reset tracking state variables
-        self.stable_history = [False] * 20
-        self.last_xerr = None
-        self.last_yerr = None
+        rospy.logerr("SEARCHING")
+        # far_right_pan = -3.6
+        # far_left_pan = 1.45
+        # head_tilt = -0.8
+        # num_pan_steps = 7
+        # self.move_to
 
-        # self.pan_target = 0.0
-        # self.tilt_target = 0.0
+        self.pan_target = 0.0
+        self.tilt_target = 0.0
         self.move_to_pose({'joint_head_pan': self.pan_target, 'joint_head_tilt': self.tilt_target}, return_before_done=True)
 
     def tracking(self):
@@ -64,6 +75,7 @@ class ReachToMarkerNode(hm.HelloNode):
             # dead zone since the tag is not moving
             self.stable_history.pop(0)
             self.stable_history.append(True)
+            rospy.loginfo('   STABLE')
         else:
             self.stable_history.pop(0)
             self.stable_history.append(False)
@@ -81,12 +93,24 @@ class ReachToMarkerNode(hm.HelloNode):
             self.pan_target += xcorr
             self.tilt_target += ycorr
             self.move_to_pose({'joint_head_pan': self.pan_target, 'joint_head_tilt': self.tilt_target}, return_before_done=True)
-            rospy.loginfo('pan correction: ' + str(xcorr))
-            rospy.loginfo('tilt correction: ' + str(ycorr))
+            rospy.loginfo('   CORRECTION STEP')
+
+    def settling(self):
+        if self.state != 'settling':
+            return
+
+        rospy.logwarn("SETTLING")
+        # reset tracking state variables
+        self.stable_history = [False] * 20
+        self.last_xerr = None
+        self.last_yerr = None
+
+        # wait for jitter to settle
+        self.move_to_pose({'joint_head_pan': self.pan_target, 'joint_head_tilt': self.tilt_target}, return_before_done=True)
 
 
     def main(self):
-        hm.HelloNode.main(self, 'reach_to_marker_node', 'reach_to_marker_node', wait_for_first_pointcloud=False)
+        hm.HelloNode.main(self, 'reach_to_marker_node', 'reach_to_marker_node', wait_for_first_pointcloud=True)
 
         self.br = StaticTransformBroadcaster()
         rospy.Subscriber('/aruco/marker_array', MarkerArray, self.aruco_callback)
@@ -95,6 +119,7 @@ class ReachToMarkerNode(hm.HelloNode):
         while not rospy.is_shutdown():
             self.searching()
             self.tracking()
+            self.settling()
             rate.sleep()
 
 
