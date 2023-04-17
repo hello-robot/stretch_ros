@@ -2,6 +2,7 @@
 
 import time
 import rospy
+import numpy as np
 import hello_helpers.hello_misc as hm
 from tf2_ros import StaticTransformBroadcaster
 
@@ -18,7 +19,6 @@ class ReachToMarkerNode(hm.HelloNode):
         #  2. 'tracking' - the node is tracking the Aruco tag
         #  3. 'settling' - the node can't see the Aruco tag due to momentary jitter
         self.state = 'searching'
-        self.target_aruco = 'test_tag'
         self.detection_history = [False] * 10
         self.stable_history = [False] * 20
         self.last_xerr = None
@@ -26,6 +26,16 @@ class ReachToMarkerNode(hm.HelloNode):
         self.pan_target = 0.0
         self.tilt_target = 0.0
         self.settling_starttime = None
+        self.search_index = 0
+
+        self.target_aruco = 'test_tag'
+        self.head_tilt = -0.3
+        self.far_right_pan = -3.6
+        self.far_left_pan = 1.45
+        self.num_pan_steps = 10
+        self.og_pan_angles = np.linspace(self.far_left_pan, self.far_right_pan, self.num_pan_steps)
+        self.pan_angles = np.copy(self.og_pan_angles)
+        self.head_settle_time = 0.75
 
     def aruco_callback(self, marker_array_msg):
         if self.state == 'disengaged':
@@ -44,24 +54,38 @@ class ReachToMarkerNode(hm.HelloNode):
         if self.state == 'tracking' and not detected:
             self.state = 'settling'
             self.settling_starttime = time.time()
-        if self.state == 'settling' and (time.time() > self.settling_starttime + 5.0):
+        if self.state == 'settling' and (time.time() > self.settling_starttime + 3.0):
             self.state = 'searching'
             self.settling_starttime = None
+            self.pan_angles = sorted(self.og_pan_angles, key=lambda x: abs(self.pan_target - x))
+
+    def reached_pose(self, pose):
+        achieved_arr = []
+        for j in pose:
+            achieved_arr.append(np.isclose(pose[j], self.joint_state.position[self.joint_state.name.index(j)], atol=0.1))
+        return all(achieved_arr)
 
     def searching(self):
         if self.state != 'searching':
             return
 
         rospy.logerr("SEARCHING")
-        # far_right_pan = -3.6
-        # far_left_pan = 1.45
-        # head_tilt = -0.8
-        # num_pan_steps = 7
-        # self.move_to
-
-        self.pan_target = 0.0
-        self.tilt_target = 0.0
-        self.move_to_pose({'joint_head_pan': self.pan_target, 'joint_head_tilt': self.tilt_target}, return_before_done=True)
+        if self.search_index <  2 * len(self.pan_angles):
+            if self.search_index % 2 == 1:
+                rospy.sleep(self.head_settle_time)
+                self.search_index += 1
+            else:
+                self.pan_target = self.pan_angles[int(self.search_index / 2)]
+                self.tilt_target = self.head_tilt
+                target = {'joint_head_pan': self.pan_target, 'joint_head_tilt': self.tilt_target}
+                self.move_to_pose(target, return_before_done=True)
+                if self.reached_pose(target):
+                    self.search_index += 1
+        else:
+            self.pan_target = 0.0
+            self.tilt_target = 0.0
+            self.move_to_pose({'joint_head_pan': self.pan_target, 'joint_head_tilt': self.tilt_target}, return_before_done=True)
+            rospy.logerr("   SEARCHING FAILED")
 
     def tracking(self):
         if self.state != 'tracking':
@@ -104,6 +128,7 @@ class ReachToMarkerNode(hm.HelloNode):
         self.stable_history = [False] * 20
         self.last_xerr = None
         self.last_yerr = None
+        self.search_index = 0
 
         # wait for jitter to settle
         self.move_to_pose({'joint_head_pan': self.pan_target, 'joint_head_tilt': self.tilt_target}, return_before_done=True)

@@ -18,7 +18,7 @@ from control_msgs.msg import FollowJointTrajectoryAction
 from control_msgs.msg import FollowJointTrajectoryGoal
 from trajectory_msgs.msg import JointTrajectoryPoint
 import tf2_ros
-from sensor_msgs.msg import PointCloud2
+from sensor_msgs.msg import PointCloud2, JointState
 from std_srvs.srv import Trigger, TriggerRequest
 
 
@@ -177,7 +177,9 @@ class HelloNode:
         
         self.tf2_buffer = tf2_ros.Buffer()
         self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
-        
+
+        self.joint_state_subscriber = rospy.Subscriber('/stretch/joint_states', JointState, self.joint_states_callback)
+
         self.point_cloud_subscriber = rospy.Subscriber('/camera/depth/color/points', PointCloud2, self.point_cloud_callback)
         self.point_cloud_pub = rospy.Publisher('/' + node_topic_namespace + '/point_cloud2', PointCloud2, queue_size=1)
 
