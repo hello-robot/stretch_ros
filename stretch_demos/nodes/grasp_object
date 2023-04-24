@@ -52,13 +52,7 @@ class GraspObjectNode(hm.HelloNode):
         lift_position, lift_velocity, lift_effort = hm.get_lift_state(joint_states)
         self.lift_position = lift_position
         self.left_finger_position, temp1, temp2 = hm.get_left_finger_state(joint_states)
-        
-    def lower_tool_until_contact(self):
-        rospy.loginfo('lower_tool_until_contact')
-        trigger_request = TriggerRequest() 
-        trigger_result = self.trigger_lower_until_contact_service(trigger_request)
-        rospy.loginfo('trigger_result = {0}'.format(trigger_result))
-        
+
     def move_to_initial_configuration(self):
         initial_pose = {'wrist_extension': 0.01,
                         'joint_wrist_yaw': 0.0,
@@ -237,14 +231,6 @@ class GraspObjectNode(hm.HelloNode):
         self.trigger_grasp_object_service = rospy.Service('/grasp_object/trigger_grasp_object',
                                                            Trigger,
                                                            self.trigger_grasp_object_callback)
-
-        rospy.wait_for_service('/funmap/trigger_reach_until_contact')
-        rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_reach_until_contact.')
-        self.trigger_reach_until_contact_service = rospy.ServiceProxy('/funmap/trigger_reach_until_contact', Trigger)
-
-        rospy.wait_for_service('/funmap/trigger_lower_until_contact')
-        rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_lower_until_contact.')
-        self.trigger_lower_until_contact_service = rospy.ServiceProxy('/funmap/trigger_lower_until_contact', Trigger)
 
         default_service = '/camera/switch_to_default_mode'
         high_accuracy_service = '/camera/switch_to_high_accuracy_mode'
