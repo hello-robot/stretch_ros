@@ -1,0 +1,153 @@
+#!/usr/bin/env python3
+
+import time
+import rospy
+import numpy as np
+import hello_helpers.hello_misc as hm
+from tf2_ros import StaticTransformBroadcaster
+
+from visualization_msgs.msg import MarkerArray
+from geometry_msgs.msg import TransformStamped, PointStamped
+
+
+class ReachToMarkerNode(hm.HelloNode):
+    def __init__(self):
+        hm.HelloNode.__init__(self)
+        # States the locator node can be in:
+        #  0. 'disengaged' - the node is not active
+        #  1. 'searching' - the node is searching for the Aruco tag
+        #  2. 'tracking' - the node is tracking the Aruco tag
+        #  3. 'settling' - the node can't see the Aruco tag due to momentary jitter
+        self.state = 'searching'
+        self.detection_history = [False] * 10
+        self.stable_history = [False] * 20
+        self.last_xerr = None
+        self.last_yerr = None
+        self.pan_target = 0.0
+        self.tilt_target = 0.0
+        self.settling_starttime = None
+        self.search_index = 0
+
+        self.target_aruco = 'test_tag'
+        self.head_tilt = -0.3
+        self.far_right_pan = -3.6
+        self.far_left_pan = 1.45
+        self.num_pan_steps = 10
+        self.og_pan_angles = np.linspace(self.far_left_pan, self.far_right_pan, self.num_pan_steps)
+        self.pan_angles = np.copy(self.og_pan_angles)
+        self.head_settle_time = 0.75
+
+    def aruco_callback(self, marker_array_msg):
+        if self.state == 'disengaged':
+            return
+
+        seen = False
+        for marker in marker_array_msg.markers:
+            if marker.text == self.target_aruco:
+                seen = True
+
+        self.detection_history.pop(0)
+        self.detection_history.append(seen)
+        detected = max(set(self.detection_history), key=self.detection_history.count)
+        if self.state in ['searching', 'settling'] and detected:
+            self.state = 'tracking'
+        if self.state == 'tracking' and not detected:
+            self.state = 'settling'
+            self.settling_starttime = time.time()
+        if self.state == 'settling' and (time.time() > self.settling_starttime + 3.0):
+            self.state = 'searching'
+            self.settling_starttime = None
+            self.pan_angles = sorted(self.og_pan_angles, key=lambda x: abs(self.pan_target - x))
+
+    def reached_pose(self, pose):
+        achieved_arr = []
+        for j in pose:
+            achieved_arr.append(np.isclose(pose[j], self.joint_state.position[self.joint_state.name.index(j)], atol=0.1))
+        return all(achieved_arr)
+
+    def searching(self):
+        if self.state != 'searching':
+            return
+
+        rospy.logerr("SEARCHING")
+        if self.search_index <  2 * len(self.pan_angles):
+            if self.search_index % 2 == 1:
+                rospy.sleep(self.head_settle_time)
+                self.search_index += 1
+            else:
+                self.pan_target = self.pan_angles[int(self.search_index / 2)]
+                self.tilt_target = self.head_tilt
+                target = {'joint_head_pan': self.pan_target, 'joint_head_tilt': self.tilt_target}
+                self.move_to_pose(target, return_before_done=True)
+                if self.reached_pose(target):
+                    self.search_index += 1
+        else:
+            self.pan_target = 0.0
+            self.tilt_target = 0.0
+            self.move_to_pose({'joint_head_pan': self.pan_target, 'joint_head_tilt': self.tilt_target}, return_before_done=True)
+            rospy.logerr("   SEARCHING FAILED")
+
+    def tracking(self):
+        if self.state != 'tracking':
+            return
+
+        rospy.loginfo("TRACKING")
+        t = self.get_tf('camera_color_frame', self.target_aruco)
+        xerr = -1 * t.transform.translation.z
+        yerr = t.transform.translation.y
+        if (abs(xerr) + abs(yerr) < 0.02):
+            # dead zone since the tag is not moving
+            self.stable_history.pop(0)
+            self.stable_history.append(True)
+            rospy.loginfo('   STABLE')
+        else:
+            self.stable_history.pop(0)
+            self.stable_history.append(False)
+            if self.last_xerr == None or self.last_yerr == None:
+                self.last_xerr = xerr
+                self.last_yerr = yerr
+
+            # PID loop
+            xcorr = 0.2 * xerr + 0.2 * (xerr - self.last_xerr)
+            ycorr = 0.2 * yerr + 0.2 * (yerr - self.last_yerr)
+            self.last_xerr = xerr
+            self.last_yerr = yerr
+
+            # apply correction
+            self.pan_target += xcorr
+            self.tilt_target += ycorr
+            self.move_to_pose({'joint_head_pan': self.pan_target, 'joint_head_tilt': self.tilt_target}, return_before_done=True)
+            rospy.loginfo('   CORRECTION STEP')
+
+    def settling(self):
+        if self.state != 'settling':
+            return
+
+        rospy.logwarn("SETTLING")
+        # reset tracking state variables
+        self.stable_history = [False] * 20
+        self.last_xerr = None
+        self.last_yerr = None
+        self.search_index = 0
+
+        # wait for jitter to settle
+        self.move_to_pose({'joint_head_pan': self.pan_target, 'joint_head_tilt': self.tilt_target}, return_before_done=True)
+
+
+    def main(self):
+        hm.HelloNode.main(self, 'reach_to_marker_node', 'reach_to_marker_node', wait_for_first_pointcloud=True)
+
+        self.br = StaticTransformBroadcaster()
+        rospy.Subscriber('/aruco/marker_array', MarkerArray, self.aruco_callback)
+
+        rate = rospy.Rate(10)
+        while not rospy.is_shutdown():
+            self.searching()
+            self.tracking()
+            self.settling()
+            rate.sleep()
+
+
+if __name__ == "__main__":
+    node = ReachToMarkerNode()
+    node.main()

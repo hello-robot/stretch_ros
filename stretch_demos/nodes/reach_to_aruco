@@ -1,150 +1,123 @@
 #!/usr/bin/env python3
 
 import time
+import copy
 import rospy
 import numpy as np
 import hello_helpers.hello_misc as hm
 from tf2_ros import StaticTransformBroadcaster
 
+from std_srvs.srv import Trigger, TriggerResponse
+from std_srvs.srv import SetBool, SetBoolResponse
 from visualization_msgs.msg import MarkerArray
+from sensor_msgs.msg import JointState
 from geometry_msgs.msg import TransformStamped, PointStamped
 
 
 class ReachToMarkerNode(hm.HelloNode):
     def __init__(self):
         hm.HelloNode.__init__(self)
-        # States the locator node can be in:
-        #  0. 'disengaged' - the node is not active
-        #  1. 'searching' - the node is searching for the Aruco tag
-        #  2. 'tracking' - the node is tracking the Aruco tag
-        #  3. 'settling' - the node can't see the Aruco tag due to momentary jitter
-        self.state = 'searching'
-        self.detection_history = [False] * 10
-        self.stable_history = [False] * 20
-        self.last_xerr = None
-        self.last_yerr = None
-        self.pan_target = 0.0
-        self.tilt_target = 0.0
-        self.settling_starttime = None
-        self.search_index = 0
+        self.configuration = None
+        self.grasp_q = None
+        self.pregrasp_q = None
+        # lift_first=True, the lift joint gets to move first
+        # lift_first=False, the lift joint moves last
+        self.lift_first = None
 
-        self.target_aruco = 'test_tag'
-        self.head_tilt = -0.3
-        self.far_right_pan = -3.6
-        self.far_left_pan = 1.45
-        self.num_pan_steps = 10
-        self.og_pan_angles = np.linspace(self.far_left_pan, self.far_right_pan, self.num_pan_steps)
-        self.pan_angles = np.copy(self.og_pan_angles)
-        self.head_settle_time = 0.75
+    def mark_lift_first_callback(self, request):
+        did_success = True
+        error_msg = ''
 
-    def aruco_callback(self, marker_array_msg):
-        if self.state == 'disengaged':
-            return
+        self.lift_first = request.data
 
-        seen = False
-        for marker in marker_array_msg.markers:
-            if marker.text == self.target_aruco:
-                seen = True
+        return SetBoolResponse(
+            success=did_success,
+            message=error_msg
+        )
 
-        self.detection_history.pop(0)
-        self.detection_history.append(seen)
-        detected = max(set(self.detection_history), key=self.detection_history.count)
-        if self.state in ['searching', 'settling'] and detected:
-            self.state = 'tracking'
-        if self.state == 'tracking' and not detected:
-            self.state = 'settling'
-            self.settling_starttime = time.time()
-        if self.state == 'settling' and (time.time() > self.settling_starttime + 3.0):
-            self.state = 'searching'
-            self.settling_starttime = None
-            self.pan_angles = sorted(self.og_pan_angles, key=lambda x: abs(self.pan_target - x))
+    def move_to_grasp_callback(self, request):
+        did_success = False
+        error_msg = "missing valid grasp_q"
 
-    def reached_pose(self, pose):
-        achieved_arr = []
-        for j in pose:
-            achieved_arr.append(np.isclose(pose[j], self.joint_state.position[self.joint_state.name.index(j)], atol=0.1))
-        return all(achieved_arr)
+        if self.grasp_q:
+            local_grasp_q = copy.copy(self.grasp_q)
+            self.move_to_pose(local_grasp_q)
+            self.move_to_pose({'joint_gripper_finger_left': -0.3})
+            did_success = True
+            error_msg = ""
 
-    def searching(self):
-        if self.state != 'searching':
-            return
+        return TriggerResponse(
+            success=did_success,
+            message=error_msg
+        )
 
-        rospy.logerr("SEARCHING")
-        if self.search_index <  2 * len(self.pan_angles):
-            if self.search_index % 2 == 1:
-                rospy.sleep(self.head_settle_time)
-                self.search_index += 1
+    def move_to_pregrasp_callback(self, request):
+        did_success = False
+        error_msg = "missing valid pregrasp_q or lift_first"
+
+        if self.pregrasp_q and self.lift_first:
+            # pregrasp_q = {'joint_arm': 0.08000198142407276, 'joint_lift': 0.9314760639101932, 'joint_wrist_yaw': 2.8487301548359594, 'joint_wrist_pitch': -0.6488738732756262, 'joint_wrist_roll': -0.26231071472844464}
+            local_pregrasp_q = copy.copy(self.pregrasp_q)
+            lift_command = {'joint_lift': local_pregrasp_q.pop('joint_lift')}
+            if self.lift_first:
+                self.move_to_pose(lift_command)
+                self.move_to_pose(local_pregrasp_q)
             else:
-                self.pan_target = self.pan_angles[int(self.search_index / 2)]
-                self.tilt_target = self.head_tilt
-                target = {'joint_head_pan': self.pan_target, 'joint_head_tilt': self.tilt_target}
-                self.move_to_pose(target, return_before_done=True)
-                if self.reached_pose(target):
-                    self.search_index += 1
-        else:
-            self.pan_target = 0.0
-            self.tilt_target = 0.0
-            self.move_to_pose({'joint_head_pan': self.pan_target, 'joint_head_tilt': self.tilt_target}, return_before_done=True)
-            rospy.logerr("   SEARCHING FAILED")
+                self.move_to_pose(local_pregrasp_q)
+                self.move_to_pose(lift_command)
+            self.move_to_pose({'joint_gripper_finger_left': 0.6})
+            did_success = True
+            error_msg = ""
 
-    def tracking(self):
-        if self.state != 'tracking':
-            return
+        return TriggerResponse(
+            success=did_success,
+            message=error_msg
+        )
 
-        rospy.loginfo("TRACKING")
-        t = self.get_tf('camera_color_frame', self.target_aruco)
-        xerr = -1 * t.transform.translation.z
-        yerr = t.transform.translation.y
-        if (abs(xerr) + abs(yerr) < 0.02):
-            # dead zone since the tag is not moving
-            self.stable_history.pop(0)
-            self.stable_history.append(True)
-            rospy.loginfo('   STABLE')
-        else:
-            self.stable_history.pop(0)
-            self.stable_history.append(False)
-            if self.last_xerr == None or self.last_yerr == None:
-                self.last_xerr = xerr
-                self.last_yerr = yerr
+    def save_current_q_as_pregrasp_callback(self, request):
+        rospy.loginfo('received save_current_q_as_pregrasp call')
+        self.pregrasp_q = copy.copy(self.configuration)
+        return TriggerResponse(
+            success=True,
+            message=""
+        )
 
-            # PID loop
-            xcorr = 0.2 * xerr + 0.2 * (xerr - self.last_xerr)
-            ycorr = 0.2 * yerr + 0.2 * (yerr - self.last_yerr)
-            self.last_xerr = xerr
-            self.last_yerr = yerr
+    def save_current_q_as_grasp_callback(self, request):
+        rospy.loginfo('received save_current_q_as_grasp call')
+        self.grasp_q = copy.copy(self.configuration)
+        return TriggerResponse(
+            success=True,
+            message=""
+        )
 
-            # apply correction
-            self.pan_target += xcorr
-            self.tilt_target += ycorr
-            self.move_to_pose({'joint_head_pan': self.pan_target, 'joint_head_tilt': self.tilt_target}, return_before_done=True)
-            rospy.loginfo('   CORRECTION STEP')
-
-    def settling(self):
-        if self.state != 'settling':
-            return
-
-        rospy.logwarn("SETTLING")
-        # reset tracking state variables
-        self.stable_history = [False] * 20
-        self.last_xerr = None
-        self.last_yerr = None
-        self.search_index = 0
-
-        # wait for jitter to settle
-        self.move_to_pose({'joint_head_pan': self.pan_target, 'joint_head_tilt': self.tilt_target}, return_before_done=True)
-
+    def joint_states_callback(self, joint_state):
+        rospy.logdebug("Jointstate callback received: ")
+        joint_arm_index = joint_state.name.index('joint_arm')
+        joint_lift_index = joint_state.name.index('joint_lift')
+        joint_wrist_yaw_index = joint_state.name.index('joint_wrist_yaw')
+        joint_wrist_pitch_index = joint_state.name.index('joint_wrist_pitch')
+        joint_wrist_roll_index = joint_state.name.index('joint_wrist_roll')
+        self.configuration = {
+            'joint_arm': joint_state.position[joint_arm_index],
+            'joint_lift': joint_state.position[joint_lift_index],
+            'joint_wrist_yaw': joint_state.position[joint_wrist_yaw_index],
+            'joint_wrist_pitch': joint_state.position[joint_wrist_pitch_index],
+            'joint_wrist_roll': joint_state.position[joint_wrist_roll_index],
+        }
+        rospy.logdebug(self.configuration)
 
     def main(self):
-        hm.HelloNode.main(self, 'reach_to_marker_node', 'reach_to_marker_node', wait_for_first_pointcloud=True)
+        hm.HelloNode.main(self, 'reach_to_marker_node', 'reach_to_marker_node', wait_for_first_pointcloud=False)
 
-        self.br = StaticTransformBroadcaster()
-        rospy.Subscriber('/aruco/marker_array', MarkerArray, self.aruco_callback)
+        rospy.Subscriber('/stretch/joint_states', JointState, self.joint_states_callback)
+        rospy.Service('/save_current_q_as_pregrasp', Trigger, self.save_current_q_as_pregrasp_callback)
+        rospy.Service('/save_current_q_as_grasp', Trigger, self.save_current_q_as_grasp_callback)
+        rospy.Service('/move_to_pregrasp', Trigger, self.move_to_pregrasp_callback)
+        rospy.Service('/move_to_grasp', Trigger, self.move_to_grasp_callback)
+        rospy.Service('/mark_lift_first', SetBool, self.mark_lift_first_callback)
 
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():
-            self.searching()
-            self.tracking()
-            self.settling()
             rate.sleep()
 
 
