@@ -13,6 +13,3 @@
   <xacro:include filename="stretch_respeaker.xacro" />
 
 </robot>
-
-  
-
