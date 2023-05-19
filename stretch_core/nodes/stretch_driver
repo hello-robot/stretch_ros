@@ -69,11 +69,10 @@ class StretchDriverNode:
             time_since_last_twist = rospy.get_time() - self.last_twist_time
             if time_since_last_twist < self.timeout:
                 self.robot.base.set_velocity(self.linear_velocity_mps, self.angular_velocity_radps)
-                self.robot.push_command()
             else:
                 # Watchdog timer stops motion if no communication within timeout
                 self.robot.base.set_velocity(0.0, 0.0)
-                self.robot.push_command()
+
 
         # TODO: In the future, consider using time stamps from the robot's
         # motor control boards and other boards. These would need to
@@ -410,7 +409,7 @@ class StretchDriverNode:
             rospy.signal_shutdown('Found old stretch_body version.')
 
         self.robot = rb.Robot()
-        self.robot.startup()
+        self.robot.startup(start_non_dxl_thread=False,start_dxl_thread=True,start_sys_mon_thread=True) #Handle the non_dxl status in local loop, not thread
 
         mode = rospy.get_param('~mode', "position")
         rospy.loginfo('mode = ' + str(mode))
@@ -527,9 +526,15 @@ class StretchDriverNode:
             # start loop to command the mobile base velocity, publish
             # odometry, and publish joint states
             while not rospy.is_shutdown():
+                self.robot.non_dxl_thread.step()
                 self.robot.pimu.set_fan_on()
-                self.robot.pimu.push_command()
                 self.command_mobile_base_velocity_and_publish_state()
+                self.robot.push_command()
+                # print('-------------')
+                # print('RATE Non Dxl',self.robot.non_dxl_thread.stats.status['avg_rate_hz'])
+                # print('RATE dxl_head_thread Dxl', self.robot.dxl_head_thread.stats.status['avg_rate_hz'])
+                # print('RATE dxl_end_of_arm_thread Dxl', self.robot.dxl_end_of_arm_thread.stats.status['avg_rate_hz'])
+                # print('RATE sys_thread Dxl', self.robot.sys_thread.stats.status['avg_rate_hz'])
                 command_base_velocity_and_publish_joint_state_rate.sleep()
         except (rospy.ROSInterruptException, ThreadServiceExit):
             self.robot.stop()
