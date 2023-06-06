@@ -8,7 +8,7 @@
   <xacro:include filename="$(find stretch_description)/urdf/stretch_d435i.xacro" />
   <xacro:include filename="$(find stretch_description)/urdf/stretch_laser_range_finder.xacro" />
   <xacro:include filename="$(find stretch_description)/urdf/stretch_respeaker.xacro" />
-  <xacro:include filename="$(find stretch_description)/urdf/stretch_gripper.xacro" />
+  <xacro:include filename="$(find stretch_description)/urdf/stretch_dex_wrist.xacro" />
 
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
@@ -524,8 +524,8 @@
     </joint>
   </transmission>
 
-  <!-- Gripper -->
-  <gazebo reference="link_gripper_finger_left">
+  <!--Dex Wrist-->
+  <gazebo reference="link_wrist_yaw_bottom">
       <mu1 value="100.0"/>
       <mu2 value="200.0"/>
       <kp value="10000000.0" />
@@ -533,7 +533,30 @@
       <material>Gazebo/Gray</material>
       <minDepth>0.001</minDepth>
   </gazebo>
-
+  <gazebo reference="link_wrist_pitch">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Gray</material>
+      <minDepth>0.001</minDepth>
+  </gazebo> 
+  <gazebo reference="link_wrist_roll">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Gray</material>
+      <minDepth>0.001</minDepth>
+  </gazebo> 
+  <gazebo reference="link_straight_gripper">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Gray</material>
+      <minDepth>0.001</minDepth>
+  </gazebo> 
   <gazebo reference="link_gripper_finger_right">
       <mu1 value="100.0"/>
       <mu2 value="200.0"/>
@@ -541,26 +564,7 @@
       <kd value="100.0" />
       <material>Gazebo/Gray</material>
       <minDepth>0.001</minDepth>
-  </gazebo>
-
-  <gazebo reference="link_grasp_center">
-      <mu1 value="100.0"/>
-      <mu2 value="200.0"/>
-      <kp value="10000000.0" />
-      <kd value="100.0" />
-      <material>Gazebo/Gray</material>
-      <minDepth>0.001</minDepth>
-  </gazebo>
-
-  <gazebo reference="link_gripper_fingertip_left">
-      <mu1 value="100.0"/>
-      <mu2 value="200.0"/>
-      <kp value="10000000.0" />
-      <kd value="100.0" />
-      <material>Gazebo/Black</material>
-      <minDepth>0.001</minDepth>
-  </gazebo>
-
+  </gazebo> 
   <gazebo reference="link_gripper_fingertip_right">
       <mu1 value="100.0"/>
       <mu2 value="200.0"/>
@@ -568,16 +572,45 @@
       <kd value="100.0" />
       <material>Gazebo/Black</material>
       <minDepth>0.001</minDepth>
-  </gazebo>
-  
-  <gazebo reference="link_gripper">
+  </gazebo> 
+  <gazebo reference="link_gripper_finger_left">
       <mu1 value="100.0"/>
       <mu2 value="200.0"/>
       <kp value="10000000.0" />
       <kd value="100.0" />
       <material>Gazebo/Gray</material>
       <minDepth>0.001</minDepth>
-  </gazebo>
+  </gazebo> 
+  <gazebo reference="link_gripper_fingertip_left">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Black</material>
+      <minDepth>0.001</minDepth>
+  </gazebo>   
+
+  <transmission name="trans_wrist_pitch">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="motor_wrist_pitch">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_wrist_pitch">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+
+  <transmission name="trans_wrist_roll">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="motor_wrist_roll">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_wrist_roll">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+
+  <!-- Gripper -->
 
   <transmission name="trans_gripper_finger_left">
     <type>transmission_interface/SimpleTransmission</type>
@@ -596,6 +629,6 @@
     <joint name="joint_gripper_finger_right">
       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
     </joint>
-</transmission>
+  </transmission>
 
 </robot>
