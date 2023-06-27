@@ -613,6 +613,8 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
                                         v_m=self.goal['velocity'],
                                         a_m=self.goal['acceleration'],
                                         contact_thresh=self.goal['contact_threshold'])
+            if self.goal_reached():
+                return False
         return True
 
     def update_execution(self, robot_status, **kwargs):
