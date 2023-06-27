@@ -107,18 +107,17 @@ class JointTrajectoryAction:
 
             robot_status = self.node.robot.get_status() # uses lock held by robot
             
-            successful_movements = [c.init_execution(self.node.robot, robot_status) for c in self.command_groups]
-            unsuccessful_movements_count = len(successful_movements) - sum(successful_movements)
+            valid_movements = [c.init_execution(self.node.robot, robot_status) for c in self.command_groups]
+            nonvalid_movements_count = len(valid_movements) - sum(valid_movements)
             
-            rospy.loginfo(("unsuccessful movements count: {0}\number of valid points: {1}").format(unsuccessful_movements_count, num_valid_points))
             
-            ## TODO find a count of commanded movements that is indepent of the amount of points in the trajectory goal
-            if unsuccessful_movements_count < num_valid_points:
+            if nonvalid_movements_count < len(commanded_joint_names):
             	self.node.robot.push_command()
 
             goals_reached = [c.goal_reached() for c in self.command_groups]
             update_rate = rospy.Rate(15.0)
             goal_start_time = rospy.Time.now()
+            
 
             while not all(goals_reached):
                 if (rospy.Time.now() - goal_start_time) > self.node.default_goal_timeout_duration:
