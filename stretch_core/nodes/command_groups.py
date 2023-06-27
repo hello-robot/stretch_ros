@@ -58,7 +58,7 @@ class HeadPanCommandGroup(SimpleCommandGroup):
 
 class HeadTiltCommandGroup(SimpleCommandGroup):
     def __init__(self, range_rad=None, calibrated_offset_rad=None, calibrated_looking_up_offset_rad=None, backlash_transition_angle_rad=None, node=None):
-        SimpleCommandGroup.__init__(self, 'joint_head_tilt', range_rad, acceptable_joint_error=0.15, node=node)
+        SimpleCommandGroup.__init__(self, 'joint_head_tilt', range_rad, acceptable_joint_error=0.52, node=node)
         if calibrated_offset_rad is None:
             calibrated_offset_rad = node.controller_parameters['tilt_angle_offset']
         self.calibrated_offset_rad = calibrated_offset_rad
