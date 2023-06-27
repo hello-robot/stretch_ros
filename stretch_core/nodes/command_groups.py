@@ -132,7 +132,7 @@ class WristYawCommandGroup(SimpleCommandGroup):
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            _, wrist_yaw_error_r = self.update_execution(robot_status)
+            _, wrist_yaw_error = self.update_execution(robot_status)
             
             if not self.goal_reached():
                 robot.end_of_arm.move_by('wrist_yaw',
