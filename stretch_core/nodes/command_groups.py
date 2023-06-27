@@ -375,15 +375,16 @@ class ArmCommandGroup(SimpleCommandGroup):
             _, extension_error_m = self.update_execution(robot_status, force_single=True)
             self.retracted = extension_error_m < 0.0
             
-            if not self.goal_reached():
-                robot.arm.move_by(extension_error_m,
-                                  v_m=self.goal['velocity'],
-                                  a_m=self.goal['acceleration'],
-                                  contact_thresh_pos=self.goal['contact_threshold'],
-                                  contact_thresh_neg=-self.goal['contact_threshold'] \
-                                                       if self.goal['contact_threshold'] is not None else None)
-                return True
-            return False
+            
+            robot.arm.move_by(extension_error_m,
+                              v_m=self.goal['velocity'],
+                              a_m=self.goal['acceleration'],
+                              contact_thresh_pos=self.goal['contact_threshold'],
+                              contact_thresh_neg=-self.goal['contact_threshold'] \
+                                                   if self.goal['contact_threshold'] is not None else None)
+            
+            if self.goal_reached():
+                return False
         return True
 
     def update_execution(self, robot_status, **kwargs):
@@ -431,15 +432,14 @@ class LiftCommandGroup(SimpleCommandGroup):
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
             _, lift_error_m = self.update_execution(robot_status)
-            if not self.goal_reached():
-                robot.lift.move_by(lift_error_m,
-                                   v_m=self.goal['velocity'],
-                                   a_m=self.goal['acceleration'],
-                                   contact_thresh_pos=self.goal['contact_threshold'],
-                                   contact_thresh_neg=-self.goal['contact_threshold'] \
-                                                        if self.goal['contact_threshold'] is not None else None)
-                return True
-            return False
+            robot.lift.move_by(lift_error_m,
+                               v_m=self.goal['velocity'],
+                               a_m=self.goal['acceleration'],
+                               contact_thresh_pos=self.goal['contact_threshold'],
+                               contact_thresh_neg=-self.goal['contact_threshold'] \
+                                                    if self.goal['contact_threshold'] is not None else None)
+            if self.goal_reached():
+                return False
         return True
 
     def update_execution(self, robot_status, **kwargs):
