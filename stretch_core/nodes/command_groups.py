@@ -34,10 +34,8 @@ class HeadPanCommandGroup(SimpleCommandGroup):
         if self.active:
             _, pan_error = self.update_execution(robot_status)
 
-            if not self.goal_reached():
-                robot.head.move_by('head_pan', pan_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
-                self.looked_left = pan_error > 0.0
-                return True
+            robot.head.move_by('head_pan', pan_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
+            self.looked_left = pan_error > 0.0
             return False
         return True
 
@@ -89,10 +87,8 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
         if self.active:
             _, tilt_error = self.update_execution(robot_status)
 
-            if not self.goal_reached():
-                robot.head.move_by('head_tilt', tilt_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
-                self.looking_up = self.goal['position'] > (self.backlash_transition_angle_rad + self.calibrated_offset_rad)
-                return True
+            robot.head.move_by('head_tilt', tilt_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
+            self.looking_up = self.goal['position'] > (self.backlash_transition_angle_rad + self.calibrated_offset_rad)
             return False
         return True
 
@@ -134,12 +130,10 @@ class WristYawCommandGroup(SimpleCommandGroup):
         if self.active:
             _, wrist_yaw_error = self.update_execution(robot_status)
             
-            if not self.goal_reached():
-                robot.end_of_arm.move_by('wrist_yaw',
-                                         wrist_yaw_error,
-                                         v_r=self.goal['velocity'],
-                                         a_r=self.goal['acceleration'])
-                return True
+            robot.end_of_arm.move_by('wrist_yaw',
+                                     wrist_yaw_error,
+                                     v_r=self.goal['velocity'],
+                                     a_r=self.goal['acceleration'])
             return False
         return True
 
@@ -237,12 +231,10 @@ class GripperCommandGroup(SimpleCommandGroup):
             elif (self.name == 'joint_gripper_finger_left') or (self.name == 'joint_gripper_finger_right'):
                 gripper_robotis_error = self.gripper_conversion.finger_to_robotis(gripper_error)
             
-            if not self.goal_reached():
-                robot.end_of_arm.move_by('stretch_gripper',
-                                         gripper_robotis_error,
-                                         v_r=self.goal['velocity'],
-                                         a_r=self.goal['acceleration'])
-                return True
+            robot.end_of_arm.move_by('stretch_gripper',
+                                     gripper_robotis_error,
+                                     v_r=self.goal['velocity'],
+                                     a_r=self.goal['acceleration'])
             return False
         return True
 
