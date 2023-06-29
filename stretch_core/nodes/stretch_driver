@@ -262,6 +262,10 @@ class StretchDriverNode:
         i.linear_acceleration.z = az
         self.imu_wrist_pub.publish(i)
         ##################################################
+        # publish Runstop event
+        runstop_event = Bool()
+        runstop_event.data = robot_status['pimu']['runstop_event']
+        self.runstop_event_pub.publish(runstop_event)
 
         self.robot_mode_rwlock.release_read()
 
@@ -471,6 +475,7 @@ class StretchDriverNode:
         self.imu_mobile_base_pub = rospy.Publisher('imu_mobile_base', Imu, queue_size=1)
         self.magnetometer_mobile_base_pub = rospy.Publisher('magnetometer_mobile_base', MagneticField, queue_size=1)
         self.imu_wrist_pub = rospy.Publisher('imu_wrist', Imu, queue_size=1)
+        self.runstop_event_pub = rospy.Publisher('runstop_event',Bool, queue_size=1)
 
         rospy.Subscriber("cmd_vel", Twist, self.set_mobile_base_velocity_callback)
 
