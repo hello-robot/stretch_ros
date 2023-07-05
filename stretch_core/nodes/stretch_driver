@@ -310,13 +310,13 @@ class StretchDriverNode:
             self.robot.base.enable_pos_incr_mode()
         self.change_mode('position', code_to_run)
 
-    def calibrate(self):
+    def home_the_robot(self):
         self.robot_mode_rwlock.acquire_read()
         last_robot_mode = copy.copy(self.robot_mode)
         self.robot_mode_rwlock.release_read()
         def code_to_run():
             pass
-        self.change_mode('calibration', code_to_run)
+        self.change_mode('homing', code_to_run)
         self.robot.home()
         self.change_mode(last_robot_mode, code_to_run)
 
@@ -353,12 +353,12 @@ class StretchDriverNode:
             message='Stopped the robot.'
             )
 
-    def calibrate_callback(self, request):
-        rospy.loginfo('Received calibrate_the_robot service call.')
-        self.calibrate()
+    def home_the_robot_callback(self, request):
+        rospy.loginfo('Received home_the_robot service call.')
+        self.home_the_robot()
         return TriggerResponse(
             success=True,
-            message='Calibrated.'
+            message='Homed.'
         )
 
     def stow_the_robot_callback(self, request):
@@ -374,14 +374,14 @@ class StretchDriverNode:
         return TriggerResponse(
             success=True,
             message='Now in navigation mode.'
-            )
+        )
 
     def position_mode_service_callback(self, request):
         self.turn_on_position_mode()
         return TriggerResponse(
             success=True,
             message='Now in position mode.'
-            )
+        )
 
     def runstop_service_callback(self, request):
         if request.data:
@@ -399,14 +399,19 @@ class StretchDriverNode:
                 for joint in self.robot.end_of_arm.joints:
                     self.robot.end_of_arm.move_by(joint, 0.0)
 
+            self.robot_mode_rwlock.acquire_read()
+            self.prerunstop_mode = copy.copy(self.robot_mode)
+            self.robot_mode_rwlock.release_read()
+            self.change_mode('runstopped', lambda: None)
             self.robot.pimu.runstop_event_trigger()
         else:
+            self.change_mode(self.prerunstop_mode, lambda: None)
             self.robot.pimu.runstop_event_reset()
 
         return SetBoolResponse(
             success=True,
             message='is_runstopped: {0}'.format(request.data)
-            )
+        )
 
     ########### MAIN ############
 
@@ -531,7 +536,11 @@ class StretchDriverNode:
 
         self.calibrate_the_robot_service = rospy.Service('/calibrate_the_robot',
                                                          Trigger,
-                                                         self.calibrate_callback)
+                                                         self.home_the_robot_callback)
+
+        self.home_the_robot_service = rospy.Service('/home_the_robot',
+                                                    Trigger,
+                                                    self.home_the_robot_callback)
 
         self.stow_the_robot_service = rospy.Service('/stow_the_robot',
                                                     Trigger,
