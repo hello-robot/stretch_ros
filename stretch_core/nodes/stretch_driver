@@ -83,6 +83,7 @@ class StretchDriverNode:
         current_time = rospy.Time.now()
         robot_status = self.robot.get_status()
 
+        ##################################################
         # obtain odometry
         base_status = robot_status['base']
         x = base_status['x']
@@ -124,6 +125,8 @@ class StretchDriverNode:
         odom.twist.twist.angular.z = theta_vel
         self.odom_pub.publish(odom)
 
+        ##################################################
+        # obstain battery state
         pimu_hardware_id = self.robot.pimu.board_info['hardware_id']
         invalid_reading = float('NaN')
         v = float(robot_status['pimu']['voltage'])
@@ -158,6 +161,7 @@ class StretchDriverNode:
         elif self.charging_state == BatteryState.POWER_SUPPLY_STATUS_DISCHARGING:
             i = -1 * float(robot_status['pimu']['current'])
 
+        # publish battery state
         battery_state = BatteryState()
         battery_state.header.stamp = current_time
         battery_state.voltage = v
@@ -175,14 +179,24 @@ class StretchDriverNode:
             battery_state.present = robot_status['pimu']['charger_connected']
         self.power_pub.publish(battery_state)
 
+        ##################################################
+        # publish homed status
         calibration_status = Bool()
         calibration_status.data = self.robot.is_calibrated()
         self.calibration_pub.publish(calibration_status)
+        self.homed_pub.publish(calibration_status)
 
+        # publish runstop event
+        runstop_event = Bool()
+        runstop_event.data = robot_status['pimu']['runstop_event']
+        self.runstop_event_pub.publish(runstop_event)
+
+        # publish mode status
         mode_msg = String()
         mode_msg.data = self.robot_mode
         self.mode_pub.publish(mode_msg)
 
+        ##################################################
         # publish joint state
         joint_state = JointState()
         joint_state.header.stamp = current_time
@@ -262,10 +276,6 @@ class StretchDriverNode:
         i.linear_acceleration.z = az
         self.imu_wrist_pub.publish(i)
         ##################################################
-        # publish Runstop event
-        runstop_event = Bool()
-        runstop_event.data = robot_status['pimu']['runstop_event']
-        self.runstop_event_pub.publish(runstop_event)
 
         self.robot_mode_rwlock.release_read()
 
@@ -415,6 +425,8 @@ class StretchDriverNode:
 
         self.robot = rb.Robot()
         self.robot.startup()
+        if not self.robot.is_calibrated():
+            rospy.logwarn(f'{self.node_name} robot is not homed')
 
         mode = rospy.get_param('~mode', "position")
         rospy.loginfo('mode = ' + str(mode))
@@ -470,12 +482,13 @@ class StretchDriverNode:
 
         self.power_pub = rospy.Publisher('battery', BatteryState, queue_size=1)
         self.calibration_pub = rospy.Publisher('is_calibrated', Bool, queue_size=1)
+        self.homed_pub = rospy.Publisher('is_homed', Bool, queue_size=1)
         self.mode_pub = rospy.Publisher('mode', String, queue_size=1)
 
         self.imu_mobile_base_pub = rospy.Publisher('imu_mobile_base', Imu, queue_size=1)
         self.magnetometer_mobile_base_pub = rospy.Publisher('magnetometer_mobile_base', MagneticField, queue_size=1)
         self.imu_wrist_pub = rospy.Publisher('imu_wrist', Imu, queue_size=1)
-        self.runstop_event_pub = rospy.Publisher('runstop_event',Bool, queue_size=1)
+        self.runstop_event_pub = rospy.Publisher('is_runstopped', Bool, queue_size=1)
 
         rospy.Subscriber("cmd_vel", Twist, self.set_mobile_base_velocity_callback)
 
