@@ -317,27 +317,38 @@ class StretchDriverNode:
 
     def home_the_robot(self):
         self.robot_mode_rwlock.acquire_read()
+        can_home = self.robot_mode in self.control_modes
         last_robot_mode = copy.copy(self.robot_mode)
         self.robot_mode_rwlock.release_read()
+        if not can_home:
+            errmsg = f'Cannot home while in mode={last_robot_mode}.'
+            rospy.logerr(errmsg)
+            return False, errmsg
         def code_to_run():
             pass
         self.change_mode('homing', code_to_run)
         self.robot.home()
         self.change_mode(last_robot_mode, code_to_run)
+        return True, 'Homed.'
 
     def stow_the_robot(self):
         self.robot_mode_rwlock.acquire_read()
+        can_stow = self.robot_mode in self.control_modes
         last_robot_mode = copy.copy(self.robot_mode)
         self.robot_mode_rwlock.release_read()
+        if not can_stow:
+            errmsg = f'Cannot stow while in mode={last_robot_mode}.'
+            rospy.logerr(errmsg)
+            return False, errmsg
         def code_to_run():
             pass
         self.change_mode('stowing', code_to_run)
         self.robot.stow()
         self.change_mode(last_robot_mode, code_to_run)
+        return True, 'Stowed.'
 
     def runstop_the_robot(self, runstopped, just_change_mode=False):
         if runstopped:
-            already_runstopped = False
             self.robot_mode_rwlock.acquire_read()
             already_runstopped = self.robot_mode == 'runstopped'
             if not already_runstopped:
@@ -349,7 +360,6 @@ class StretchDriverNode:
             if not just_change_mode:
                 self.robot.pimu.runstop_event_trigger()
         else:
-            already_not_runstopped = False
             self.robot_mode_rwlock.acquire_read()
             already_not_runstopped = self.robot_mode != 'runstopped'
             self.robot_mode_rwlock.release_read()
@@ -384,18 +394,18 @@ class StretchDriverNode:
 
     def home_the_robot_callback(self, request):
         rospy.loginfo('Received home_the_robot service call.')
-        self.home_the_robot()
+        did_succeed, msg = self.home_the_robot()
         return TriggerResponse(
-            success=True,
-            message='Homed.'
+            success=did_succeed,
+            message=msg
         )
 
     def stow_the_robot_callback(self, request):
         rospy.loginfo('Recevied stow_the_robot service call.')
-        self.stow_the_robot()
+        did_succeed, msg = self.stow_the_robot()
         return TriggerResponse(
-            success=True,
-            message='Stowed.'
+            success=did_succeed,
+            message=msg
         )
 
     def navigation_mode_service_callback(self, request):
