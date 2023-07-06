@@ -40,9 +40,10 @@ class StretchDriverNode:
 
         self.robot_stop_lock = threading.Lock()
         self.stop_the_robot = False
-
         self.robot_mode_rwlock = RWLock()
         self.robot_mode = None
+        self.control_modes = ['position', 'navigation']
+        self.prev_runstop_state = None
 
         self.voltage_history = []
         self.charging_state_history = [BatteryState.POWER_SUPPLY_STATUS_UNKNOWN] * 10
@@ -278,6 +279,10 @@ class StretchDriverNode:
         ##################################################
 
         self.robot_mode_rwlock.release_read()
+        # must happen after the read release, otherwise the write lock in change_mode() will cause a deadlock
+        if (self.prev_runstop_state == None and runstop_event.data) or (self.prev_runstop_state != None and runstop_event.data != self.prev_runstop_state):
+            self.runstop_the_robot(runstop_event.data, just_change_mode=True)
+        self.prev_runstop_state = runstop_event.data
 
     ######## CHANGE MODES #########
 
@@ -329,6 +334,30 @@ class StretchDriverNode:
         self.change_mode('stowing', code_to_run)
         self.robot.stow()
         self.change_mode(last_robot_mode, code_to_run)
+
+    def runstop_the_robot(self, runstopped, just_change_mode=False):
+        if runstopped:
+            already_runstopped = False
+            self.robot_mode_rwlock.acquire_read()
+            already_runstopped = self.robot_mode == 'runstopped'
+            if not already_runstopped:
+                self.prerunstop_mode = copy.copy(self.robot_mode)
+            self.robot_mode_rwlock.release_read()
+            if already_runstopped:
+                return
+            self.change_mode('runstopped', lambda: None)
+            if not just_change_mode:
+                self.robot.pimu.runstop_event_trigger()
+        else:
+            already_not_runstopped = False
+            self.robot_mode_rwlock.acquire_read()
+            already_not_runstopped = self.robot_mode != 'runstopped'
+            self.robot_mode_rwlock.release_read()
+            if already_not_runstopped:
+                return
+            self.change_mode(self.prerunstop_mode, lambda: None)
+            if not just_change_mode:
+                self.robot.pimu.runstop_event_reset()
 
     ######## SERVICE CALLBACKS #######
 
@@ -384,30 +413,7 @@ class StretchDriverNode:
         )
 
     def runstop_service_callback(self, request):
-        if request.data:
-            with self.robot_stop_lock:
-                self.stop_the_robot = True
-
-                self.robot.base.translate_by(0.0)
-                self.robot.base.rotate_by(0.0)
-                self.robot.arm.move_by(0.0)
-                self.robot.lift.move_by(0.0)
-                self.robot.push_command()
-
-                for joint in self.robot.head.joints:
-                    self.robot.head.move_by(joint, 0.0)
-                for joint in self.robot.end_of_arm.joints:
-                    self.robot.end_of_arm.move_by(joint, 0.0)
-
-            self.robot_mode_rwlock.acquire_read()
-            self.prerunstop_mode = copy.copy(self.robot_mode)
-            self.robot_mode_rwlock.release_read()
-            self.change_mode('runstopped', lambda: None)
-            self.robot.pimu.runstop_event_trigger()
-        else:
-            self.change_mode(self.prerunstop_mode, lambda: None)
-            self.robot.pimu.runstop_event_reset()
-
+        self.runstop_the_robot(request.data)
         return SetBoolResponse(
             success=True,
             message='is_runstopped: {0}'.format(request.data)
@@ -434,6 +440,9 @@ class StretchDriverNode:
             rospy.logwarn(f'{self.node_name} robot is not homed')
 
         mode = rospy.get_param('~mode', "position")
+        if mode not in self.control_modes:
+            rospy.logwarn(f'{self.node_name} given invalid mode={mode}, using position instead')
+            mode = 'position'
         rospy.loginfo('mode = ' + str(mode))
         if mode == "position":
             self.turn_on_position_mode()
@@ -499,7 +508,7 @@ class StretchDriverNode:
 
         # ~ symbol gets parameter from private namespace
         self.joint_state_rate = rospy.get_param('~rate', 15.0)
-        self.timeout = rospy.get_param('~timeout', 1.0)
+        self.timeout = rospy.get_param('~timeout', 0.5)
         rospy.loginfo("{0} rate = {1} Hz".format(self.node_name, self.joint_state_rate))
         rospy.loginfo("{0} timeout = {1} s".format(self.node_name, self.timeout))
 
@@ -534,6 +543,7 @@ class StretchDriverNode:
                                                     Trigger,
                                                     self.stop_the_robot_callback)
 
+        # TODO: deprecated, will be removed
         self.calibrate_the_robot_service = rospy.Service('/calibrate_the_robot',
                                                          Trigger,
                                                          self.home_the_robot_callback)
