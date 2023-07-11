@@ -81,6 +81,10 @@ Other ways to stow the robot include using the `stretch_robot_stow.py` CLI tool 
 
 Runstopping the robot while this service is running will yield undefined behavior and likely leave the driver in a bad state.
 
+##### /stop_the_robot ([std_srvs/Trigger](https://docs.ros.org/en/noetic/api/std_srvs/html/srv/Trigger.html))
+
+This service immediately stops any currently active motion.
+
 ##### /runstop ([std_srvs/SetBool](https://docs.ros.org/en/noetic/api/std_srvs/html/srv/SetBool.html))
 
 This service can put Stretch into runstop or take Stretch out of runstop. It's common to put the robot into/out of runstop by pressing the [glowing white button](https://docs.hello-robot.com/0.2/stretch-tutorials/getting_started/safety_guide/#runstop) in Stretch's head (at which point the robot will beep and the button will be blinking to indicate that it's runstopped), and holding the button down for two seconds to take it out of runstop (the button will return to non-blinking). This service acts as a programmatic way to achieve the same effect. When this service is triggered, the [mode topic](#mode-stdmsgsstringhttpsdocsrosorgennoeticapistdmsgshtmlmsgstringhtml) will reflect that the robot is in "runstopped" mode, and after the robot is taken out of runstop, the driver will switch back to whatever mode the robot was in before this service was triggered. While stretch_driver is in "runstopped" mode, no commands to the [cmd_vel topic](#TODO) or the [follow joint trajectory action service](#TODO) will be accepted.
