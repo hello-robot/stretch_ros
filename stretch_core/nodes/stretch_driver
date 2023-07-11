@@ -373,6 +373,7 @@ class StretchDriverNode:
             self.change_mode(self.prerunstop_mode, lambda: None)
             if not just_change_mode:
                 self.robot.pimu.runstop_event_reset()
+        self.robot.pimu.push_command()
 
     ######## SERVICE CALLBACKS #######
 
@@ -576,12 +577,13 @@ class StretchDriverNode:
                                               SetBool,
                                               self.runstop_service_callback)
 
+        self.robot.pimu.set_fan_on()
+        self.robot.pimu.push_command()
+        
         try:
             # start loop to command the mobile base velocity, publish
             # odometry, and publish joint states
             while not rospy.is_shutdown():
-                self.robot.pimu.set_fan_on()
-                self.robot.pimu.push_command()
                 self.command_mobile_base_velocity_and_publish_state()
                 command_base_velocity_and_publish_joint_state_rate.sleep()
         except (rospy.ROSInterruptException, ThreadServiceExit):
