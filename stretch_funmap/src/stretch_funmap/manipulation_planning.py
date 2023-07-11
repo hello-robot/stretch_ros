@@ -203,7 +203,7 @@ class ManipulationView():
         print('ManipulationView __init__: self.debug_directory =', self.debug_directory)
         self.gripper_links = {
             'tool_stretch_gripper': 'link_gripper',
-            'tool_stretch_dex_wrist': 'link_straight_gripper'
+            'tool_stretch_dex_wrist': 'link_straight_gripper_aligned'
         }
         self.tool = tool
 
