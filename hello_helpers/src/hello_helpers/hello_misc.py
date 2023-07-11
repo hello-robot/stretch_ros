@@ -164,6 +164,24 @@ class HelloNode:
                 continue
             rate.sleep()
 
+    def home_the_robot(self):
+        trigger_request = TriggerRequest()
+        trigger_result = self.home_the_robot_service(trigger_request)
+        rospy.logdebug(f"{self.node_name}'s HelloNode.home_the_robot: got message {trigger_result.message}")
+        return trigger_result.success
+
+    def stow_the_robot(self):
+        trigger_request = TriggerRequest()
+        trigger_result = self.stow_the_robot_service(trigger_request)
+        rospy.logdebug(f"{self.node_name}'s HelloNode.stow_the_robot: got message {trigger_result.message}")
+        return trigger_result.success
+
+    def stop_the_robot(self):
+        trigger_request = TriggerRequest()
+        trigger_result = self.stop_the_robot_service(trigger_request)
+        rospy.logdebug(f"{self.node_name}'s HelloNode.stop_the_robot: got message {trigger_result.message}")
+        return trigger_result.success
+
     def main(self, node_name, node_topic_namespace, wait_for_first_pointcloud=True):
         rospy.init_node(node_name)
         self.node_name = rospy.get_name()
@@ -181,10 +199,14 @@ class HelloNode:
         self.point_cloud_subscriber = rospy.Subscriber('/camera/depth/color/points', PointCloud2, self.point_cloud_callback)
         self.point_cloud_pub = rospy.Publisher('/' + node_topic_namespace + '/point_cloud2', PointCloud2, queue_size=1)
 
+        rospy.wait_for_service('/home_the_robot')
+        rospy.wait_for_service('/stow_the_robot')
         rospy.wait_for_service('/stop_the_robot')
-        rospy.loginfo('Node ' + self.node_name + ' connected to /stop_the_robot service.')
+        rospy.loginfo('Node ' + self.node_name + ' connected to robot services.')
+        self.home_the_robot_service = rospy.ServiceProxy('/home_the_robot', Trigger)
+        self.stow_the_robot_service = rospy.ServiceProxy('/stow_the_robot', Trigger)
         self.stop_the_robot_service = rospy.ServiceProxy('/stop_the_robot', Trigger)
-        
+
         if wait_for_first_pointcloud:
             # Do not start until a point cloud has been received
             point_cloud_msg = self.point_cloud
