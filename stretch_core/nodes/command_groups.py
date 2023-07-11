@@ -16,6 +16,7 @@ class HeadPanCommandGroup(SimpleCommandGroup):
             calibrated_looked_left_offset_rad = node.controller_parameters['pan_looked_left_offset']
         self.looked_left_offset_rad = calibrated_looked_left_offset_rad
         self.looked_left = False
+        
 
     def update_joint_range(self, joint_range, node=None):
         if joint_range is not None:
@@ -32,8 +33,11 @@ class HeadPanCommandGroup(SimpleCommandGroup):
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
             _, pan_error = self.update_execution(robot_status)
+
             robot.head.move_by('head_pan', pan_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
             self.looked_left = pan_error > 0.0
+            return False
+        return True
 
     def update_execution(self, robot_status, **kwargs):
         self.error = None
@@ -65,6 +69,7 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
             backlash_transition_angle_rad = node.controller_parameters['tilt_angle_backlash_transition']
         self.backlash_transition_angle_rad = backlash_transition_angle_rad
         self.looking_up = False
+        
 
     def update_joint_range(self, joint_range, node=None):
         if joint_range is not None:
@@ -81,8 +86,11 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
             _, tilt_error = self.update_execution(robot_status)
+
             robot.head.move_by('head_tilt', tilt_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
             self.looking_up = self.goal['position'] > (self.backlash_transition_angle_rad + self.calibrated_offset_rad)
+            return False
+        return True
 
     def update_execution(self, robot_status, **kwargs):
         self.error = None
@@ -104,6 +112,7 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
 class WristYawCommandGroup(SimpleCommandGroup):
     def __init__(self, range_rad=None, node=None):
         SimpleCommandGroup.__init__(self, 'joint_wrist_yaw', range_rad, node=node)
+         
 
     def update_joint_range(self, joint_range, node=None):
         if joint_range is not None:
@@ -119,10 +128,14 @@ class WristYawCommandGroup(SimpleCommandGroup):
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
+            _, wrist_yaw_error = self.update_execution(robot_status)
+            
             robot.end_of_arm.move_by('wrist_yaw',
-                                     self.update_execution(robot_status)[1],
+                                     wrist_yaw_error,
                                      v_r=self.goal['velocity'],
                                      a_r=self.goal['acceleration'])
+            return False
+        return True
 
     def update_execution(self, robot_status, **kwargs):
         self.error = None
@@ -143,6 +156,7 @@ class GripperCommandGroup(SimpleCommandGroup):
         SimpleCommandGroup.__init__(self, 'joint_gripper_finger_left', range_robotis, acceptable_joint_error=1.0, node=node)
         self.gripper_joint_names = ['joint_gripper_finger_left', 'joint_gripper_finger_right', 'gripper_aperture']
         self.update_joint_range(range_robotis)
+        
 
     def update_joint_range(self, joint_range, node=None):
         if joint_range is not None:
@@ -216,10 +230,13 @@ class GripperCommandGroup(SimpleCommandGroup):
                 gripper_robotis_error = self.gripper_conversion.aperture_to_robotis(gripper_error)
             elif (self.name == 'joint_gripper_finger_left') or (self.name == 'joint_gripper_finger_right'):
                 gripper_robotis_error = self.gripper_conversion.finger_to_robotis(gripper_error)
+            
             robot.end_of_arm.move_by('stretch_gripper',
                                      gripper_robotis_error,
                                      v_r=self.goal['velocity'],
                                      a_r=self.goal['acceleration'])
+            return False
+        return True
 
     def update_execution(self, robot_status, **kwargs):
         self.error = None
@@ -356,13 +373,19 @@ class ArmCommandGroup(SimpleCommandGroup):
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
             _, extension_error_m = self.update_execution(robot_status, force_single=True)
+            self.retracted = extension_error_m < 0.0
+            
+            
             robot.arm.move_by(extension_error_m,
                               v_m=self.goal['velocity'],
                               a_m=self.goal['acceleration'],
                               contact_thresh_pos=self.goal['contact_threshold'],
                               contact_thresh_neg=-self.goal['contact_threshold'] \
                                                    if self.goal['contact_threshold'] is not None else None)
-            self.retracted = extension_error_m < 0.0
+            
+            if self.goal_reached():
+                return False
+        return True
 
     def update_execution(self, robot_status, **kwargs):
         success_callback = kwargs['success_callback'] if 'success_callback' in kwargs.keys() else None
@@ -408,12 +431,16 @@ class LiftCommandGroup(SimpleCommandGroup):
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            robot.lift.move_by(self.update_execution(robot_status)[1],
+            _, lift_error_m = self.update_execution(robot_status)
+            robot.lift.move_by(lift_error_m,
                                v_m=self.goal['velocity'],
                                a_m=self.goal['acceleration'],
                                contact_thresh_pos=self.goal['contact_threshold'],
                                contact_thresh_neg=-self.goal['contact_threshold'] \
                                                     if self.goal['contact_threshold'] is not None else None)
+            if self.goal_reached():
+                return False
+        return True
 
     def update_execution(self, robot_status, **kwargs):
         success_callback = kwargs['success_callback'] if 'success_callback' in kwargs.keys() else None
@@ -586,6 +613,9 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
                                         v_m=self.goal['velocity'],
                                         a_m=self.goal['acceleration'],
                                         contact_thresh=self.goal['contact_threshold'])
+            if self.goal_reached():
+                return False
+        return True
 
     def update_execution(self, robot_status, **kwargs):
         success_callback = kwargs['success_callback'] if 'success_callback' in kwargs.keys() else None

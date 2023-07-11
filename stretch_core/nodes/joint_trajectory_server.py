@@ -106,13 +106,18 @@ class JointTrajectoryAction:
                 return
 
             robot_status = self.node.robot.get_status() # uses lock held by robot
-            for c in self.command_groups:
-                c.init_execution(self.node.robot, robot_status)
-            self.node.robot.push_command()
+            
+            movements_requiring_push = [c.init_execution(self.node.robot, robot_status) for c in self.command_groups]
+            movements_not_requiring_push_count = len(movements_requiring_push) - sum(movements_requiring_push)
+            
+            
+            if movements_not_requiring_push_count != len(commanded_joint_names):
+            	self.node.robot.push_command()
 
             goals_reached = [c.goal_reached() for c in self.command_groups]
             update_rate = rospy.Rate(15.0)
             goal_start_time = rospy.Time.now()
+            
 
             while not all(goals_reached):
                 if (rospy.Time.now() - goal_start_time) > self.node.default_goal_timeout_duration:
