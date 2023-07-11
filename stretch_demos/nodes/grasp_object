@@ -103,7 +103,7 @@ class GraspObjectNode(hm.HelloNode):
         self.stow_the_robot()
 
         # 2. Scan surface and find grasp target
-        self.look_at_surface(scan_time_s = 3.0)
+        self.look_at_surface(scan_time_s = 4.0)
         grasp_target = self.manipulation_view.get_grasp_target(self.tf2_buffer)
         if grasp_target is None:
             return TriggerResponse(
@@ -113,6 +113,8 @@ class GraspObjectNode(hm.HelloNode):
 
         # 3. Move to pregrasp pose
         pregrasp_lift_m = self.manipulation_view.get_pregrasp_lift(grasp_target, self.tf2_buffer)
+        if self.tool == "tool_stretch_dex_wrist":
+            pregrasp_lift_m += 0.02
         if (self.lift_position is None):
             return TriggerResponse(
                 success=False,
