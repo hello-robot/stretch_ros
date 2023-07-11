@@ -239,10 +239,10 @@ class FunmapNode(hm.HelloNode):
                 av_effort_threshold = 34.0
 
                 if (effort >= single_effort_threshold):
-                    rospy.loginfo('Extension single effort exceeded single_effort_threshold: {0} >= {1}'.format(
+                    rospy.logdebug('Extension single effort exceeded single_effort_threshold: {0} >= {1}'.format(
                         effort, single_effort_threshold))
                 if (av_effort >= av_effort_threshold):
-                    rospy.loginfo('Extension average effort exceeded av_effort_threshold: {0} >= {1}'.format(
+                    rospy.logdebug('Extension average effort exceeded av_effort_threshold: {0} >= {1}'.format(
                         av_effort, av_effort_threshold))
 
                 return ((effort >= single_effort_threshold) or
@@ -257,10 +257,10 @@ class FunmapNode(hm.HelloNode):
                 av_effort_threshold = 40.0
 
                 if (effort >= single_effort_threshold):
-                    rospy.loginfo('Extension single effort exceeded single_effort_threshold: {0} >= {1}'.format(
+                    rospy.logdebug('Extension single effort exceeded single_effort_threshold: {0} >= {1}'.format(
                         effort, single_effort_threshold))
                 if (av_effort >= av_effort_threshold):
-                    rospy.loginfo('Extension average effort exceeded av_effort_threshold: {0} >= {1}'.format(
+                    rospy.logdebug('Extension average effort exceeded av_effort_threshold: {0} >= {1}'.format(
                         av_effort, av_effort_threshold))
 
                 return ((effort >= single_effort_threshold) or
@@ -274,10 +274,10 @@ class FunmapNode(hm.HelloNode):
             av_effort_threshold = 20.0
 
             if (effort <= single_effort_threshold):
-                rospy.loginfo('Lift single effort less than single_effort_threshold: {0} <= {1}'.format(
+                rospy.logdebug('Lift single effort less than single_effort_threshold: {0} <= {1}'.format(
                     effort, single_effort_threshold))
             if (av_effort <= av_effort_threshold):
-                rospy.loginfo('Lift average effort less than av_effort_threshold: {0} <= {1}'.format(
+                rospy.logdebug('Lift average effort less than av_effort_threshold: {0} <= {1}'.format(
                     av_effort, av_effort_threshold))
 
             return ((effort <= single_effort_threshold) or
