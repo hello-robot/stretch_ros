@@ -58,7 +58,7 @@ class GraspObjectNode(hm.HelloNode):
         rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
     def look_at_surface(self, scan_time_s=None):
-        self.manipulation_view = mp.ManipulationView(self.tf2_buffer, self.debug_directory)
+        self.manipulation_view = mp.ManipulationView(self.tf2_buffer, self.debug_directory, self.get_tool())
         manip = self.manipulation_view
         head_settle_time_s = 0.02 #1.0
         manip.move_head(self.move_to_pose)

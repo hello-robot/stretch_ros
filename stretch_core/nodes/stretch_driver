@@ -197,6 +197,11 @@ class StretchDriverNode:
         mode_msg.data = self.robot_mode
         self.mode_pub.publish(mode_msg)
 
+        # publish end of arm tool
+        tool_msg = String()
+        tool_msg.data = self.robot.end_of_arm.name
+        self.tool_pub.publish(tool_msg)
+
         ##################################################
         # publish joint state
         joint_state = JointState()
@@ -508,6 +513,7 @@ class StretchDriverNode:
         self.calibration_pub = rospy.Publisher('is_calibrated', Bool, queue_size=1)
         self.homed_pub = rospy.Publisher('is_homed', Bool, queue_size=1)
         self.mode_pub = rospy.Publisher('mode', String, queue_size=1)
+        self.tool_pub = rospy.Publisher('tool', String, queue_size=1)
 
         self.imu_mobile_base_pub = rospy.Publisher('imu_mobile_base', Imu, queue_size=1)
         self.magnetometer_mobile_base_pub = rospy.Publisher('magnetometer_mobile_base', MagneticField, queue_size=1)
