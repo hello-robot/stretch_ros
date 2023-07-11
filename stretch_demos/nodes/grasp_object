@@ -87,22 +87,20 @@ class GraspObjectNode(hm.HelloNode):
             at_goal = self.move_base.backward(forward_m, detect_obstacles=False, tolerance_distance_m=tolerance_distance_m)
         
     def trigger_grasp_object_callback(self, request):
-        actually_move = True
         max_lift_m = 1.09
         min_extension_m = 0.01
         max_extension_m = 0.5
 
         # 1. Initial configuration
         use_default_mode = False
-        if use_default_mode: 
+        if use_default_mode:
             # Set the D435i to Default mode for obstacle detection
-            trigger_request = TriggerRequest() 
+            trigger_request = TriggerRequest()
             trigger_result = self.trigger_d435i_default_mode_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
-        if actually_move:
-            rospy.loginfo('Stow the arm.')
-            self.stow_the_robot()
+        rospy.loginfo('Stow the arm.')
+        self.stow_the_robot()
 
         # 2. Scan surface and find grasp target
         self.look_at_surface(scan_time_s = 3.0)
@@ -120,14 +118,13 @@ class GraspObjectNode(hm.HelloNode):
                 success=False,
                 message='lift position unavailable'
             )
-        if actually_move:
-            rospy.loginfo('Raise tool to pregrasp height.')
-            lift_to_pregrasp_m = max(self.lift_position + pregrasp_lift_m, 0.1)
-            lift_to_pregrasp_m = min(lift_to_pregrasp_m, max_lift_m)
-            pose = {'joint_lift': lift_to_pregrasp_m}
-            self.move_to_pose(pose)
+        rospy.loginfo('Raise tool to pregrasp height.')
+        lift_to_pregrasp_m = max(self.lift_position + pregrasp_lift_m, 0.1)
+        lift_to_pregrasp_m = min(lift_to_pregrasp_m, max_lift_m)
+        pose = {'joint_lift': lift_to_pregrasp_m}
+        self.move_to_pose(pose)
 
-        if actually_move and self.tool == "tool_stretch_dex_wrist":
+        if self.tool == "tool_stretch_dex_wrist":
             rospy.loginfo('Rotate pitch/roll for grasping.')
             pose = {'joint_wrist_pitch': -0.3, 'joint_wrist_roll': 0.0}
             self.move_to_pose(pose)
@@ -135,88 +132,83 @@ class GraspObjectNode(hm.HelloNode):
         pregrasp_yaw = self.manipulation_view.get_pregrasp_yaw(grasp_target, self.tf2_buffer)
         rospy.loginfo('pregrasp_yaw = {0:.2f} rad'.format(pregrasp_yaw))
         rospy.loginfo('pregrasp_yaw = {0:.2f} deg'.format(pregrasp_yaw * (180.0/np.pi)))
-        if actually_move:
-            rospy.loginfo('Rotate the gripper for grasping.')
-            pose = {'joint_wrist_yaw': pregrasp_yaw}
-            self.move_to_pose(pose)
+        rospy.loginfo('Rotate the gripper for grasping.')
+        pose = {'joint_wrist_yaw': pregrasp_yaw}
+        self.move_to_pose(pose)
 
-            rospy.loginfo('Open the gripper.')
-            pose = {'gripper_aperture': 0.125}
-            self.move_to_pose(pose)
+        rospy.loginfo('Open the gripper.')
+        pose = {'gripper_aperture': 0.125}
+        self.move_to_pose(pose)
 
         pregrasp_mobile_base_m, pregrasp_wrist_extension_m = self.manipulation_view.get_pregrasp_planar_translation(grasp_target, self.tf2_buffer)
         rospy.loginfo('pregrasp_mobile_base_m = {0:.3f} m'.format(pregrasp_mobile_base_m))
         rospy.loginfo('pregrasp_wrist_extension_m = {0:.3f} m'.format(pregrasp_wrist_extension_m))
-        if actually_move:
-            rospy.loginfo('Drive to pregrasp location.')
-            self.drive(pregrasp_mobile_base_m)
+        rospy.loginfo('Drive to pregrasp location.')
+        self.drive(pregrasp_mobile_base_m)
 
-            if pregrasp_wrist_extension_m > 0.0:
-                extension_m = max(self.wrist_position + pregrasp_wrist_extension_m, min_extension_m)
-                extension_m = min(extension_m, max_extension_m)
-                rospy.loginfo('Extend tool above surface.')
-                pose = {'wrist_extension': extension_m}
-                self.move_to_pose(pose)
-            else:
-                rospy.loginfo('negative wrist extension for pregrasp, so not extending or retracting.')
+        if pregrasp_wrist_extension_m > 0.0:
+            extension_m = max(self.wrist_position + pregrasp_wrist_extension_m, min_extension_m)
+            extension_m = min(extension_m, max_extension_m)
+            rospy.loginfo('Extend tool above surface.')
+            pose = {'wrist_extension': extension_m}
+            self.move_to_pose(pose)
+        else:
+            rospy.loginfo('negative wrist extension for pregrasp, so not extending or retracting.')
 
         # 4. Grasp the object and lift it
         grasp_mobile_base_m, grasp_lift_m, grasp_wrist_extension_m = self.manipulation_view.get_grasp_from_pregrasp(grasp_target, self.tf2_buffer)
         rospy.loginfo('grasp_mobile_base_m = {0:3f} m, grasp_lift_m = {1:3f} m, grasp_wrist_extension_m = {2:3f} m'.format(grasp_mobile_base_m, grasp_lift_m, grasp_wrist_extension_m))
-        if actually_move:
-            rospy.loginfo('Move the grasp pose from the pregrasp pose.')
+        rospy.loginfo('Move the grasp pose from the pregrasp pose.')
 
-            lift_m = max(self.lift_position + grasp_lift_m, 0.1)
-            lift_m = min(lift_m, max_lift_m)
+        lift_m = max(self.lift_position + grasp_lift_m, 0.1)
+        lift_m = min(lift_m, max_lift_m)
+        extension_m = max(self.wrist_position + grasp_wrist_extension_m, min_extension_m)
+        extension_m = min(extension_m, max_extension_m)
+        pose = {'translate_mobile_base': grasp_mobile_base_m,
+                'joint_lift': lift_m,
+                'wrist_extension': extension_m}
+        self.move_to_pose(pose)
 
-            extension_m = max(self.wrist_position + grasp_wrist_extension_m, min_extension_m)
-            extension_m = min(extension_m, max_extension_m)
+        rospy.loginfo('Attempt to close the gripper on the object.')
+        gripper_aperture_m = grasp_target['width_m'] - 0.18
+        pose = {'gripper_aperture': gripper_aperture_m}
+        self.move_to_pose(pose)
 
-            pose = {'translate_mobile_base': grasp_mobile_base_m,
-                    'joint_lift': lift_m,
-                    'wrist_extension': extension_m}
-            self.move_to_pose(pose)
+        # Lifting appears to happen before the gripper has
+        # finished unless there is this sleep. Need to look
+        # into this issue.
+        rospy.sleep(3.0)
 
-            rospy.loginfo('Attempt to close the gripper on the object.')
-            gripper_aperture_m = grasp_target['width_m'] - 0.18
-            pose = {'gripper_aperture': gripper_aperture_m}
-            self.move_to_pose(pose)
+        rospy.loginfo('Attempt to lift the object.')
+        object_lift_height_m = 0.1
+        lift_m = max(self.lift_position + object_lift_height_m, 0.2)
+        lift_m = min(lift_m, max_lift_m)
+        pose = {'joint_lift': lift_m}
+        self.move_to_pose(pose)
 
-            # Lifting appears to happen before the gripper has
-            # finished unless there is this sleep. Need to look
-            # into this issue.
-            rospy.sleep(3.0)
+        rospy.loginfo('Open the gripper a little to avoid overtorquing and overheating the gripper motor.')
+        pose = {'gripper_aperture': gripper_aperture_m + 0.005}
+        self.move_to_pose(pose)
 
-            rospy.loginfo('Attempt to lift the object.')
-            object_lift_height_m = 0.1
-            lift_m = max(self.lift_position + object_lift_height_m, 0.2)
-            lift_m = min(lift_m, max_lift_m)
-            pose = {'joint_lift': lift_m}
-            self.move_to_pose(pose)
+        rospy.loginfo('Retract the tool.')
+        pose = {'wrist_extension': 0.01}
+        self.move_to_pose(pose)
 
-            rospy.loginfo('Open the gripper a little to avoid overtorquing and overheating the gripper motor.')
-            pose = {'gripper_aperture': gripper_aperture_m + 0.005}
-            self.move_to_pose(pose)
-
-            rospy.loginfo('Retract the tool.')
-            pose = {'wrist_extension': 0.01}
-            self.move_to_pose(pose)
-
-            rospy.loginfo('Reorient the wrist.')
-            pose = {'joint_wrist_yaw': 0.0}
-            self.move_to_pose(pose)
+        rospy.loginfo('Reorient the wrist.')
+        pose = {'joint_wrist_yaw': 0.0}
+        self.move_to_pose(pose)
 
         return TriggerResponse(
             success=True,
             message='Completed object grasp!'
-            )
+        )
 
     def main(self):
         hm.HelloNode.main(self, 'grasp_object', 'grasp_object', wait_for_first_pointcloud=False)
 
         self.debug_directory = rospy.get_param('~debug_directory')
         rospy.loginfo('Using the following directory for debugging files: {0}'.format(self.debug_directory))
-
+        self.dryrun = rospy.get_param('~dryrun', False)
 
         self.joint_states_subscriber = rospy.Subscriber('/stretch/joint_states', JointState, self.joint_states_callback)
         

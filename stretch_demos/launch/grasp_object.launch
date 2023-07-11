@@ -1,6 +1,8 @@
 <launch>
 
   <arg name="debug_directory" value="$(env HELLO_FLEET_PATH)/debug/"/>
+  <arg name="dryrun" value="false" />
+  <arg name="rviz" value="true" />
 
   <!-- REALSENSE D435i -->
   <include file="$(find stretch_core)/launch/d435i_high_resolution.launch"></include>
@@ -37,6 +39,7 @@
   <!-- GRASP OBJECT -->
   <node name="grasp_object" pkg="stretch_demos" type="grasp_object" output="screen">
     <param name="debug_directory" type="string" value="$(arg debug_directory)"/>
+    <param name="dryrun" type="bool" value="$(arg dryrun)"/>
   </node>
   <!-- -->
 
@@ -45,7 +48,7 @@
   <!-- -->
 
   <!-- VISUALIZE -->
-  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_demos)/rviz/grasp_object.rviz" />
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_demos)/rviz/grasp_object.rviz" if="$(arg rviz)" />
   <!-- -->
 
 </launch>

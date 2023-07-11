@@ -71,6 +71,7 @@ class HelloNode:
         self.joint_state = None
         self.point_cloud = None
         self.tool = None
+        self.dryrun = False
 
     @classmethod
     def quick_create(cls, name, wait_for_first_pointcloud=False):
@@ -88,6 +89,9 @@ class HelloNode:
         self.tool = tool_string.data
 
     def move_to_pose(self, pose, return_before_done=False, custom_contact_thresholds=False, custom_full_goal=False):
+        if self.dryrun:
+            return
+
         point = JointTrajectoryPoint()
         point.time_from_start = rospy.Duration(0.0)
         trajectory_goal = FollowJointTrajectoryGoal()
@@ -170,12 +174,18 @@ class HelloNode:
             rate.sleep()
 
     def home_the_robot(self):
+        if self.dryrun:
+            return
+
         trigger_request = TriggerRequest()
         trigger_result = self.home_the_robot_service(trigger_request)
         rospy.logdebug(f"{self.node_name}'s HelloNode.home_the_robot: got message {trigger_result.message}")
         return trigger_result.success
 
     def stow_the_robot(self):
+        if self.dryrun:
+            return
+
         trigger_request = TriggerRequest()
         trigger_result = self.stow_the_robot_service(trigger_request)
         rospy.logdebug(f"{self.node_name}'s HelloNode.stow_the_robot: got message {trigger_result.message}")
