@@ -127,6 +127,11 @@ class GraspObjectNode(hm.HelloNode):
             pose = {'joint_lift': lift_to_pregrasp_m}
             self.move_to_pose(pose)
 
+        if actually_move and self.tool == "tool_stretch_dex_wrist":
+            rospy.loginfo('Rotate pitch/roll for grasping.')
+            pose = {'joint_wrist_pitch': -0.3, 'joint_wrist_roll': 0.0}
+            self.move_to_pose(pose)
+
         pregrasp_yaw = self.manipulation_view.get_pregrasp_yaw(grasp_target, self.tf2_buffer)
         rospy.loginfo('pregrasp_yaw = {0:.2f} rad'.format(pregrasp_yaw))
         rospy.loginfo('pregrasp_yaw = {0:.2f} deg'.format(pregrasp_yaw * (180.0/np.pi)))
