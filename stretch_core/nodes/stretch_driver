@@ -70,9 +70,11 @@ class StretchDriverNode:
             time_since_last_twist = rospy.get_time() - self.last_twist_time
             if time_since_last_twist < self.timeout:
                 self.robot.base.set_velocity(self.linear_velocity_mps, self.angular_velocity_radps)
+                #self.robot.push_command() #Moved to main
             else:
                 # Watchdog timer stops motion if no communication within timeout
                 self.robot.base.set_velocity(0.0, 0.0)
+                #self.robot.push_command() #Moved to main
 
 
         # TODO: In the future, consider using time stamps from the robot's
@@ -383,7 +385,7 @@ class StretchDriverNode:
             self.robot.base.rotate_by(0.0)
             self.robot.arm.move_by(0.0)
             self.robot.lift.move_by(0.0)
-            self.robot.push_command()
+            #self.robot.push_command() Moved to main
 
             for joint in self.robot.head.joints:
                 self.robot.head.move_by(joint, 0.0)
@@ -583,11 +585,7 @@ class StretchDriverNode:
                 self.robot.pimu.set_fan_on()
                 self.command_mobile_base_velocity_and_publish_state()
                 self.robot.push_command()
-                # print('-------------')
-                # print('RATE Non Dxl',self.robot.non_dxl_thread.stats.status['avg_rate_hz'])
-                # print('RATE dxl_head_thread Dxl', self.robot.dxl_head_thread.stats.status['avg_rate_hz'])
-                # print('RATE dxl_end_of_arm_thread Dxl', self.robot.dxl_end_of_arm_thread.stats.status['avg_rate_hz'])
-                # print('RATE sys_thread Dxl', self.robot.sys_thread.stats.status['avg_rate_hz'])
+                self.dirty_command=False
                 command_base_velocity_and_publish_joint_state_rate.sleep()
         except (rospy.ROSInterruptException, ThreadServiceExit):
             self.robot.stop()
