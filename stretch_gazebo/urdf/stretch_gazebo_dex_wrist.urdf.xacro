@@ -1,0 +1,634 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="stretch">
+  <xacro:arg name="gpu_lidar" default="false" />
+  <xacro:arg name="visualize_lidar" default="false" />
+
+  <xacro:include filename="$(find stretch_description)/urdf/stretch_main.xacro" />
+  <xacro:include filename="$(find stretch_description)/urdf/stretch_aruco.xacro" />
+  <xacro:include filename="$(find stretch_description)/urdf/stretch_d435i.xacro" />
+  <xacro:include filename="$(find stretch_description)/urdf/stretch_laser_range_finder.xacro" />
+  <xacro:include filename="$(find stretch_description)/urdf/stretch_respeaker.xacro" />
+  <xacro:include filename="$(find stretch_description)/urdf/stretch_dex_wrist.xacro" />
+
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/</robotNamespace>
+    </plugin>
+  </gazebo>
+
+  <!-- Base and Drive -->
+  <gazebo reference="base_link">
+      <material>Gazebo/Gray</material>
+  </gazebo>
+
+  <gazebo reference="link_right_wheel">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Blue</material>
+      <minDepth>0.001</minDepth>
+  </gazebo>
+
+  <gazebo reference="link_left_wheel">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Blue</material>
+      <minDepth>0.001</minDepth>
+  </gazebo>
+
+  <gazebo reference="caster_link">
+    <turnGravityOff>false</turnGravityOff>
+    <minDepth>0.001</minDepth>
+    <material>Gazebo/Blue</material>
+    <mu1>0.0</mu1>
+    <mu2>0.0</mu2>
+  </gazebo>
+
+  <transmission name="right_wheel_trans" type="SimpleTransmission">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="right_wheel_motor">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_right_wheel">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+		</transmission>
+
+  <transmission name="left_wheel_trans" type="SimpleTransmission">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="left_wheel_motor">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_left_wheel">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+		</transmission>
+
+  <!-- Sensors -->
+
+  <!-- Realsense D435i -->
+  <gazebo reference="camera_color_frame">
+    <sensor name="color" type="camera">
+      <pose frame="">0 0 0 0 0 0</pose>
+      <camera name="__default__">
+        <horizontal_fov>1.5009831567151233</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>RGB_INT8</format>
+        </image>
+        <clip>
+          <near>0.1</near>
+          <far>100</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <always_on>1</always_on>
+      <update_rate>30</update_rate>
+      <visualize>0</visualize>
+    </sensor>
+  </gazebo>
+  <gazebo reference="camera_infra1_frame">
+    <sensor name="ired1" type="camera">
+      <pose frame="">0 0 0 0 0 0</pose>
+      <camera name="__default__">
+        <horizontal_fov>1.5009831567151233</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>L_INT8</format>
+        </image>
+        <clip>
+          <near>0.1</near>
+          <far>100</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <always_on>1</always_on>
+      <update_rate>30</update_rate>
+      <visualize>0</visualize>
+    </sensor>
+  </gazebo>
+  <gazebo reference="camera_infra2_frame">
+    <sensor name="ired2" type="camera">
+      <pose frame="">0 0 0 0 0 0</pose>
+      <camera name="__default__">
+        <horizontal_fov>1.5009831567151233</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>L_INT8</format>
+        </image>
+        <clip>
+          <near>0.1</near>
+          <far>100</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <always_on>1</always_on>
+      <update_rate>30</update_rate>
+      <visualize>0</visualize>
+    </sensor>
+  </gazebo>
+  <gazebo reference="camera_depth_frame">
+    <sensor name="depth" type="depth">
+      <pose frame="">0 0 0 0 0 0</pose>
+      <camera name="__default__">
+        <horizontal_fov>1.5009831567151233</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+        </image>
+        <clip>
+          <near>0.1</near>
+          <far>100</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <always_on>1</always_on>
+      <update_rate>30</update_rate>
+      <visualize>0</visualize>
+    </sensor>
+  </gazebo>
+  <gazebo>
+      <plugin name="camera" filename="librealsense_gazebo_plugin.so">
+        <depthUpdateRate>30</depthUpdateRate>
+        <colorUpdateRate>30</colorUpdateRate>
+        <infraredUpdateRate>30</infraredUpdateRate>
+        <depthTopicName>depth/image_raw</depthTopicName>
+        <depthCameraInfoTopicName>depth/camera_info</depthCameraInfoTopicName>
+        <colorTopicName>color/image_raw</colorTopicName>
+        <colorCameraInfoTopicName>color/camera_info</colorCameraInfoTopicName>
+        <infrared1TopicName>infrared/image_raw</infrared1TopicName>
+        <infrared1CameraInfoTopicName>infrared/camera_info</infrared1CameraInfoTopicName>
+        <infrared2TopicName>infrared2/image_raw</infrared2TopicName>
+        <infrared2CameraInfoTopicName>infrared2/camera_info</infrared2CameraInfoTopicName>
+        <colorOpticalframeName>camera_color_optical_frame</colorOpticalframeName>
+        <depthOpticalframeName>camera_depth_optical_frame</depthOpticalframeName>
+        <infrared1OpticalframeName>camera_left_ir_optical_frame</infrared1OpticalframeName>
+        <infrared2OpticalframeName>camera_right_ir_optical_frame</infrared2OpticalframeName>
+        <rangeMinDepth>0.1</rangeMinDepth>
+        <rangeMaxDepth>10</rangeMaxDepth>
+        <pointCloud>1</pointCloud>
+        <pointCloudTopicName>depth/color/points</pointCloudTopicName>
+        <pointCloudCutoff>0.15</pointCloudCutoff>
+        <pointCloudCutoffMax>10</pointCloudCutoffMax>
+      </plugin>
+  </gazebo>
+
+  <gazebo reference="camera_gyro_frame">
+    <gravity>true</gravity>
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <visualize>false</visualize>
+      <plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
+        <topicName>camera/imu/data</topicName>
+        <bodyName>camera_gyro_frame</bodyName>
+        <updateRateHZ>50.0</updateRateHZ>
+        <gaussianNoise>0.001</gaussianNoise>
+        <xyzOffset>0 0 0</xyzOffset>
+        <rpyOffset>0 0 0</rpyOffset>
+        <frameName>camera_gyro_frame</frameName>
+        <initialOrientationAsReference>false</initialOrientationAsReference>
+      </plugin>
+      <pose>0 0 0 0 0 0</pose>
+    </sensor>
+  </gazebo>
+
+  <!-- Aruco -->
+  <gazebo reference="link_aruco_right_base">
+      <material>Gazebo/Black</material>
+  </gazebo>
+
+  <gazebo reference="link_aruco_left_base">
+      <material>Gazebo/Black</material>
+  </gazebo>
+
+  <gazebo reference="link_aruco_shoulder">
+      <material>Gazebo/Black</material>
+  </gazebo>
+
+  <gazebo reference="link_aruco_top_wrist">
+      <material>Gazebo/Black</material>
+  </gazebo>
+
+  <gazebo reference="link_aruco_inner_wrist">
+      <material>Gazebo/Black</material>
+  </gazebo>
+
+  <!-- Respeaker -->
+  <gazebo reference="respeaker_base">
+      <material>Gazebo/Green</material>
+  </gazebo>
+
+  <!-- Non GPU LIDAR -->
+  <xacro:unless value="$(arg gpu_lidar)">
+    <gazebo reference="laser">
+      <material>Gazebo/Black</material>
+      <sensor type="ray" name="laser_sensor">
+        <pose>0 0 0 0 0 0</pose>
+        <visualize>$(arg visualize_lidar)</visualize>
+        <update_rate>5.5</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>2000</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.9</min_angle>
+              <max_angle>5.0</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>0.15</min>
+            <max>12.0</max>
+            <resolution>0.01</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.001</stddev>
+          </noise>
+        </ray>
+        <plugin name="gazebo_ros_lidar_controller" filename="libgazebo_ros_laser.so">
+          <topicName>scan</topicName>
+          <frameName>laser</frameName>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:unless>
+
+  <!-- GPU LIDAR -->
+  <xacro:if value="$(arg gpu_lidar)">
+    <gazebo reference="laser">
+      <material>Gazebo/Black</material>
+      <sensor type="gpu_ray" name="laser_sensor">
+        <pose>0 0 0 0 0 0</pose>
+        <visualize>$(arg visualize_lidar)</visualize>
+        <update_rate>5.5</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>2000</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.9</min_angle>
+              <max_angle>5.0</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>0.15</min>
+            <max>12.0</max>
+            <resolution>0.01</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.001</stddev>
+          </noise>
+        </ray>
+        <plugin name="gazebo_ros_lidar_controller" filename="libgazebo_ros_gpu_laser.so">
+          <topicName>scan</topicName>
+          <frameName>laser</frameName>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:if>
+
+  <!-- Base IMU -->
+  <gazebo reference="base_link">
+    <gravity>true</gravity>
+    <sensor name="base_imu" type="imu">
+      <always_on>true</always_on>
+      <visualize>false</visualize>
+      <plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
+        <topicName>imu/data</topicName>
+        <bodyName>base_link</bodyName>
+        <updateRateHZ>25.0</updateRateHZ>
+        <gaussianNoise>0.001</gaussianNoise>
+        <xyzOffset>0 0 0</xyzOffset>
+        <rpyOffset>0 0 0</rpyOffset>
+        <frameName>base_link</frameName>
+        <initialOrientationAsReference>false</initialOrientationAsReference>
+      </plugin>
+      <pose>0 0 0 0 0 0</pose>
+    </sensor>
+  </gazebo>
+
+  <!-- Wrist IMU -->
+  <gazebo reference="link_wrist_yaw">
+    <gravity>true</gravity>
+    <sensor name="wrist_imu" type="imu">
+      <always_on>true</always_on>
+      <visualize>false</visualize>
+      <plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
+        <topicName>wrist_imu/data</topicName>
+        <bodyName>link_wrist_yaw</bodyName>
+        <updateRateHZ>25.0</updateRateHZ>
+        <gaussianNoise>0.001</gaussianNoise>
+        <xyzOffset>0 0 0</xyzOffset>
+        <rpyOffset>0 0 0</rpyOffset>
+        <frameName>link_wrist_yaw</frameName>
+        <initialOrientationAsReference>false</initialOrientationAsReference>
+      </plugin>
+      <pose>0 0 0 0 0 0</pose>
+    </sensor>
+  </gazebo>
+
+  <!-- Lift -->
+  <gazebo reference="link_lift">
+      <mu1 value="10000.0"/>
+      <mu2 value="10000.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Black</material>
+      <minDepth>0.001</minDepth>
+  </gazebo>
+
+  <gazebo reference="link_mast">
+      <material>Gazebo/Gray</material>
+  </gazebo>
+
+  <transmission name="trans_lift">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="motor_lift">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_lift">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+
+  <!-- Arm -->
+  <gazebo reference="link_arm_l0">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Gray</material>
+      <minDepth>0.001</minDepth>
+  </gazebo>
+
+  <gazebo reference="link_arm_l1">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Gray</material>
+      <minDepth>0.001</minDepth>
+  </gazebo>
+
+  <gazebo reference="link_arm_l2">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Gray</material>
+      <minDepth>0.001</minDepth>
+  </gazebo>
+
+  <gazebo reference="link_arm_l3">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Gray</material>
+      <minDepth>0.001</minDepth>
+  </gazebo>
+
+  <gazebo reference="link_arm_l4">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Gray</material>
+      <minDepth>0.001</minDepth>
+  </gazebo>
+
+  <transmission name="trans_arm_l0">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="motor_arm_l0" >
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_arm_l0">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+  <transmission name="trans_arm_l1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="motor_arm_l1" >
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_arm_l1">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+  <transmission name="trans_arm_l2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="motor_arm_l2" >
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_arm_l2">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+  <transmission name="trans_arm_l3">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="motor_arm_l3" >
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_arm_l3">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+
+  <!-- Wrist -->
+  <gazebo reference="link_wrist_yaw">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Black</material>
+      <minDepth>0.001</minDepth>
+  </gazebo>
+
+  <transmission name="trans_wrist_yaw">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="motor_wrist_yaw" >
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_wrist_yaw">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+
+  <!-- Head -->
+  <gazebo reference="link_head">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <material>Gazebo/Gray</material>
+  </gazebo>
+
+  <gazebo reference="link_head_tilt">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Gray</material>
+      <minDepth>0.001</minDepth>
+  </gazebo>
+
+  <gazebo reference="link_head_pan">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Gray</material>
+      <minDepth>0.001</minDepth>
+  </gazebo>
+
+  <transmission name="trans_head_pan">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="motor_head_pan">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_head_pan">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+
+  <transmission name="trans_head_tilt">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="motor_head_tilt">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_head_tilt">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+
+  <!--Dex Wrist-->
+  <gazebo reference="link_wrist_yaw_bottom">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Gray</material>
+      <minDepth>0.001</minDepth>
+  </gazebo>
+  <gazebo reference="link_wrist_pitch">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Gray</material>
+      <minDepth>0.001</minDepth>
+  </gazebo> 
+  <gazebo reference="link_wrist_roll">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Gray</material>
+      <minDepth>0.001</minDepth>
+  </gazebo> 
+  <gazebo reference="link_straight_gripper">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Gray</material>
+      <minDepth>0.001</minDepth>
+  </gazebo> 
+  <gazebo reference="link_gripper_finger_right">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Gray</material>
+      <minDepth>0.001</minDepth>
+  </gazebo> 
+  <gazebo reference="link_gripper_fingertip_right">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Black</material>
+      <minDepth>0.001</minDepth>
+  </gazebo> 
+  <gazebo reference="link_gripper_finger_left">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Gray</material>
+      <minDepth>0.001</minDepth>
+  </gazebo> 
+  <gazebo reference="link_gripper_fingertip_left">
+      <mu1 value="100.0"/>
+      <mu2 value="200.0"/>
+      <kp value="10000000.0" />
+      <kd value="100.0" />
+      <material>Gazebo/Black</material>
+      <minDepth>0.001</minDepth>
+  </gazebo>   
+
+  <transmission name="trans_wrist_pitch">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="motor_wrist_pitch">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_wrist_pitch">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+
+  <transmission name="trans_wrist_roll">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="motor_wrist_roll">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_wrist_roll">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+
+  <!-- Gripper -->
+
+  <transmission name="trans_gripper_finger_left">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="motor_gripper_finger_left">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_gripper_finger_left">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+  <transmission name="trans_gripper_finger_right">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="motor_gripper_finger_right">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_gripper_finger_right">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+
+</robot>
