@@ -57,6 +57,33 @@ temp = hm.HelloNode.quick_create('temp')
 temp.move_to_pose({'joint_lift': 0.4})
 ```
 
+#### Attributes
+
+##### `dryrun`
+
+This attribute allows you to control whether the robot actually moves when calling `move_to_pose()`, `home_the_robot()`, `stow_the_robot()`, or other motion methods in this class. When `dryrun` is set to True, these motion methods return immediately. This attribute is helpful when you want to run just the perception/planning part of your node without actually moving the robot. For example, you could replace the following verbose snippet:
+
+```python
+# roslaunch the stretch launch file beforehand
+import hello_helpers.hello_misc as hm
+temp = hm.HelloNode.quick_create('temp')
+actually_move = False
+[...]
+if actually_move:
+    temp.move_to_pose({'translate_mobile_base': 1.0})
+```
+
+to be more consise:
+
+```python
+# roslaunch the stretch launch file beforehand
+import hello_helpers.hello_misc as hm
+temp = hm.HelloNode.quick_create('temp')
+[...]
+temp.dryrun = True
+temp.move_to_pose({'translate_mobile_base': 1.0})
+```
+
 #### Methods
 
 ##### `move_to_pose(pose, return_before_done=False, custom_contact_thresholds=False, custom_full_goal=False)`
@@ -80,6 +107,18 @@ If you set `custom_full_goal` to True, the dictionary format is string/tuple key
 ```python
 self.move_to_pose({'joint_arm': (0.5, 0.01, 0.01, 40)}, custom_full_goal=True)
 ```
+
+##### `home_the_robot()`
+
+This is a convenience method to interact with the driver's [`/home_the_robot` service](../stretch_core/README.md#home_the_robot-std_srvstrigger).
+
+##### `stow_the_robot()`
+
+This is a convenience method to interact with the driver's [`/stow_the_robot` service](../stretch_core/README.md#stow_the_robot-std_srvstrigger).
+
+##### `stop_the_robot()`
+
+This is a convenience method to interact with the driver's [`/stop_the_robot` service](../stretch_core/README.md#stop_the_robot-std_srvstrigger).
 
 ##### `get_tf(from_frame, to_frame)`
 

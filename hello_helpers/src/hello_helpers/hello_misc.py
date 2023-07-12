@@ -20,6 +20,7 @@ from trajectory_msgs.msg import JointTrajectoryPoint
 import tf2_ros
 from sensor_msgs.msg import PointCloud2
 from std_srvs.srv import Trigger, TriggerRequest
+from std_msgs.msg import String
 
 
 #######################
@@ -69,6 +70,8 @@ class HelloNode:
     def __init__(self):
         self.joint_state = None
         self.point_cloud = None
+        self.tool = None
+        self.dryrun = False
 
     @classmethod
     def quick_create(cls, name, wait_for_first_pointcloud=False):
@@ -81,8 +84,14 @@ class HelloNode:
 
     def point_cloud_callback(self, point_cloud):
         self.point_cloud = point_cloud
-    
+
+    def tool_callback(self, tool_string):
+        self.tool = tool_string.data
+
     def move_to_pose(self, pose, return_before_done=False, custom_contact_thresholds=False, custom_full_goal=False):
+        if self.dryrun:
+            return
+
         point = JointTrajectoryPoint()
         point.time_from_start = rospy.Duration(0.0)
         trajectory_goal = FollowJointTrajectoryGoal()
@@ -164,6 +173,34 @@ class HelloNode:
                 continue
             rate.sleep()
 
+    def home_the_robot(self):
+        if self.dryrun:
+            return
+
+        trigger_request = TriggerRequest()
+        trigger_result = self.home_the_robot_service(trigger_request)
+        rospy.logdebug(f"{self.node_name}'s HelloNode.home_the_robot: got message {trigger_result.message}")
+        return trigger_result.success
+
+    def stow_the_robot(self):
+        if self.dryrun:
+            return
+
+        trigger_request = TriggerRequest()
+        trigger_result = self.stow_the_robot_service(trigger_request)
+        rospy.logdebug(f"{self.node_name}'s HelloNode.stow_the_robot: got message {trigger_result.message}")
+        return trigger_result.success
+
+    def stop_the_robot(self):
+        trigger_request = TriggerRequest()
+        trigger_result = self.stop_the_robot_service(trigger_request)
+        rospy.logdebug(f"{self.node_name}'s HelloNode.stop_the_robot: got message {trigger_result.message}")
+        return trigger_result.success
+
+    def get_tool(self):
+        assert(self.tool is not None)
+        return self.tool
+
     def main(self, node_name, node_topic_namespace, wait_for_first_pointcloud=True):
         rospy.init_node(node_name)
         self.node_name = rospy.get_name()
@@ -177,14 +214,20 @@ class HelloNode:
         
         self.tf2_buffer = tf2_ros.Buffer()
         self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
-        
+
+        self.tool_subscriber = rospy.Subscriber('/tool', String, self.tool_callback)
+
         self.point_cloud_subscriber = rospy.Subscriber('/camera/depth/color/points', PointCloud2, self.point_cloud_callback)
         self.point_cloud_pub = rospy.Publisher('/' + node_topic_namespace + '/point_cloud2', PointCloud2, queue_size=1)
 
+        rospy.wait_for_service('/home_the_robot')
+        rospy.wait_for_service('/stow_the_robot')
         rospy.wait_for_service('/stop_the_robot')
-        rospy.loginfo('Node ' + self.node_name + ' connected to /stop_the_robot service.')
+        rospy.loginfo('Node ' + self.node_name + ' connected to robot services.')
+        self.home_the_robot_service = rospy.ServiceProxy('/home_the_robot', Trigger)
+        self.stow_the_robot_service = rospy.ServiceProxy('/stow_the_robot', Trigger)
         self.stop_the_robot_service = rospy.ServiceProxy('/stop_the_robot', Trigger)
-        
+
         if wait_for_first_pointcloud:
             # Do not start until a point cloud has been received
             point_cloud_msg = self.point_cloud

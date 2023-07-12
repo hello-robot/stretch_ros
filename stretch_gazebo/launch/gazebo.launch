@@ -6,10 +6,14 @@
   <arg name="headless" default="false"/>
   <arg name="debug" default="false"/>
   <arg name="rviz" default="false"/>
-  <arg name="model" default="$(find stretch_gazebo)/urdf/stretch_gazebo.urdf.xacro"/>
   <arg name="gpu_lidar" default="false"/>
   <arg name="visualize_lidar" default="false"/>
   <arg name="world" default="worlds/empty.world"/>
+  <arg name="dex_wrist" default="false"/>
+  <param name="stretch_gazebo/dex_wrist" type="bool" value="$(arg dex_wrist)"/>
+
+  <arg name="model" value="$(find stretch_gazebo)/urdf/stretch_gazebo_standard_gripper.urdf.xacro" unless="$(arg dex_wrist)"/>
+  <arg name="model" value="$(find stretch_gazebo)/urdf/stretch_gazebo_dex_wrist.urdf.xacro" if="$(arg dex_wrist)"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(arg world)" />
@@ -21,7 +25,8 @@
     <arg name="verbose" value="true"/>
   </include>
 
-  <param name="robot_description" command="$(find xacro)/xacro $(arg model) gpu_lidar:=$(arg gpu_lidar) visualize_lidar:=$(arg visualize_lidar)" />
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model) gpu_lidar:=$(arg gpu_lidar) visualize_lidar:=$(arg visualize_lidar)"/>
+
 
   <!-- push robot_description to factory and spawn robot in gazebo -->
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
@@ -50,8 +55,16 @@
   <rosparam command="load"
             file="$(find stretch_gazebo)/config/gripper.yaml" />
 
+  <rosparam command="load"
+        file="$(find stretch_gazebo)/config/dex_wrist.yaml" if="$(arg dex_wrist)"/>
+
   <node name="stretch_controller_spawner" pkg="controller_manager" type="spawner"
-        args="stretch_joint_state_controller stretch_diff_drive_controller stretch_arm_controller stretch_head_controller stretch_gripper_controller"/>
+        args="stretch_joint_state_controller stretch_diff_drive_controller stretch_arm_controller stretch_head_controller stretch_gripper_controller"
+        unless="$(arg dex_wrist)"/>
+
+  <node name="stretch_controller_spawner" pkg="controller_manager" type="spawner"
+        args="stretch_joint_state_controller stretch_diff_drive_controller stretch_arm_controller stretch_head_controller stretch_gripper_controller stretch_dex_wrist_controller"
+  if="$(arg dex_wrist)"/>
 
   <node name="publish_ground_truth_odom" pkg="stretch_gazebo" type="publish_ground_truth_odom.py" output="screen"/>
 

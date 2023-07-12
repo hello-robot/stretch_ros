@@ -180,6 +180,7 @@ class KeyboardTeleopNode:
         self.rate = 10.0
         self.joint_state = None
         self.twist = Twist()
+        self.dex_wrist_control = False
 
     def joint_states_callback(self, joint_state):
         self.joint_state = joint_state
@@ -197,8 +198,7 @@ class KeyboardTeleopNode:
             trajectory_goal.goal_time_tolerance = rospy.Time(1.0)
 
             joint_name = command['joint']
-
-            if joint_name in ['joint_lift', 'joint_wrist_yaw', 'joint_head_pan', 'joint_head_tilt']:
+            if joint_name in ['joint_lift', 'joint_wrist_yaw', 'joint_wrist_roll', 'joint_wrist_pitch', 'joint_head_pan', 'joint_head_tilt']:
                 trajectory_goal.trajectory.joint_names = [joint_name]
                 joint_index = joint_state.name.index(joint_name)
                 joint_value = joint_state.position[joint_index]
@@ -221,8 +221,9 @@ class KeyboardTeleopNode:
 
             trajectory_goal.trajectory.points = [point]
             trajectory_goal.trajectory.header.stamp = rospy.Time.now()
-            self.trajectory_client.send_goal(trajectory_goal)
-            self.trajectory_client.wait_for_result()
+            if self.trajectory_client:
+                self.trajectory_client.send_goal(trajectory_goal)
+                self.trajectory_client.wait_for_result()
 
     def trajectory_client_selector(self, command):
         self.trajectory_client = None
@@ -236,6 +237,9 @@ class KeyboardTeleopNode:
                 self.trajectory_client = self.trajectory_head_client
             if joint == 'joint_gripper_finger_right' or joint == 'joint_gripper_finger_left':
                 self.trajectory_client = self.trajectory_gripper_client
+            if self.dex_wrist_control:
+                if joint == 'joint_wrist_roll' or joint == 'joint_wrist_pitch':
+                    self.trajectory_client = self.trajectory_dex_wrist_client
             if joint == 'translate_mobile_base' or joint == 'rotate_mobile_base':
                 if joint == 'translate_mobile_base':
                     if 'inc' in command:
@@ -252,6 +256,10 @@ class KeyboardTeleopNode:
 
     def main(self):
         rospy.init_node('keyboard_teleop_gazebo')
+        try:
+            self.dex_wrist_control = rospy.get_param('stretch_gazebo/dex_wrist', default=False)
+        except KeyError:
+            self.dex_wrist_control = False
 
         self.trajectory_gripper_client = actionlib.SimpleActionClient(
             '/stretch_gripper_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
@@ -264,6 +272,12 @@ class KeyboardTeleopNode:
         self.trajectory_arm_client = actionlib.SimpleActionClient('/stretch_arm_controller/follow_joint_trajectory',
                                                                   FollowJointTrajectoryAction)
         server_reached = self.trajectory_arm_client.wait_for_server(timeout=rospy.Duration(60.0))
+
+        if self.dex_wrist_control:
+            rospy.loginfo("Dex Wrist Control Activated")
+            self.trajectory_dex_wrist_client = actionlib.SimpleActionClient('/stretch_dex_wrist_controller/follow_joint_trajectory',
+                                                                      FollowJointTrajectoryAction)
+            server_reached = self.trajectory_dex_wrist_client.wait_for_server(timeout=rospy.Duration(60.0))
 
         self.cmd_vel_pub = rospy.Publisher('/stretch_diff_drive_controller/cmd_vel', Twist, queue_size=10)
 
