@@ -122,7 +122,7 @@ class JointTrajectoryAction:
             self.node.dirty_command=True
 
             goals_reached = [c.goal_reached() for c in self.command_groups]
-            update_rate = rospy.Rate(15.0)
+            update_rate = rospy.Rate(30.0)
             goal_start_time = rospy.Time.now()
 
             while not all(goals_reached):
