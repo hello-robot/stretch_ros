@@ -524,7 +524,7 @@ class StretchDriverNode:
         rospy.Subscriber("cmd_vel", Twist, self.set_mobile_base_velocity_callback)
 
         # ~ symbol gets parameter from private namespace
-        self.joint_state_rate = rospy.get_param('~rate', 15.0)
+        self.joint_state_rate = rospy.get_param('~rate', 30.0)
         self.timeout = rospy.get_param('~timeout', 0.5)
         rospy.loginfo("{0} rate = {1} Hz".format(self.node_name, self.joint_state_rate))
         rospy.loginfo("{0} timeout = {1} s".format(self.node_name, self.timeout))
