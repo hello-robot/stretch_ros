@@ -446,8 +446,8 @@ class StretchDriverNode:
 
         rospy.loginfo("{0} started".format(self.node_name))
 
-        if int(stretch_body.__version__.split('.')[1]) < 4:
-            rospy.logerr("ERROR: Found old stretch_body version. Please upgrade stretch_body to 0.4.0 or above.")
+        if int(stretch_body.__version__.split('.')[1]) < 5:
+            rospy.logerr("ERROR: Found old stretch_body version. Please upgrade stretch_body to v0.5.0 or above.")
             rospy.signal_shutdown('Found old stretch_body version.')
 
         self.robot = rb.Robot()
