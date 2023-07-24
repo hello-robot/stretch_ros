@@ -48,6 +48,7 @@ class JointTrajectoryAction:
                 endofarm_cg = getattr(importlib.import_module(module_name), class_name)(node=self.node)
                 self.command_groups.append(endofarm_cg)
 
+
     def execute_cb(self, goal):
         with self.node.robot_stop_lock:
             # Escape stopped mode to execute trajectory
@@ -106,12 +107,22 @@ class JointTrajectoryAction:
                 return
 
             robot_status = self.node.robot.get_status() # uses lock held by robot
+
+            #Relying on the stretch_driver node to do the push_command
+            #If it doesn't due to thread conflict, then do it here
+            #We rely on stretch_driver to avoid two push_commands() from two threads that are close together in tie
+            #As the pimu.trigger_motor_sync does not support this.
+            if self.node.dirty_command:
+                self.node.robot.push_command()
+
             for c in self.command_groups:
                 c.init_execution(self.node.robot, robot_status)
-            self.node.robot.push_command()
+
+            #self.node.robot.push_command() #Moved to an asynchronous call in stretch_driver
+            self.node.dirty_command=True
 
             goals_reached = [c.goal_reached() for c in self.command_groups]
-            update_rate = rospy.Rate(15.0)
+            update_rate = rospy.Rate(30.0)
             goal_start_time = rospy.Time.now()
 
             while not all(goals_reached):

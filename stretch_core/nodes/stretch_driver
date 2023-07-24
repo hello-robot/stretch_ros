@@ -70,11 +70,12 @@ class StretchDriverNode:
             time_since_last_twist = rospy.get_time() - self.last_twist_time
             if time_since_last_twist < self.timeout:
                 self.robot.base.set_velocity(self.linear_velocity_mps, self.angular_velocity_radps)
-                self.robot.push_command()
+                #self.robot.push_command() #Moved to main
             else:
                 # Watchdog timer stops motion if no communication within timeout
                 self.robot.base.set_velocity(0.0, 0.0)
-                self.robot.push_command()
+                #self.robot.push_command() #Moved to main
+
 
         # TODO: In the future, consider using time stamps from the robot's
         # motor control boards and other boards. These would need to
@@ -384,7 +385,7 @@ class StretchDriverNode:
             self.robot.base.rotate_by(0.0)
             self.robot.arm.move_by(0.0)
             self.robot.lift.move_by(0.0)
-            self.robot.push_command()
+            #self.robot.push_command() Moved to main
 
             for joint in self.robot.head.joints:
                 self.robot.head.move_by(joint, 0.0)
@@ -445,12 +446,12 @@ class StretchDriverNode:
 
         rospy.loginfo("{0} started".format(self.node_name))
 
-        if int(stretch_body.__version__.split('.')[1]) < 4:
-            rospy.logerr("ERROR: Found old stretch_body version. Please upgrade stretch_body to 0.4.0 or above.")
+        if int(stretch_body.__version__.split('.')[1]) < 5:
+            rospy.logerr("ERROR: Found old stretch_body version. Please upgrade stretch_body to v0.5.0 or above.")
             rospy.signal_shutdown('Found old stretch_body version.')
 
         self.robot = rb.Robot()
-        self.robot.startup()
+        self.robot.startup(start_non_dxl_thread=False,start_dxl_thread=True,start_sys_mon_thread=True) #Handle the non_dxl status in local loop, not thread
         if not self.robot.is_calibrated():
             rospy.logwarn(f'{self.node_name} robot is not homed')
 
@@ -523,7 +524,7 @@ class StretchDriverNode:
         rospy.Subscriber("cmd_vel", Twist, self.set_mobile_base_velocity_callback)
 
         # ~ symbol gets parameter from private namespace
-        self.joint_state_rate = rospy.get_param('~rate', 15.0)
+        self.joint_state_rate = rospy.get_param('~rate', 30.0)
         self.timeout = rospy.get_param('~timeout', 0.5)
         rospy.loginfo("{0} rate = {1} Hz".format(self.node_name, self.joint_state_rate))
         rospy.loginfo("{0} timeout = {1} s".format(self.node_name, self.timeout))
@@ -580,9 +581,11 @@ class StretchDriverNode:
             # start loop to command the mobile base velocity, publish
             # odometry, and publish joint states
             while not rospy.is_shutdown():
+                self.robot.non_dxl_thread.step()
                 self.robot.pimu.set_fan_on()
-                self.robot.pimu.push_command()
                 self.command_mobile_base_velocity_and_publish_state()
+                self.robot.push_command()
+                self.dirty_command=False
                 command_base_velocity_and_publish_joint_state_rate.sleep()
         except (rospy.ROSInterruptException, ThreadServiceExit):
             self.robot.stop()
