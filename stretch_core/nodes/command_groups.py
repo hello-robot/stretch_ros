@@ -134,16 +134,25 @@ class WristYawCommandGroup(SimpleCommandGroup):
         self.range = range_rad
 
     def init_execution(self, robot, robot_status, **kwargs):
+        robot_mode = kwargs['robot_mode']
         if self.active:
-            robot.end_of_arm.move_by('wrist_yaw',
-                                     self.update_execution(robot_status)[1],
-                                     v_r=self.goal['velocity'],
-                                     a_r=self.goal['acceleration'])
+            _, yaw_error = self.update_execution(robot_status, robot_mode=robot_mode)
+            if robot_mode == 'position':
+                robot.end_of_arm.move_by('wrist_yaw',
+                                         yaw_error,
+                                         v_r=self.goal['velocity'],
+                                         a_r=self.goal['acceleration'])
+            elif robot_mode == 'velocity':
+                robot.end_of_arm.get_joint('wrist_yaw').set_velocity(self.goal['velocity'], a_des=self.goal['acceleration'])
 
     def update_execution(self, robot_status, **kwargs):
+        robot_mode = kwargs['robot_mode']
         self.error = None
         if self.active:
-            self.error = self.goal['position'] - robot_status['end_of_arm']['wrist_yaw']['pos']
+            if robot_mode == 'position':
+                self.error = self.goal['position'] - robot_status['end_of_arm']['wrist_yaw']['pos']
+            elif robot_mode == 'velocity':
+                self.error = 0.0
             return self.name, self.error
 
         return None
