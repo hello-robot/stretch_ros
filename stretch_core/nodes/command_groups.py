@@ -341,6 +341,7 @@ class ArmCommandGroup(SimpleCommandGroup):
         return True
 
     def set_goal(self, point, invalid_goal_callback, fail_out_of_range_goal, **kwargs):
+        robot_mode = kwargs['robot_mode']
         self.goal = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
         if self.active:
             if self.is_telescoping:
@@ -362,15 +363,21 @@ class ArmCommandGroup(SimpleCommandGroup):
                 self.goal['contact_threshold'] = point.effort[self.index] \
                                                  if len(point.effort) > self.index else None
 
-            if goal_pos is None:
+            if robot_mode == 'position' and goal_pos is None:
                 err_str = ("Received goal point with positions array length={0}. "
                            "This joint ({1})'s index is {2}. Length of array must cover all joints listed "
                            "in commanded_joint_names.").format(len(point.positions), self.name if not self.is_named_wrist_extension else self.wrist_extension_name, self.index)
                 invalid_goal_callback(err_str)
                 return False
+            elif robot_mode == 'velocity' and goal_pos is not None:
+                err_str = (f"Received goal point with position for joint {self.name} (index {self.index}) "
+                           "during velocity mode, which is not allowed.")
+                invalid_goal_callback(err_str)
+                return False
 
-            self.goal['position'] = hm.bound_ros_command(self.range, goal_pos, fail_out_of_range_goal)
-            if self.goal['position'] is None:
+            if goal_pos is not None:
+                self.goal['position'] = hm.bound_ros_command(self.range, goal_pos, fail_out_of_range_goal)
+            if robot_mode == 'position' and self.goal['position'] is None:
                 err_str = ("Received {0} goal point that is out of bounds. "
                             "Range = {1}, but goal point = {2}.").format(self.name if not self.is_named_wrist_extension else self.wrist_extension_name, self.range, goal_pos)
                 invalid_goal_callback(err_str)
@@ -379,17 +386,26 @@ class ArmCommandGroup(SimpleCommandGroup):
         return True
 
     def init_execution(self, robot, robot_status, **kwargs):
+        robot_mode = kwargs['robot_mode']
         if self.active:
-            _, extension_error_m = self.update_execution(robot_status, force_single=True)
-            robot.arm.move_by(extension_error_m,
-                              v_m=self.goal['velocity'],
-                              a_m=self.goal['acceleration'],
-                              contact_thresh_pos=self.goal['contact_threshold'],
-                              contact_thresh_neg=-self.goal['contact_threshold'] \
-                                                   if self.goal['contact_threshold'] is not None else None)
-            self.retracted = extension_error_m < 0.0
+            _, extension_error_m = self.update_execution(robot_status, force_single=True, robot_mode=robot_mode)
+            if robot_mode == 'position':
+                robot.arm.move_by(extension_error_m,
+                                v_m=self.goal['velocity'],
+                                a_m=self.goal['acceleration'],
+                                contact_thresh_pos=self.goal['contact_threshold'],
+                                contact_thresh_neg=-self.goal['contact_threshold'] \
+                                                    if self.goal['contact_threshold'] is not None else None)
+                self.retracted = extension_error_m < 0.0
+            elif robot_mode == 'velocity':
+                robot.arm.set_velocity(self.goal['velocity'],
+                                       a_m=self.goal['acceleration'],
+                                       contact_thresh_pos=self.goal['contact_threshold'],
+                                       contact_thresh_neg=-self.goal['contact_threshold'] \
+                                                          if self.goal['contact_threshold'] is not None else None)
 
     def update_execution(self, robot_status, **kwargs):
+        robot_mode = kwargs['robot_mode']
         success_callback = kwargs['success_callback'] if 'success_callback' in kwargs.keys() else None
         force_single = kwargs['force_single'] if 'force_single' in kwargs.keys() else False
         self.error = None
@@ -397,9 +413,12 @@ class ArmCommandGroup(SimpleCommandGroup):
             if success_callback and robot_status['arm']['motor']['in_guarded_event']:
                 success_callback("{0} contact detected.".format(self.name if not self.is_named_wrist_extension else self.wrist_extension_name))
                 return True
-            arm_backlash_correction = self.retracted_offset_m if self.retracted else 0.0
-            extension_current = robot_status['arm']['pos'] + arm_backlash_correction
-            self.error = self.goal['position'] - extension_current
+            if robot_mode == 'position':
+                arm_backlash_correction = self.retracted_offset_m if self.retracted else 0.0
+                extension_current = robot_status['arm']['pos'] + arm_backlash_correction
+                self.error = self.goal['position'] - extension_current
+            elif robot_mode == 'velocity':
+                self.error = 0.0
             if force_single:
                 return self.name, self.error
             else:
@@ -432,22 +451,35 @@ class LiftCommandGroup(SimpleCommandGroup):
         self.range = range_m
 
     def init_execution(self, robot, robot_status, **kwargs):
+        robot_mode = kwargs['robot_mode']
         if self.active:
-            robot.lift.move_by(self.update_execution(robot_status)[1],
-                               v_m=self.goal['velocity'],
-                               a_m=self.goal['acceleration'],
-                               contact_thresh_pos=self.goal['contact_threshold'],
-                               contact_thresh_neg=-self.goal['contact_threshold'] \
-                                                    if self.goal['contact_threshold'] is not None else None)
+            _, lift_error = self.update_execution(robot_status, robot_mode=robot_mode)
+            if robot_mode == 'position':
+                robot.lift.move_by(lift_error,
+                                v_m=self.goal['velocity'],
+                                a_m=self.goal['acceleration'],
+                                contact_thresh_pos=self.goal['contact_threshold'],
+                                contact_thresh_neg=-self.goal['contact_threshold'] \
+                                                        if self.goal['contact_threshold'] is not None else None)
+            elif robot_mode == 'velocity':
+                robot.lift.set_velocity(self.goal['velocity'],
+                                        a_m=self.goal['acceleration'],
+                                        contact_thresh_pos=self.goal['contact_threshold'],
+                                        contact_thresh_neg=-self.goal['contact_threshold'] \
+                                                           if self.goal['contact_threshold'] is not None else None)
 
     def update_execution(self, robot_status, **kwargs):
+        robot_mode = kwargs['robot_mode']
         success_callback = kwargs['success_callback'] if 'success_callback' in kwargs.keys() else None
         self.error = None
         if self.active:
             if success_callback and robot_status['lift']['motor']['in_guarded_event']:
                 success_callback("{0} contact detected.".format(self.name))
                 return True
-            self.error = self.goal['position'] - robot_status['lift']['pos']
+            if robot_mode == 'position':
+                self.error = self.goal['position'] - robot_status['lift']['pos']
+            elif robot_mode == 'velocity':
+                self.error = 0.0
             return self.name, self.error
 
         return None
