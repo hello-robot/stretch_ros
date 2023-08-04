@@ -87,17 +87,25 @@ class HeadTiltCommandGroup(SimpleCommandGroup):
         self.range = range_rad
 
     def init_execution(self, robot, robot_status, **kwargs):
+        robot_mode = kwargs['robot_mode']
         if self.active:
-            _, tilt_error = self.update_execution(robot_status)
-            robot.head.move_by('head_tilt', tilt_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
-            self.looking_up = self.goal['position'] > (self.backlash_transition_angle_rad + self.calibrated_offset_rad)
+            _, tilt_error = self.update_execution(robot_status, robot_mode=robot_mode)
+            if robot_mode == 'position':
+                robot.head.move_by('head_tilt', tilt_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
+                self.looking_up = self.goal['position'] > (self.backlash_transition_angle_rad + self.calibrated_offset_rad)
+            elif robot_mode == 'velocity':
+                robot.head.get_joint('head_tilt').set_velocity(self.goal['velocity'], a_des=self.goal['acceleration'])
 
     def update_execution(self, robot_status, **kwargs):
+        robot_mode = kwargs['robot_mode']
         self.error = None
         if self.active:
-            tilt_backlash_correction = self.looking_up_offset_rad if self.looking_up else 0.0
-            tilt_current = robot_status['head']['head_tilt']['pos'] + self.calibrated_offset_rad + tilt_backlash_correction
-            self.error = self.goal['position'] - tilt_current
+            if robot_mode == 'position':
+                tilt_backlash_correction = self.looking_up_offset_rad if self.looking_up else 0.0
+                tilt_current = robot_status['head']['head_tilt']['pos'] + self.calibrated_offset_rad + tilt_backlash_correction
+                self.error = self.goal['position'] - tilt_current
+            elif robot_mode == 'velocity':
+                self.error = 0.0
             return self.name, self.error
 
         return None
