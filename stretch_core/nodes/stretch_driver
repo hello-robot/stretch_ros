@@ -42,7 +42,7 @@ class StretchDriverNode:
         self.stop_the_robot = False
         self.robot_mode_rwlock = RWLock()
         self.robot_mode = None
-        self.control_modes = ['position', 'navigation']
+        self.control_modes = ['position', 'navigation', 'velocity']
         self.prev_runstop_state = None
 
         self.voltage_history = []
@@ -53,8 +53,8 @@ class StretchDriverNode:
 
     def set_mobile_base_velocity_callback(self, twist):
         self.robot_mode_rwlock.acquire_read()
-        if self.robot_mode != 'navigation':
-            error_string = '{0} action server must be in navigation mode to receive a twist on cmd_vel. Current mode = {1}.'.format(self.node_name, self.robot_mode)
+        if self.robot_mode not in ['navigation', 'velocity']:
+            error_string = '{0} action server must be in navigation or velocity modes to receive a twist on cmd_vel. Current mode = {1}.'.format(self.node_name, self.robot_mode)
             rospy.logerr(error_string)
             return
         self.linear_velocity_mps = twist.linear.x
@@ -66,7 +66,7 @@ class StretchDriverNode:
         self.robot_mode_rwlock.acquire_read()
 
         # set new mobile base velocities if available
-        if self.robot_mode == 'navigation': 
+        if self.robot_mode in ['navigation', 'velocity']:
             time_since_last_twist = rospy.get_time() - self.last_twist_time
             if time_since_last_twist < self.timeout:
                 self.robot.base.set_velocity(self.linear_velocity_mps, self.angular_velocity_radps)
@@ -321,6 +321,17 @@ class StretchDriverNode:
             self.robot.base.enable_pos_incr_mode()
         self.change_mode('position', code_to_run)
 
+    def turn_on_velocity_mode(self):
+        # Velocity mode enables velocity control of every joint except
+        # the gripper, which remains in position control. Mobile base
+        # velocity control happens via the cmd_vel topic, and velocity
+        # control of the remaining joints happens through the
+        # FollowJointTrajectory action server.
+        def code_to_run():
+            self.linear_velocity_mps = 0.0
+            self.angular_velocity_radps = 0.0
+        self.change_mode('velocity', code_to_run)
+
     def home_the_robot(self):
         self.robot_mode_rwlock.acquire_read()
         can_home = self.robot_mode in self.control_modes
@@ -428,6 +439,13 @@ class StretchDriverNode:
             message='Now in position mode.'
         )
 
+    def velocity_mode_service_callback(self, request):
+        self.turn_on_velocity_mode()
+        return TriggerResponse(
+            success=True,
+            message='Now in velocity mode.'
+        )
+
     def runstop_service_callback(self, request):
         self.runstop_the_robot(request.data)
         return SetBoolResponse(
@@ -464,6 +482,8 @@ class StretchDriverNode:
             self.turn_on_position_mode()
         elif mode == "navigation":
             self.turn_on_navigation_mode()
+        elif mode == "velocity":
+            self.turn_on_velocity_mode()
 
         self.broadcast_odom_tf = rospy.get_param('~broadcast_odom_tf', False)
         rospy.loginfo('broadcast_odom_tf = ' + str(self.broadcast_odom_tf))
@@ -555,6 +575,10 @@ class StretchDriverNode:
         self.switch_to_position_mode_service = rospy.Service('/switch_to_position_mode',
                                                              Trigger,
                                                              self.position_mode_service_callback)
+
+        self.switch_to_velocity_mode_service = rospy.Service('/switch_to_velocity_mode',
+                                                             Trigger,
+                                                             self.velocity_mode_service_callback)
         
         self.stop_the_robot_service = rospy.Service('/stop_the_robot',
                                                     Trigger,

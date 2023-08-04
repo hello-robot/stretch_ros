@@ -54,7 +54,7 @@ class JointTrajectoryAction:
             # Escape stopped mode to execute trajectory
             self.node.stop_the_robot = False
         self.node.robot_mode_rwlock.acquire_read()
-        if self.node.robot_mode not in ['position', 'manipulation', 'navigation']:
+        if self.node.robot_mode not in ['position', 'manipulation', 'navigation', 'velocity']:
             self.invalid_goal_callback("Cannot execute goals while in mode={0}".format(self.node.robot_mode))
             self.node.robot_mode_rwlock.release_read()
             return
