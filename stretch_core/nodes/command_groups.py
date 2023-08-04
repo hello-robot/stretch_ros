@@ -30,17 +30,25 @@ class HeadPanCommandGroup(SimpleCommandGroup):
         self.range = range_rad
 
     def init_execution(self, robot, robot_status, **kwargs):
+        robot_mode = kwargs['robot_mode']
         if self.active:
-            _, pan_error = self.update_execution(robot_status)
-            robot.head.move_by('head_pan', pan_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
-            self.looked_left = pan_error > 0.0
+            _, pan_error = self.update_execution(robot_status, robot_mode=robot_mode)
+            if robot_mode == 'position':
+                robot.head.move_by('head_pan', pan_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
+                self.looked_left = pan_error > 0.0
+            elif robot_mode == 'velocity':
+                robot.head.get_joint('head_pan').set_velocity(self.goal['velocity'], a_des=self.goal['acceleration'])
 
     def update_execution(self, robot_status, **kwargs):
+        robot_mode = kwargs['robot_mode']
         self.error = None
         if self.active:
-            pan_backlash_correction = self.looked_left_offset_rad if self.looked_left else 0.0
-            pan_current = robot_status['head']['head_pan']['pos'] + self.calibrated_offset_rad + pan_backlash_correction
-            self.error = self.goal['position'] - pan_current
+            if robot_mode == 'position':
+                pan_backlash_correction = self.looked_left_offset_rad if self.looked_left else 0.0
+                pan_current = robot_status['head']['head_pan']['pos'] + self.calibrated_offset_rad + pan_backlash_correction
+                self.error = self.goal['position'] - pan_current
+            elif robot_mode == 'velocity':
+                self.error = 0.0
             return self.name, self.error
 
         return None
