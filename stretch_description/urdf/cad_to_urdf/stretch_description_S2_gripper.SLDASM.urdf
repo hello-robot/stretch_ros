@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.5.1-0-g916b5db  Build Version: 1.5.7152.31018
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="stretch_description_S2_gripper.SLDASM">
+  <link
+    name="link_wrist_yaw">
+    <inertial>
+      <origin
+        xyz="0 -3.9E-05 -0.016495"
+        rpy="0 0 0" />
+      <mass
+        value="0.054422" />
+      <inertia
+        ixx="9E-06"
+        ixy="0"
+        ixz="0"
+        iyy="9E-06"
+        iyz="0"
+        izz="7E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2_gripper.SLDASM/meshes/link_wrist_yaw.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2_gripper.SLDASM/meshes/link_wrist_yaw.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="link_gripper">
+    <inertial>
+      <origin
+        xyz="-0.013687 0.015548 -0.035364"
+        rpy="0 0 0" />
+      <mass
+        value="0.175929" />
+      <inertia
+        ixx="0.000124"
+        ixy="3.7E-05"
+        ixz="5.7E-05"
+        iyy="0.000217"
+        iyz="1.1E-05"
+        izz="0.000221" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2_gripper.SLDASM/meshes/link_gripper.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2_gripper.SLDASM/meshes/link_gripper.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_gripper"
+    type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="3.141592654 0 1.570796327" />
+    <parent
+      link="link_wrist_yaw" />
+    <child
+      link="link_gripper" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="link_gripper_finger_right">
+    <inertial>
+      <origin
+        xyz="-0.093921 -0.011351 0"
+        rpy="0 0 0" />
+      <mass
+        value="0.06" />
+      <inertia
+        ixx="1.1E-05"
+        ixy="3.6E-05"
+        ixz="0"
+        iyy="0.000213"
+        iyz="0"
+        izz="0.000223" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2_gripper.SLDASM/meshes/link_gripper_finger_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2_gripper.SLDASM/meshes/link_gripper_finger_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_gripper_finger_right"
+    type="revolute">
+    <origin
+      xyz="-0.02558069591 0.01004924142 -0.03429"
+      rpy="-3.141592654 -0.5235987756 0" />
+    <parent
+      link="link_gripper" />
+    <child
+      link="link_gripper_finger_right" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="link_gripper_fingertip_right">
+    <inertial>
+      <origin
+        xyz="0 0 0.008126"
+        rpy="0 0 0" />
+      <mass
+        value="0.003822" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="1E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2_gripper.SLDASM/meshes/link_gripper_fingertip_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2_gripper.SLDASM/meshes/link_gripper_fingertip_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_gripper_fingertip_right"
+    type="fixed">
+    <origin
+      xyz="-0.1901087319 -0.01491216603 0"
+      rpy="-1.570796327 0 0.5870461496" />
+    <parent
+      link="link_gripper_finger_right" />
+    <child
+      link="link_gripper_fingertip_right" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="link_gripper_finger_left">
+    <inertial>
+      <origin
+        xyz="0.094071 0.011377 0"
+        rpy="0 0 0" />
+      <mass
+        value="0.06" />
+      <inertia
+        ixx="1.1E-05"
+        ixy="3.6E-05"
+        ixz="0"
+        iyy="0.000214"
+        iyz="0"
+        izz="0.000224" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2_gripper.SLDASM/meshes/link_gripper_finger_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2_gripper.SLDASM/meshes/link_gripper_finger_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_gripper_finger_left"
+    type="revolute">
+    <origin
+      xyz="-0.02558069591 -0.01015075858 -0.03429"
+      rpy="0 0.5235987756 3.141592654" />
+    <parent
+      link="link_gripper" />
+    <child
+      link="link_gripper_finger_left" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="link_gripper_fingertip_left">
+    <inertial>
+      <origin
+        xyz="0 0 0.008126"
+        rpy="0 0 0" />
+      <mass
+        value="0.003822" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="1E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2_gripper.SLDASM/meshes/link_gripper_fingertip_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2_gripper.SLDASM/meshes/link_gripper_fingertip_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_gripper_fingertip_left"
+    type="fixed">
+    <origin
+      xyz="0.1901087319 0.01491216603 0"
+      rpy="-1.570796327 0 -2.554546504" />
+    <parent
+      link="link_gripper_finger_left" />
+    <child
+      link="link_gripper_fingertip_left" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+</robot>
