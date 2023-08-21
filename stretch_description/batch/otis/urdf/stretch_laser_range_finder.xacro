@@ -5,17 +5,17 @@
     name="laser">
     <inertial>
       <origin
-        xyz="0 0 -0.000755956127492408"
+        xyz="0.011979 -0.000523 -0.01998"
         rpy="0 0 0" />
       <mass
-        value="0.0749979022894495" />
+        value="0.216007" />
       <inertia
-        ixx="0"
-        ixy="0"
-        ixz="0"
-        iyy="0"
-        iyz="0"
-        izz="0" />
+        ixx="9.5E-05"
+        ixy="2E-06"
+        ixz="-1.9E-05"
+        iyy="0.000184"
+        iyz="-1E-06"
+        izz="0.000216" />
     </inertial>
     <visual>
       <origin

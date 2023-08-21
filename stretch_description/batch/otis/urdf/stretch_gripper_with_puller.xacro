@@ -7,17 +7,17 @@
     name="link_gripper">
     <inertial>
       <origin
-        xyz="-0.0170229132730066 0.0131410320934285 -0.0371614759484659"
+        xyz="-0.013687 0.015548 -0.035364"
         rpy="0 0 0" />
       <mass
-        value="0.101902711393094" />
+        value="0.175929" />
       <inertia
-        ixx="2.79241618017607E-05"
-        ixy="-1.10819247449605E-05"
-        ixz="-1.50343284036654E-05"
-        iyy="3.67945130513069E-05"
-        iyz="-4.33280448535579E-06"
-        izz="4.14524691955231E-05" />
+        ixx="0.000124"
+        ixy="3.7E-05"
+        ixz="5.7E-05"
+        iyy="0.000217"
+        iyz="1.1E-05"
+        izz="0.000221" />
     </inertial>
     <visual>
       <origin
@@ -118,17 +118,17 @@
     name="link_gripper_finger_left">
     <inertial>
       <origin
-        xyz="0.0945047483510102 0.0124301080924361 -4.44089209850063E-16"
+        xyz="0.094071 0.011377 0"
         rpy="0 0 0" />
       <mass
-        value="0.0476207785199474" />
+        value="0.06" />
       <inertia
-        ixx="0"
-        ixy="0"
+        ixx="1.1E-05"
+        ixy="3.6E-05"
         ixz="0"
-        iyy="0"
+        iyy="0.000214"
         iyz="0"
-        izz="0" />
+        izz="0.000224" />
     </inertial>
     <visual>
       <origin
@@ -174,17 +174,17 @@
     name="link_gripper_fingertip_left">
     <inertial>
       <origin
-        xyz="-3.16381381648689E-08 -2.91408530639359E-09 0.00812579670381812"
+        xyz="0 0 0.008126"
         rpy="0 0 0" />
       <mass
-        value="0.00382159917455729" />
+        value="0.003822" />
       <inertia
         ixx="0"
         ixy="0"
         ixz="0"
         iyy="0"
         iyz="0"
-        izz="0" />
+        izz="1E-06" />
     </inertial>
     <visual>
       <origin
@@ -229,17 +229,17 @@
     name="link_gripper_finger_right">
     <inertial>
       <origin
-        xyz="-0.0945047483510099 -0.0124301080924345 0"
+        xyz="-0.093921 -0.011351 0"
         rpy="0 0 0" />
       <mass
-        value="0.0476207785199481" />
+        value="0.06" />
       <inertia
-        ixx="0"
-        ixy="0"
+        ixx="1.1E-05"
+        ixy="3.6E-05"
         ixz="0"
-        iyy="0"
+        iyy="0.000213"
         iyz="0"
-        izz="0" />
+        izz="0.000223" />
     </inertial>
     <visual>
       <origin
@@ -285,17 +285,17 @@
     name="link_gripper_fingertip_right">
     <inertial>
       <origin
-        xyz="2.59386303963494E-08 6.70949018566347E-09 0.00812579516130402"
+        xyz="0 0 0.008126"
         rpy="0 0 0" />
       <mass
-        value="0.00382160037319545" />
+        value="0.003822" />
       <inertia
         ixx="0"
         ixy="0"
         ixz="0"
         iyy="0"
         iyz="0"
-        izz="0" />
+        izz="1E-06" />
     </inertial>
     <visual>
       <origin
