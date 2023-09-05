@@ -36,7 +36,7 @@ The *stretch_ros* repository holds ROS related code for the Stretch RE1 mobile m
 
 ## Licenses
 
-This software is intended for use with the Stretch RE1 mobile manipulator, which is a robot produced and sold by Hello Robot Inc. For further information, including inquiries about dual licensing, please contact Hello Robot Inc.
+This software is intended for use with the Stretch mobile manipulators, which is a robot produced and sold by Hello Robot Inc. For further information, including inquiries about dual licensing, please contact Hello Robot Inc.
 
 For license details for this repository, see the LICENSE files found in the directories. A summary of the licenses follows: 
 
