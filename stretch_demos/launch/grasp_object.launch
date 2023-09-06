@@ -1,8 +1,8 @@
 <launch>
 
-  <arg name="debug_directory" value="$(env HELLO_FLEET_PATH)/debug/"/>
-  <arg name="dryrun" value="false" />
-  <arg name="rviz" value="true" />
+  <arg name="debug_directory" default="$(env HELLO_FLEET_PATH)/debug/"/>
+  <arg name="dryrun" default="false" />
+  <arg name="rviz" default="true" />
 
   <!-- REALSENSE D435i -->
   <include file="$(find stretch_core)/launch/d435i_high_resolution.launch"></include>
