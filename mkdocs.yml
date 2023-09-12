@@ -1,0 +1,97 @@
+site_name: Stretch ROS
+site_url: https://docs.hello-robot.com/stretch_ros
+site_description: "Hello Robot Stretch ROS Documentation"
+copyright: 'Copyright &copy; 2022 Hello Robot Inc'
+site_author: Hello Robot Inc
+use_directory_urls: True
+docs_dir: .
+site_dir: ../site
+
+theme:
+ name: material
+ features:
+  - navigation.instant
+  - navigation.footer
+ #font: Arial
+ palette:
+  - scheme: default
+    primary: hello-robot-light
+    toggle:
+      icon: material/lightbulb-outline
+      name: Switch to dark mode
+  - scheme: slate
+    primary: hello-robot-dark
+    toggle:
+      icon: material/lightbulb
+      name: Switch to light mode
+ logo: images/hello_robot_logo_light.png
+ favicon: images/hello_robot_favicon.png
+
+extra_css:
+  - ./docs/extra.css
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - admonition
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - same-dir
+#  - simple:
+#      merge_docs_dir: true
+#      include_extensions: [".css", ".png"]
+#      include_folders: ['../hello_helpers']
+  - mike:
+      # these fields are all optional; the defaults are as below...
+      version_selector: true   # set to false to leave out the version selector
+      css_dir: css             # the directory to put the version selector's CSS
+      javascript_dir: js       # the directory to put the version selector's JS
+      canonical_version: null  # the version for <link rel="canonical">; `null`
+      # uses the version specified via `mike deploy`
+  - search
+  - tags
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          selection:
+            docstring_style: numpy
+          rendering:
+            show_root_heading: true
+            show_source: false
+            members_order: source
+            heading_level: 3
+            show_if_no_docstring: true
+
+extra:
+  version:
+    provider: mike
+    default: latest
+  social:
+    - icon: material/home
+      link: https://hello-robot.com
+    - icon: material/twitter
+      link: https://twitter.com/HelloRobotInc
+    - icon: material/github
+      link: https://github.com/hello-robot
+    - icon: material/linkedin
+      link: https://linkedin.com/company/hello-robot-inc
+
+nav:
+ - Overview: README.md
+ - Tutorials: https://docs.hello-robot.com/0.2/stretch-tutorials/ros1/
+ - Packages:
+    - hello_helpers: ./hello_helpers/README.md
+    - stretch_calibration: ./stretch_calibration/README.md
+    - stretch_core: ./stretch_core/README.md
+    - stretch_deep_perception: ./stretch_deep_perception/README.md
+    - stretch_demos: ./stretch_demos/README.md
+    - stretch_description: ./stretch_description/README.md
+    - stretch_funmap: ./stretch_funmap/README.md
+    - stretch_gazebo: ./stretch_gazebo/README.md
+    - stretch_moveit_config: ./stretch_moveit_config/README.md
+    - stretch_navigation: ./stretch_navigation/README.md
