@@ -9,8 +9,9 @@ This repository holds ROS Noetic code for the Stretch mobile manipulator from He
 | Resource                                                     | Description                                                  |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 [hello_helpers](hello_helpers/README.md) | Miscellaneous helper code used across the stretch_ros repository
-[stretch_calibration](stretch_calibration/README.md) | Creates and updates calibrated URDFs for the Stretch RE1
-[stretch_core](stretch_core/README.md) | Enables basic use of the Stretch RE1 from ROS
+[stretch_calibration](stretch_calibration/README.md) | Creates and updates calibrated URDFs for Stretch
+[stretch_core](stretch_core/README.md) | Drivers to use Stretch from ROS
+[stretch_dashboard](stretch_dashboard/README.md) | Dashboard showing health and diagnostic stats about Stretch
 [stretch_deep_perception](stretch_deep_perception/README.md) | Demonstrations that use open deep learning models to perceive the world
 [stretch_demos](stretch_demos/README.md) | Demonstrations of simple autonomous manipulation
 [stretch_description](stretch_description/README.md) | Generate and export URDFs
