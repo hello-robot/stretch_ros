@@ -25,7 +25,7 @@ This repository holds ROS Noetic code for the Stretch mobile manipulator from He
 
 This software is intended for use with the Stretch mobile manipulators, which is a robot produced and sold by Hello Robot Inc. For further information, including inquiries about dual licensing, please contact Hello Robot Inc.
 
-For license details for this repository, see the LICENSE files found in the directories. A summary of the licenses follows: 
+For license details for this repository, see the LICENSE files found in the directories. A summary of the licenses follows:
 
 Directory | License
 --- | ---

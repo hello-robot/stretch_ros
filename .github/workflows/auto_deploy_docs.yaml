@@ -15,7 +15,7 @@ jobs:
         run: echo "Repo ${{ github.repository }} | Branch ${{ github.ref }} | Runner ${{ runner.os }} | Event ${{ github.event_name }}"
 
       - name: Dispatch deploy workflow
-        uses: actions/github-scripts@v6
+        uses: actions/github-script@v6
         with:
           script: |
             await github.rest.actions.createWorkflowDispatch({
