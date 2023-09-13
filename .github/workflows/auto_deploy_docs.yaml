@@ -5,7 +5,7 @@ on:
     branches:
       - 'noetic'
     paths:
-      - '*.md'
+      - '**.md'
 jobs:
   Dispatch-Deploy-Workflow:
     runs-on: ubuntu-latest
@@ -17,6 +17,7 @@ jobs:
       - name: Dispatch deploy workflow
         uses: actions/github-script@v6
         with:
+          github-token: ${{ secrets.GHA_CROSSREPO_WORKFLOW_TOKEN }}
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: 'hello-robot',
