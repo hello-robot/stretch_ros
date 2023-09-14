@@ -1,0 +1,24 @@
+<launch>
+
+  <arg name="resolution"          default="high"  doc="resolution of the color/depth images ('low' or 'high')" />
+  <arg name="publish_upright_img" default="false" doc="whether to publish a rotated upright color image" />
+  <arg name="publish_frustum_viz" default="false" doc="whether to publish frustum field of view visualizers" />
+
+  <!-- D435i DRIVER -->
+  <include file="$(find stretch_core)/launch/d435i_$(arg resolution)_resolution.launch" />
+
+  <!-- VISUAL PRESET CONFIGURATION -->
+  <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen" />
+
+  <!-- UPRIGHT ROTATED CAMERA VIEW -->
+  <node name="upright_rotater" pkg="image_rotate" type="image_rotate" if="$(arg publish_upright_img)">
+    <remap from="image" to="/camera/color/image_raw" />
+    <remap from="rotated/image" to="/camera/color/upright_image_raw" />
+    <param name="target_frame_id" type="str" value="" />
+    <param name="target_x" type="double" value="-1.5708" />
+  </node>
+
+  <!-- FRUSTUM FIELD OF VIEW VISUALIZATION -->
+  <node name="d435i_frustum_visualizer" pkg="stretch_core" type="d435i_frustum_visualizer" output="screen" if="$(arg publish_frustum_viz)" />
+
+</launch>

@@ -1,0 +1,26 @@
+<launch>
+
+  <arg name="lidar_odom" default="true"  doc="whether the odom TF is estimated with lidar odometry fused, or just wheel odometry" />
+  <arg name="respeaker"  default="true"  doc="whether to launch the respeaker microphone array/speaker drivers" />
+  <arg name="rviz"       default="false" doc="whether to show Rviz" />
+
+  <!-- STRETCH DRIVER -->
+  <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="true" unless="$(arg lidar_odom)" />
+  <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true" />
+
+  <!-- D435i CAMERA -->
+  <include file="$(find stretch_core)/launch/stretch_realsense.launch" pass_all_args="true" />
+
+  <!-- LASER RANGE FINDER + SCAN MATCHER ODOMETRY -->
+  <include file="$(find stretch_core)/launch/rplidar.launch" if="$(arg lidar_odom)" />
+  <include file="$(find stretch_core)/launch/stretch_scan_matcher.launch" if="$(arg lidar_odom)" />
+
+  <!-- RESPEAKER MICROPHONE ARRAY -->
+  <group ns="stretch">
+    <include file="$(find respeaker_ros)/launch/respeaker.launch" if="$(arg respeaker)" />
+  </group>
+
+  <!-- VISUALIZE -->
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find stretch_core)/rviz/stretch.rviz" if="$(arg rviz)" />
+
+</launch>
