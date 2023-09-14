@@ -1,47 +1,27 @@
 <launch>
 
-  <arg name="debug_directory" default="$(env HELLO_FLEET_PATH)/debug/"/>
-  <arg name="dryrun" default="false" />
-  <arg name="rviz" default="true" />
+  <arg name="launch_drivers"  default="true"                           doc="whether to launch Stretch, D435i, Lidar, and other drivers" />
+  <arg name="debug_directory" default="$(env HELLO_FLEET_PATH)/debug/" doc="path to directory where debug planning images/logs are stored" />
+  <arg name="dryrun"          default="false"                          doc="whether run perception/planning without actually moving" />
+  <arg name="rviz"            default="true"                           doc="whether to launch Rviz" />
+  <arg name="respeaker"       value="false" />
 
-  <!-- REALSENSE D435i -->
-  <include file="$(find stretch_core)/launch/d435i_high_resolution.launch"></include>
-  <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen">
-    <!--<param name="initial_mode" type="string" value="Default"/>-->
-    <param name="initial_mode" type="string" value="High Accuracy"/>
-  </node>
-  <!-- -->
-
-  <!-- STRETCH DRIVER -->
-  <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="false"/>
-  <param name="/stretch_driver/fail_out_of_range_goal" type="bool" value="false"/>
-  <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true"/>
-  <!-- -->
+  <!-- STRETCH DRIVERS -->
+  <include file="$(find stretch_core)/launch/stretch.launch" if="$(arg launch_drivers)" pass_all_args="true" />
 
   <!-- MAPPING -->
   <node name="funmap" pkg="stretch_funmap" type="funmap" output="screen" >
     <param name="debug_directory" type="string" value="$(arg debug_directory)"/>
   </node>
-  <!-- -->
-
-  <!-- LASER RANGE FINDER -->
-  <include file="$(find stretch_core)/launch/rplidar.launch" />
-  <!-- -->
-
-  <!-- LASER SCAN MATCHER FOR ODOMETRY -->
-  <include file="$(find stretch_core)/launch/stretch_scan_matcher.launch" />
-  <!-- -->
 
   <!-- ALIGNED GRIPPER LINK -->
   <node name="aligned_gripper_link_tf_publisher" pkg="tf" type="static_transform_publisher" args="0 0 0 -0.5 0.4999968 0.5 0.5000032 /link_straight_gripper /link_straight_gripper_aligned 100" />
-  <!-- -->
 
   <!-- GRASP OBJECT -->
   <node name="grasp_object" pkg="stretch_demos" type="grasp_object" output="screen">
     <param name="debug_directory" type="string" value="$(arg debug_directory)"/>
     <param name="dryrun" type="bool" value="$(arg dryrun)"/>
   </node>
-  <!-- -->
 
   <!-- KEYBOARD TELEOP -->
   <node name="keyboard_teleop" pkg="stretch_core" type="keyboard_teleop" output="screen" args='--mapping_on --grasp_object_on'/>
