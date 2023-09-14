@@ -8,7 +8,7 @@
 
 *detect_aruco_markers* : node that detects and estimates the pose of ArUco markers, including the markers on the robot's body
 
-*d435i_** : various nodes to help use the Stretch RE1's 3D camera
+*d435i_* : various nodes to help use the Stretch RE1's 3D camera
 
 *keyboard_teleop* : node that provides a keyboard interface to control the robot's joints
 
