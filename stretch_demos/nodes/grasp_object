@@ -219,7 +219,7 @@ class GraspObjectNode(hm.HelloNode):
                 self.surface_marker_pub.publish(surface_pc)
         else:
             self.surface_marker_pub.publish(self.empty_pc)
-            self.surface_search_timeout = time.time() + 3.0
+            self.surface_search_timeout = time.time() + 2.5
 
         self.manip.publish_visualizations(self.voi_marker_pub, self.mhi_marker_pub)
 
