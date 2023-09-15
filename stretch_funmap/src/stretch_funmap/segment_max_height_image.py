@@ -1027,7 +1027,7 @@ def find_floor(segment_info, segments_image, verbose=False):
         return None, None
     max_bin_value = 0.0
     floor_id = None
-    print('segment_max_height_image.py : find_floor')
+    # print('segment_max_height_image.py : find_floor')
     for i in segment_info:
         height_m = segment_info[i]['height_m']
         bin_value = segment_info[i]['bin_value']

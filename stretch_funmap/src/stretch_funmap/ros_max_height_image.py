@@ -274,8 +274,8 @@ class ROSMaxHeightImage(MaxHeightImage):
             rospy.logwarn('ROSMaxHeightImage.from_rgb_points_with_tf2: failed to update the image likely due to a failure to lookup the transform using TF2. points_frame_id = {0}, points_timestamp = {1}, timeout_s = {2}'.format(points_frame_id, points_timestamp, timeout_s))
 
             
-    def to_point_cloud(self, color_map=None):
-        points = self.to_points(color_map)
+    def to_point_cloud(self, color_map=None, substitute_image=None):
+        points = self.to_points(color_map, substitute_image=substitute_image)
         if self.last_update_time is None:
             self.last_update_time = rospy.Time.now()
         point_cloud = ros_numpy.msgify(PointCloud2, points, stamp=self.last_update_time, frame_id=self.voi.frame_id)

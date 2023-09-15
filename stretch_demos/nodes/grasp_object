@@ -202,17 +202,21 @@ class GraspObjectNode(hm.HelloNode):
             message='Completed object grasp!'
         )
 
-    def temp_trigger_grasp_object_service2(self, request):
-        with open(f'{self.debug_directory}manip.pkl', 'wb') as outp:
-            pickle.dump(self.manip, outp, pickle.HIGHEST_PROTOCOL)
+    def visualization_publish_loop(self):
+        self.manip.update(self.point_cloud, self.tf2_buffer)
 
         height, width = self.manip.max_height_im.image.shape
         robot_xy_pix = [width/2, 0]
-        surface_mask, plane_parameters = sm.find_closest_flat_surface(self.manip.max_height_im, robot_xy_pix, display_on=False)
-        print(surface_mask)
-        # print(type(surface_mask))
-        # print(surface_mask.shape)
+        surface_mask, plane_parameters = sm.find_closest_flat_surface(self.manip.max_height_im, robot_xy_pix)
+        if surface_mask is not None:
+            image_copy = self.manip.max_height_im.image.copy()
+            image_copy[surface_mask <= 0] = 0
+            surface_pc = self.manip.max_height_im.to_point_cloud(substitute_image=image_copy)
+            self.surface_marker_pub.publish(surface_pc)
 
+        self.manip.publish_visualizations(self.voi_marker_pub, self.mhi_marker_pub)
+
+    def temp_trigger_grasp_object_service2(self, request):
         # grasp_target = self.manip.get_grasp_target(self.tf2_buffer)
         grasp_target = True
 
@@ -258,7 +262,7 @@ class GraspObjectNode(hm.HelloNode):
             '/grasp_object/voi_marker', Marker, queue_size=1)
         self.mhi_marker_pub = rospy.Publisher(
             '/grasp_object/mhi_marker', PointCloud2, queue_size=1)
-        self.mhi_marker_pub = rospy.Publisher(
+        self.surface_marker_pub = rospy.Publisher(
             '/grasp_object/surface_marker', PointCloud2, queue_size=1)
 
         self.manip = mp.ManipulationView(self.tf2_buffer, self.debug_directory, self.get_tool())
@@ -266,8 +270,7 @@ class GraspObjectNode(hm.HelloNode):
 
         rate = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
-            self.manip.update(self.point_cloud, self.tf2_buffer)
-            self.manip.publish_visualizations(self.voi_marker_pub, self.mhi_marker_pub)
+            self.visualization_publish_loop()
             rate.sleep()
 
 
