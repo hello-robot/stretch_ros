@@ -18,6 +18,7 @@ from control_msgs.msg import FollowJointTrajectoryAction
 from control_msgs.msg import FollowJointTrajectoryGoal
 from trajectory_msgs.msg import JointTrajectoryPoint
 import tf2_ros
+from sensor_msgs.msg import JointState
 from sensor_msgs.msg import PointCloud2
 from std_srvs.srv import Trigger, TriggerRequest
 from std_msgs.msg import String
@@ -68,9 +69,9 @@ def get_left_finger_state(joint_states):
 
 class HelloNode:
     def __init__(self):
-        self.joint_state = None
-        self.point_cloud = None
-        self.tool = None
+        self._joint_state = None
+        self._point_cloud = None
+        self._tool = None
         self.dryrun = False
 
     @classmethod
@@ -79,14 +80,14 @@ class HelloNode:
         i.main(name, name, wait_for_first_pointcloud)
         return i
 
-    def joint_states_callback(self, joint_state):
-        self.joint_state = joint_state
+    def _joint_states_callback(self, joint_state):
+        self._joint_state = joint_state
 
-    def point_cloud_callback(self, point_cloud):
-        self.point_cloud = point_cloud
+    def _point_cloud_callback(self, point_cloud):
+        self._point_cloud = point_cloud
 
-    def tool_callback(self, tool_string):
-        self.tool = tool_string.data
+    def _tool_callback(self, tool_string):
+        self._tool = tool_string.data
 
     def move_to_pose(self, pose, return_before_done=False, custom_contact_thresholds=False, custom_full_goal=False):
         if self.dryrun:
@@ -125,10 +126,10 @@ class HelloNode:
             point.positions = [joint_position for joint_position in pose.values()]
 
         # send goal
-        self.trajectory_client.send_goal(trajectory_goal)
+        self._trajectory_client.send_goal(trajectory_goal)
         if not return_before_done:
-            self.trajectory_client.wait_for_result()
-            rospy.logdebug(f"{self.node_name}'s HelloNode.move_to_pose: got result {self.trajectory_client.get_result()}")
+            self._trajectory_client.wait_for_result()
+            rospy.logdebug(f"{self.node_name}'s HelloNode.move_to_pose: got result {self._trajectory_client.get_result()}")
 
     def get_robot_floor_pose_xya(self, floor_frame='odom'):
         # Returns the current estimated x, y position and angle of the
@@ -145,7 +146,7 @@ class HelloNode:
 
         # Query TF2 to obtain the current estimated transformation
         # from the robot's base_link frame to the frame.
-        robot_to_odom_mat, timestamp = get_p1_to_p2_matrix('base_link', floor_frame, self.tf2_buffer)
+        robot_to_odom_mat, timestamp = get_p1_to_p2_matrix('base_link', floor_frame, self._tf2_buffer)
         print('robot_to_odom_mat =', robot_to_odom_mat)
         print('timestamp =', timestamp)
 
@@ -168,10 +169,14 @@ class HelloNode:
         rate = rospy.Rate(10.0)
         while True:
             try:
-                return self.tf2_buffer.lookup_transform(from_frame, to_frame, rospy.Time())
+                return self._tf2_buffer.lookup_transform(from_frame, to_frame, rospy.Time())
             except:
                 continue
             rate.sleep()
+
+    def get_point_cloud():
+        assert(self._point_cloud is not None)
+        return self._point_cloud
 
     def home_the_robot(self):
         if self.dryrun:
@@ -198,43 +203,45 @@ class HelloNode:
         return trigger_result.success
 
     def get_tool(self):
-        assert(self.tool is not None)
-        return self.tool
+        assert(self._tool is not None)
+        return self._tool
 
     def main(self, node_name, node_topic_namespace, wait_for_first_pointcloud=True):
         rospy.init_node(node_name)
         self.node_name = rospy.get_name()
         rospy.loginfo("{0} started".format(self.node_name))
 
-        self.trajectory_client = actionlib.SimpleActionClient('/stretch_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
-        server_reached = self.trajectory_client.wait_for_server(timeout=rospy.Duration(60.0))
+        self._trajectory_client = actionlib.SimpleActionClient('/stretch_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
+        server_reached = self._trajectory_client.wait_for_server(timeout=rospy.Duration(60.0))
         if not server_reached:
             rospy.signal_shutdown('Unable to connect to arm action server. Timeout exceeded.')
             sys.exit()
 
-        self.tf2_buffer = tf2_ros.Buffer()
-        self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
+        self._joint_states_subscriber = rospy.Subscriber('/stretch/joint_states', JointState, self._joint_states_callback)
 
-        self.tool_subscriber = rospy.Subscriber('/tool', String, self.tool_callback)
+        self._tf2_buffer = tf2_ros.Buffer()
+        self._tf2_listener = tf2_ros.TransformListener(self._tf2_buffer)
 
-        self.point_cloud_subscriber = rospy.Subscriber('/camera/depth/color/points', PointCloud2, self.point_cloud_callback)
+        self._tool_subscriber = rospy.Subscriber('/tool', String, self._tool_callback)
+
+        self._point_cloud_subscriber = rospy.Subscriber('/camera/depth/color/points', PointCloud2, self._point_cloud_callback)
         self.point_cloud_pub = rospy.Publisher('/' + node_topic_namespace + '/point_cloud2', PointCloud2, queue_size=1)
 
         rospy.wait_for_service('/home_the_robot')
         rospy.wait_for_service('/stow_the_robot')
         rospy.wait_for_service('/stop_the_robot')
         rospy.loginfo('Node ' + self.node_name + ' connected to robot services.')
-        self.home_the_robot_service = rospy.ServiceProxy('/home_the_robot', Trigger)
-        self.stow_the_robot_service = rospy.ServiceProxy('/stow_the_robot', Trigger)
-        self.stop_the_robot_service = rospy.ServiceProxy('/stop_the_robot', Trigger)
+        self._home_the_robot_service = rospy.ServiceProxy('/home_the_robot', Trigger)
+        self._stow_the_robot_service = rospy.ServiceProxy('/stow_the_robot', Trigger)
+        self._stop_the_robot_service = rospy.ServiceProxy('/stop_the_robot', Trigger)
 
         if wait_for_first_pointcloud:
             # Do not start until a point cloud has been received
-            point_cloud_msg = self.point_cloud
+            point_cloud_msg = self._point_cloud
             print('Node ' + node_name + ' waiting to receive first point cloud.')
             while point_cloud_msg is None:
                 rospy.sleep(0.1)
-                point_cloud_msg = self.point_cloud
+                point_cloud_msg = self._point_cloud
             print('Node ' + node_name + ' received first point cloud, so continuing.')
 
 
