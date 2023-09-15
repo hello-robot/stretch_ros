@@ -36,36 +36,28 @@ class GraspObjectNode(hm.HelloNode):
     def __init__(self):
         hm.HelloNode.__init__(self)
         self.rate = 10.0
-        self.joint_states = None
-        self.joint_states_lock = threading.Lock()
-        # self.move_base = nv.MoveBase(self)
-        self.letter_height_m = 0.2
         self.wrist_position = None
         self.lift_position = None
         self.manipulation_view = None
         self.debug_directory = None
 
-    def joint_states_callback(self, joint_states):
-        with self.joint_states_lock:
-            self.joint_states = joint_states
-        wrist_position, wrist_velocity, wrist_effort = hm.get_wrist_state(joint_states)
-        self.wrist_position = wrist_position
-        lift_position, lift_velocity, lift_effort = hm.get_lift_state(joint_states)
-        self.lift_position = lift_position
-        self.left_finger_position, temp1, temp2 = hm.get_left_finger_state(joint_states)
+    def joint_states_loop(self):
+        self.wrist_position, _, _, _ = self.get_joint_state('joint_arm')
+        self.lift_position, _, _, _ = self.get_joint_state('joint_lift')
+        self.left_finger_position, _, _, _ = self.get_joint_state('joint_gripper_finger_left')
 
     def look_at_surface(self, scan_time_s=None):
-        self.manipulation_view = mp.ManipulationView(self.tf2_buffer, self.debug_directory, self.get_tool())
+        self.manipulation_view = mp.ManipulationView(self._tf2_buffer, self.debug_directory, self.get_tool())
         manip = self.manipulation_view
         head_settle_time_s = 0.02 #1.0
         manip.move_head(self.move_to_pose)
         rospy.sleep(head_settle_time_s)
         if scan_time_s is None:
-            manip.update(self.point_cloud, self.tf2_buffer)
+            manip.update(self.get_point_cloud(), self._tf2_buffer)
         else:
             start_time_s = time.time()
             while ((time.time() - start_time_s) < scan_time_s):
-                manip.update(self.point_cloud, self.tf2_buffer)
+                manip.update(self.get_point_cloud(), self._tf2_buffer)
         if self.debug_directory is not None:
             dirname = self.debug_directory + 'grasp_object/'
             # If the directory does not already exist, create it.
@@ -101,7 +93,7 @@ class GraspObjectNode(hm.HelloNode):
 
         # 2. Scan surface and find grasp target
         self.look_at_surface(scan_time_s = 4.0)
-        grasp_target = self.manipulation_view.get_grasp_target(self.tf2_buffer)
+        grasp_target = self.manipulation_view.get_grasp_target(self._tf2_buffer)
         if grasp_target is None:
             return TriggerResponse(
                 success=False,
@@ -109,7 +101,7 @@ class GraspObjectNode(hm.HelloNode):
             )
 
         # 3. Move to pregrasp pose
-        pregrasp_lift_m = self.manipulation_view.get_pregrasp_lift(grasp_target, self.tf2_buffer)
+        pregrasp_lift_m = self.manipulation_view.get_pregrasp_lift(grasp_target, self._tf2_buffer)
         if self.tool == "tool_stretch_dex_wrist":
             pregrasp_lift_m += 0.02
         if (self.lift_position is None):
@@ -139,7 +131,7 @@ class GraspObjectNode(hm.HelloNode):
         pose = {'gripper_aperture': 0.125}
         self.move_to_pose(pose)
 
-        pregrasp_mobile_base_m, pregrasp_wrist_extension_m = self.manipulation_view.get_pregrasp_planar_translation(grasp_target, self.tf2_buffer)
+        pregrasp_mobile_base_m, pregrasp_wrist_extension_m = self.manipulation_view.get_pregrasp_planar_translation(grasp_target, self._tf2_buffer)
         rospy.loginfo('pregrasp_mobile_base_m = {0:.3f} m'.format(pregrasp_mobile_base_m))
         rospy.loginfo('pregrasp_wrist_extension_m = {0:.3f} m'.format(pregrasp_wrist_extension_m))
         rospy.loginfo('Drive to pregrasp location.')
@@ -155,7 +147,7 @@ class GraspObjectNode(hm.HelloNode):
             rospy.loginfo('negative wrist extension for pregrasp, so not extending or retracting.')
 
         # 4. Grasp the object and lift it
-        grasp_mobile_base_m, grasp_lift_m, grasp_wrist_extension_m = self.manipulation_view.get_grasp_from_pregrasp(grasp_target, self.tf2_buffer)
+        grasp_mobile_base_m, grasp_lift_m, grasp_wrist_extension_m = self.manipulation_view.get_grasp_from_pregrasp(grasp_target, self._tf2_buffer)
         rospy.loginfo('grasp_mobile_base_m = {0:3f} m, grasp_lift_m = {1:3f} m, grasp_wrist_extension_m = {2:3f} m'.format(grasp_mobile_base_m, grasp_lift_m, grasp_wrist_extension_m))
         rospy.loginfo('Move the grasp pose from the pregrasp pose.')
 
@@ -203,7 +195,7 @@ class GraspObjectNode(hm.HelloNode):
         )
 
     def visualization_publish_loop(self):
-        self.manip.update(self.point_cloud, self.tf2_buffer)
+        self.manip.update(self.get_point_cloud(), self._tf2_buffer)
 
         height, width = self.manip.max_height_im.image.shape
         robot_xy_pix = [width/2, 0]
@@ -217,7 +209,7 @@ class GraspObjectNode(hm.HelloNode):
         self.manip.publish_visualizations(self.voi_marker_pub, self.mhi_marker_pub)
 
     def temp_trigger_grasp_object_service2(self, request):
-        # grasp_target = self.manip.get_grasp_target(self.tf2_buffer)
+        # grasp_target = self.manip.get_grasp_target(self._tf2_buffer)
         grasp_target = True
 
         if grasp_target is not None:
@@ -237,8 +229,6 @@ class GraspObjectNode(hm.HelloNode):
         self.debug_directory = rospy.get_param('~debug_directory')
         rospy.loginfo('Using the following directory for debugging files: {0}'.format(self.debug_directory))
         self.dryrun = rospy.get_param('~dryrun', False)
-
-        self.joint_states_subscriber = rospy.Subscriber('/stretch/joint_states', JointState, self.joint_states_callback)
 
         self.trigger_grasp_object_service = rospy.Service('/grasp_object/trigger_grasp_object',
                                                            Trigger,
@@ -265,11 +255,12 @@ class GraspObjectNode(hm.HelloNode):
         self.surface_marker_pub = rospy.Publisher(
             '/grasp_object/surface_marker', PointCloud2, queue_size=1)
 
-        self.manip = mp.ManipulationView(self.tf2_buffer, self.debug_directory, self.get_tool())
+        self.manip = mp.ManipulationView(self._tf2_buffer, self.debug_directory, self.get_tool())
         self.manip.move_head(self.move_to_pose, head_settle_time=0.0)
 
         rate = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
+            self.joint_states_loop()
             self.visualization_publish_loop()
             rate.sleep()
 
