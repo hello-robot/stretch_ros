@@ -72,6 +72,7 @@ class HelloNode:
         self._joint_state = None
         self._point_cloud = None
         self._tool = None
+        self._mode = None
         self.dryrun = False
 
     @classmethod
@@ -88,6 +89,9 @@ class HelloNode:
 
     def _tool_callback(self, tool_string):
         self._tool = tool_string.data
+
+    def _mode_callback(self, mode_string):
+        self._mode = mode_string.data
 
     def move_to_pose(self, pose, return_before_done=False, custom_contact_thresholds=False, custom_full_goal=False):
         if self.dryrun:
@@ -185,6 +189,14 @@ class HelloNode:
         joint_effort = self._joint_states.effort[i]
         return (joint_position, joint_velocity, joint_effort)
 
+    def get_tool(self):
+        assert(self._tool is not None)
+        return self._tool
+
+    def get_mode(self):
+        assert(self._mode is not None)
+        return self._mode
+
     def home_the_robot(self):
         if self.dryrun:
             return
@@ -209,10 +221,6 @@ class HelloNode:
         rospy.logdebug(f"{self.node_name}'s HelloNode.stop_the_robot: got message {trigger_result.message}")
         return trigger_result.success
 
-    def get_tool(self):
-        assert(self._tool is not None)
-        return self._tool
-
     def main(self, node_name, node_topic_namespace, wait_for_first_pointcloud=True):
         rospy.init_node(node_name)
         self.node_name = rospy.get_name()
@@ -230,9 +238,10 @@ class HelloNode:
         self._tf2_listener = tf2_ros.TransformListener(self._tf2_buffer)
 
         self._tool_subscriber = rospy.Subscriber('/tool', String, self._tool_callback)
+        self._mode_subscriber = rospy.Subscriber('/mode', String, self._mode_callback)
 
         self._point_cloud_subscriber = rospy.Subscriber('/camera/depth/color/points', PointCloud2, self._point_cloud_callback)
-        self.point_cloud_pub = rospy.Publisher('/' + node_topic_namespace + '/point_cloud2', PointCloud2, queue_size=1)
+        self._point_cloud_pub = rospy.Publisher('/' + node_topic_namespace + '/point_cloud2', PointCloud2, queue_size=1)
 
         rospy.wait_for_service('/home_the_robot')
         rospy.wait_for_service('/stow_the_robot')
