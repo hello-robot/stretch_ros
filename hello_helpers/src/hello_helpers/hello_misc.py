@@ -178,6 +178,13 @@ class HelloNode:
         assert(self._point_cloud is not None)
         return self._point_cloud
 
+    def get_joint_state(self, joint_name):
+        i = self._joint_states.name.index(joint_name)
+        joint_position = self._joint_states.position[i]
+        joint_velocity = self._joint_states.velocity[i]
+        joint_effort = self._joint_states.effort[i]
+        return (joint_position, joint_velocity, joint_effort)
+
     def home_the_robot(self):
         if self.dryrun:
             return
