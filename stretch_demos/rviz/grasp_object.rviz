@@ -5,7 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /VOI Marker1/Status1
-        - /Surface Marker1
       Splitter Ratio: 0.4968421161174774
     Tree Height: 539
   - Class: rviz/Selection
@@ -585,7 +584,7 @@ Visualization Manager:
       Color: 138; 226; 52
       Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
@@ -600,7 +599,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -629,7 +628,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.622921943664551
+      Distance: 5.505923271179199
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -637,17 +636,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -0.19024641811847687
-        Y: -0.866672933101654
-        Z: 0.26281020045280457
+        X: -0.4598890244960785
+        Y: -0.7370460033416748
+        Z: 0.6274316310882568
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.9747954607009888
+      Pitch: 0.6747954487800598
       Target Frame: <Fixed Frame>
-      Yaw: 0.7804074287414551
+      Yaw: 0.6954066753387451
     Saved: ~
 Window Geometry:
   Camera:
