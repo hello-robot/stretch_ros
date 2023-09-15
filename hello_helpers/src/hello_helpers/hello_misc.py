@@ -69,7 +69,7 @@ def get_left_finger_state(joint_states):
 
 class HelloNode:
     def __init__(self):
-        self._joint_state = None
+        self._joint_states = None
         self._point_cloud = None
         self._tool = None
         self._mode = None
@@ -81,8 +81,8 @@ class HelloNode:
         i.main(name, name, wait_for_first_pointcloud)
         return i
 
-    def _joint_states_callback(self, joint_state):
-        self._joint_state = joint_state
+    def _joint_states_callback(self, joint_states):
+        self._joint_states = joint_states
 
     def _point_cloud_callback(self, point_cloud):
         self._point_cloud = point_cloud
