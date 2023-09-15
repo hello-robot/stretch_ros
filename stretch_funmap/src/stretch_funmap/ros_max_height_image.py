@@ -73,7 +73,7 @@ class ROSVolumeOfInterest(VolumeOfInterest):
         marker.type = marker.CUBE
         marker.action = marker.ADD
         marker.lifetime = rospy.Duration(duration)
-        marker.text = 'volume of interest'
+        # marker.text = 'volume of interest'
 
         marker.header.frame_id = self.frame_id
         marker.header.stamp = rospy.Time.now()
@@ -276,5 +276,7 @@ class ROSMaxHeightImage(MaxHeightImage):
             
     def to_point_cloud(self, color_map=None):
         points = self.to_points(color_map)
+        if self.last_update_time is None:
+            self.last_update_time = rospy.Time.now()
         point_cloud = ros_numpy.msgify(PointCloud2, points, stamp=self.last_update_time, frame_id=self.voi.frame_id)
         return point_cloud

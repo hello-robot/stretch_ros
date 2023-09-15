@@ -94,6 +94,9 @@ class VolumeOfInterest:
         origin.append(1.0)
         origin = np.array(origin)
         new_origin = np.matmul(points_in_old_frame_to_new_frame_mat, origin)
+        new_origin = list(new_origin)
+        new_origin.pop()
+        new_origin = np.array(new_origin)
         # rotate the axes
         new_axes = np.matmul(points_in_old_frame_to_new_frame_mat[:3,:3], self.axes)
         # transform transforms
@@ -160,6 +163,7 @@ class MaxHeightImage:
         # pixel_dtype : Numpy dtype for the max height image (MHI)
         # pixels, which also defines the maximum resolution in height.
         #
+        self.last_update_time = None
         self.supported_dtypes = [np.uint8, np.uint16, np.uint32, np.uint64, np.float32, np.float64]
 
         if pixel_dtype not in self.supported_dtypes:

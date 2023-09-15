@@ -200,15 +200,14 @@ def detect_cliff(image, m_per_pix, m_per_height_unit, robot_xy_pix, display_text
 class ManipulationView():
     def __init__(self, tf2_buffer, debug_directory=None, tool='tool_stretch_gripper'):
         self.debug_directory = debug_directory
-        print('ManipulationView __init__: self.debug_directory =', self.debug_directory)
+        # print('ManipulationView __init__: self.debug_directory =', self.debug_directory)
         self.gripper_links = {
             'tool_stretch_gripper': 'link_gripper',
             'tool_stretch_dex_wrist': 'link_straight_gripper_aligned'
         }
         self.tool = tool
 
-        # Define the volume of interest for planning using the current
-        # view.
+        # Define the volume of interest for planning using the current view.
 
         # How far to look ahead.
         look_ahead_distance_m = 2.0
@@ -249,10 +248,10 @@ class ManipulationView():
         voi.change_frame(points_in_old_frame_to_new_frame_mat, new_frame_id)
         self.voi = voi
         self.max_height_im = rm.ROSMaxHeightImage(self.voi, m_per_pix, pixel_dtype)
-        self.max_height_im.print_info()
+        # self.max_height_im.print_info()
         self.updated = False
 
-    def move_head(self, move_to_pose):
+    def move_head(self, move_to_pose, head_settle_time=0.5):
         tilt = -0.8
         pan = -1.8 #-1.6
         # This head configuration can reduce seeing the hand or arm when they are held high, which can avoid noise due to the hand and arm being to close to the head.
@@ -260,7 +259,6 @@ class ManipulationView():
         #pan = -0.9
         pose = {'joint_head_pan': pan, 'joint_head_tilt': tilt}
         move_to_pose(pose)
-        head_settle_time = 0.5
         rospy.sleep(head_settle_time)
 
     def estimate_reach_to_contact_distance(self, tooltip_frame, tf2_buffer, save_debugging_images=True):

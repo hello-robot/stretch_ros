@@ -11,6 +11,7 @@ from control_msgs.msg import FollowJointTrajectoryGoal
 from trajectory_msgs.msg import JointTrajectoryPoint
 
 from sensor_msgs.msg import PointCloud2
+from visualization_msgs.msg import Marker, MarkerArray
 
 from std_srvs.srv import Trigger, TriggerRequest, TriggerResponse
 
@@ -50,12 +51,6 @@ class GraspObjectNode(hm.HelloNode):
         lift_position, lift_velocity, lift_effort = hm.get_lift_state(joint_states)
         self.lift_position = lift_position
         self.left_finger_position, temp1, temp2 = hm.get_left_finger_state(joint_states)
-
-    def lower_tool_until_contact(self):
-        rospy.loginfo('lower_tool_until_contact')
-        trigger_request = TriggerRequest()
-        trigger_result = self.trigger_lower_until_contact_service(trigger_request)
-        rospy.loginfo('trigger_result = {0}'.format(trigger_result))
 
     def look_at_surface(self, scan_time_s=None):
         self.manipulation_view = mp.ManipulationView(self.tf2_buffer, self.debug_directory, self.get_tool())
@@ -205,6 +200,14 @@ class GraspObjectNode(hm.HelloNode):
             message='Completed object grasp!'
         )
 
+    def temp_trigger_grasp_object_service2(self, request):
+        # grasp_target = self.manipulation_view.get_grasp_target(self.tf2_buffer)
+
+        return TriggerResponse(
+            success=True,
+            message='Completed object grasp!'
+        )
+
     def main(self):
         hm.HelloNode.main(self, 'grasp_object', 'grasp_object', wait_for_first_pointcloud=False)
 
@@ -218,13 +221,9 @@ class GraspObjectNode(hm.HelloNode):
                                                            Trigger,
                                                            self.trigger_grasp_object_callback)
 
-        rospy.wait_for_service('/funmap/trigger_reach_until_contact')
-        rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_reach_until_contact.')
-        self.trigger_reach_until_contact_service = rospy.ServiceProxy('/funmap/trigger_reach_until_contact', Trigger)
-
-        rospy.wait_for_service('/funmap/trigger_lower_until_contact')
-        rospy.loginfo('Node ' + self.node_name + ' connected to /funmap/trigger_lower_until_contact.')
-        self.trigger_lower_until_contact_service = rospy.ServiceProxy('/funmap/trigger_lower_until_contact', Trigger)
+        self.trigger_grasp_object_service2 = rospy.Service('/grasp_object/temp',
+                                                           Trigger,
+                                                           self.temp_trigger_grasp_object_service2)
 
         default_service = '/camera/switch_to_default_mode'
         high_accuracy_service = '/camera/switch_to_high_accuracy_mode'
@@ -236,8 +235,18 @@ class GraspObjectNode(hm.HelloNode):
         rospy.loginfo('Node ' + self.node_name + ' connected to'  + high_accuracy_service)
         self.trigger_d435i_high_accuracy_mode_service = rospy.ServiceProxy(high_accuracy_service, Trigger)
 
+        self.voi_marker_pub = rospy.Publisher(
+            '/grasp_object/voi_marker', Marker, queue_size=1)
+        self.mhi_marker_pub = rospy.Publisher(
+            '/grasp_object/mhi_marker', PointCloud2, queue_size=1)
+
+        self.manip = mp.ManipulationView(self.tf2_buffer, self.debug_directory, self.get_tool())
+        self.manip.move_head(self.move_to_pose, head_settle_time=0.75)
+
         rate = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
+            self.manip.update(self.point_cloud, self.tf2_buffer)
+            self.manip.publish_visualizations(self.voi_marker_pub, self.mhi_marker_pub)
             rate.sleep()
 
 
