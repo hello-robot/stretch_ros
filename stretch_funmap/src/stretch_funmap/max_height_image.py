@@ -333,8 +333,6 @@ class MaxHeightImage:
     def apply_planar_correction(self, plane_parameters, plane_height_pix):
         # plane_parameters: [alpha, beta, gamma] such that alpha*x + beta*y + gamma = z
         # plane_height_m: The new height for points on the plane in meters
-        plane_height_pix = plane_height_pix
-        
         self.image, transform_to_corrected = numba_correct_height_image(plane_parameters, self.image, plane_height_pix)
         self.transform_original_to_corrected = transform_to_corrected
         self.transform_corrected_to_original = np.linalg.inv(transform_to_corrected)

@@ -23,10 +23,12 @@ import tf2_ros
 import argparse as ap
 import numpy as np
 import os
+import pickle
 
 import hello_helpers.hello_misc as hm
 import stretch_funmap.navigate as nv
 import stretch_funmap.manipulation_planning as mp
+import stretch_funmap.segment_max_height_image as sm
 
 
 class GraspObjectNode(hm.HelloNode):
@@ -36,7 +38,7 @@ class GraspObjectNode(hm.HelloNode):
         self.rate = 10.0
         self.joint_states = None
         self.joint_states_lock = threading.Lock()
-        self.move_base = nv.MoveBase(self)
+        # self.move_base = nv.MoveBase(self)
         self.letter_height_m = 0.2
         self.wrist_position = None
         self.lift_position = None
@@ -201,15 +203,32 @@ class GraspObjectNode(hm.HelloNode):
         )
 
     def temp_trigger_grasp_object_service2(self, request):
-        # grasp_target = self.manipulation_view.get_grasp_target(self.tf2_buffer)
+        with open(f'{self.debug_directory}manip.pkl', 'wb') as outp:
+            pickle.dump(self.manip, outp, pickle.HIGHEST_PROTOCOL)
 
-        return TriggerResponse(
-            success=True,
-            message='Completed object grasp!'
-        )
+        height, width = self.manip.max_height_im.image.shape
+        robot_xy_pix = [width/2, 0]
+        surface_mask, plane_parameters = sm.find_closest_flat_surface(self.manip.max_height_im, robot_xy_pix, display_on=False)
+        print(surface_mask)
+        # print(type(surface_mask))
+        # print(surface_mask.shape)
+
+        # grasp_target = self.manip.get_grasp_target(self.tf2_buffer)
+        grasp_target = True
+
+        if grasp_target is not None:
+            return TriggerResponse(
+                success=True,
+                message='Found target!!'
+            )
+        else:
+            return TriggerResponse(
+                success=False,
+                message='No grasp found...'
+            )
 
     def main(self):
-        hm.HelloNode.main(self, 'grasp_object', 'grasp_object', wait_for_first_pointcloud=False)
+        hm.HelloNode.main(self, 'grasp_object', 'grasp_object', wait_for_first_pointcloud=True)
 
         self.debug_directory = rospy.get_param('~debug_directory')
         rospy.loginfo('Using the following directory for debugging files: {0}'.format(self.debug_directory))
@@ -225,23 +244,25 @@ class GraspObjectNode(hm.HelloNode):
                                                            Trigger,
                                                            self.temp_trigger_grasp_object_service2)
 
-        default_service = '/camera/switch_to_default_mode'
-        high_accuracy_service = '/camera/switch_to_high_accuracy_mode'
-        rospy.loginfo('Node ' + self.node_name + ' waiting to connect to ' + default_service + ' and ' + high_accuracy_service)
-        rospy.wait_for_service(default_service)
-        rospy.loginfo('Node ' + self.node_name + ' connected to ' + default_service)
-        self.trigger_d435i_default_mode_service = rospy.ServiceProxy(default_service, Trigger)
-        rospy.wait_for_service(high_accuracy_service)
-        rospy.loginfo('Node ' + self.node_name + ' connected to'  + high_accuracy_service)
-        self.trigger_d435i_high_accuracy_mode_service = rospy.ServiceProxy(high_accuracy_service, Trigger)
+        # default_service = '/camera/switch_to_default_mode'
+        # high_accuracy_service = '/camera/switch_to_high_accuracy_mode'
+        # rospy.loginfo('Node ' + self.node_name + ' waiting to connect to ' + default_service + ' and ' + high_accuracy_service)
+        # rospy.wait_for_service(default_service)
+        # rospy.loginfo('Node ' + self.node_name + ' connected to ' + default_service)
+        # self.trigger_d435i_default_mode_service = rospy.ServiceProxy(default_service, Trigger)
+        # rospy.wait_for_service(high_accuracy_service)
+        # rospy.loginfo('Node ' + self.node_name + ' connected to'  + high_accuracy_service)
+        # self.trigger_d435i_high_accuracy_mode_service = rospy.ServiceProxy(high_accuracy_service, Trigger)
 
         self.voi_marker_pub = rospy.Publisher(
             '/grasp_object/voi_marker', Marker, queue_size=1)
         self.mhi_marker_pub = rospy.Publisher(
             '/grasp_object/mhi_marker', PointCloud2, queue_size=1)
+        self.mhi_marker_pub = rospy.Publisher(
+            '/grasp_object/surface_marker', PointCloud2, queue_size=1)
 
         self.manip = mp.ManipulationView(self.tf2_buffer, self.debug_directory, self.get_tool())
-        self.manip.move_head(self.move_to_pose, head_settle_time=0.75)
+        self.manip.move_head(self.move_to_pose, head_settle_time=0.0)
 
         rate = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
