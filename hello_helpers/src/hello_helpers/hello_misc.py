@@ -178,7 +178,7 @@ class HelloNode:
                 continue
             rate.sleep()
 
-    def get_point_cloud():
+    def get_point_cloud(self):
         assert(self._point_cloud is not None)
         return self._point_cloud
 

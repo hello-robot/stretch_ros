@@ -24,6 +24,8 @@ import argparse as ap
 import numpy as np
 import os
 import pickle
+import subprocess
+import pathlib
 
 import hello_helpers.hello_misc as hm
 import stretch_funmap.navigate as nv
@@ -40,6 +42,10 @@ class GraspObjectNode(hm.HelloNode):
         self.lift_position = None
         self.manipulation_view = None
         self.debug_directory = None
+        pc_pkl_fpath = str(pathlib.Path(subprocess.Popen("rospack find stretch_demos", shell=True, stdout=subprocess.PIPE).stdout.read().decode()[:-1]) / 'empty_pc.pkl')
+        with open(pc_pkl_fpath, 'rb') as inp:
+            self.empty_pc = pickle.load(inp)
+        self.surface_search_timeout = time.time()
 
     def joint_states_loop(self):
         self.wrist_position, _, _, _ = self.get_joint_state('joint_arm')
@@ -197,14 +203,23 @@ class GraspObjectNode(hm.HelloNode):
     def visualization_publish_loop(self):
         self.manip.update(self.get_point_cloud(), self._tf2_buffer)
 
-        height, width = self.manip.max_height_im.image.shape
-        robot_xy_pix = [width/2, 0]
-        surface_mask, plane_parameters = sm.find_closest_flat_surface(self.manip.max_height_im, robot_xy_pix)
+        surface_mask = None
+        _, _, _, head_tilt_moving = self.get_joint_state('joint_head_tilt')
+        _, _, _, head_pan_moving = self.get_joint_state('joint_head_pan')
+        head_moving = head_tilt_moving or head_pan_moving
+        if not head_moving:
+            height, width = self.manip.max_height_im.image.shape
+            robot_xy_pix = [width/2, 0]
+            surface_mask, plane_parameters = sm.find_closest_flat_surface(self.manip.max_height_im, robot_xy_pix)
         if surface_mask is not None:
-            image_copy = self.manip.max_height_im.image.copy()
-            image_copy[surface_mask <= 0] = 0
-            surface_pc = self.manip.max_height_im.to_point_cloud(substitute_image=image_copy)
-            self.surface_marker_pub.publish(surface_pc)
+            if time.time() > self.surface_search_timeout:
+                image_copy = self.manip.max_height_im.image.copy()
+                image_copy[surface_mask <= 0] = 0
+                surface_pc = self.manip.max_height_im.to_point_cloud(substitute_image=image_copy)
+                self.surface_marker_pub.publish(surface_pc)
+        else:
+            self.surface_marker_pub.publish(self.empty_pc)
+            self.surface_search_timeout = time.time() + 3.0
 
         self.manip.publish_visualizations(self.voi_marker_pub, self.mhi_marker_pub)
 
