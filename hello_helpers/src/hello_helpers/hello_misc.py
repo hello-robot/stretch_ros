@@ -70,7 +70,7 @@ def get_left_finger_state(joint_states):
 class HelloNode:
     def __init__(self):
         self._joint_states = None
-        self._point_cloud = None
+        self.point_cloud = None
         self._tool = None
         self._mode = None
         self.dryrun = False
@@ -85,7 +85,7 @@ class HelloNode:
         self._joint_states = joint_states
 
     def _point_cloud_callback(self, point_cloud):
-        self._point_cloud = point_cloud
+        self.point_cloud = point_cloud
 
     def _tool_callback(self, tool_string):
         self._tool = tool_string.data
@@ -150,7 +150,7 @@ class HelloNode:
 
         # Query TF2 to obtain the current estimated transformation
         # from the robot's base_link frame to the frame.
-        robot_to_odom_mat, timestamp = get_p1_to_p2_matrix('base_link', floor_frame, self._tf2_buffer)
+        robot_to_odom_mat, timestamp = get_p1_to_p2_matrix('base_link', floor_frame, self.tf2_buffer)
         print('robot_to_odom_mat =', robot_to_odom_mat)
         print('timestamp =', timestamp)
 
@@ -173,14 +173,14 @@ class HelloNode:
         rate = rospy.Rate(10.0)
         while True:
             try:
-                return self._tf2_buffer.lookup_transform(from_frame, to_frame, rospy.Time())
+                return self.tf2_buffer.lookup_transform(from_frame, to_frame, rospy.Time())
             except:
                 continue
             rate.sleep()
 
     def get_point_cloud(self):
-        assert(self._point_cloud is not None)
-        return self._point_cloud
+        assert(self.point_cloud is not None)
+        return self.point_cloud
 
     def get_joint_state(self, joint_name, moving_threshold=0.001):
         i = self._joint_states.name.index(joint_name)
@@ -235,8 +235,8 @@ class HelloNode:
 
         self._joint_states_subscriber = rospy.Subscriber('/stretch/joint_states', JointState, self._joint_states_callback)
 
-        self._tf2_buffer = tf2_ros.Buffer()
-        self._tf2_listener = tf2_ros.TransformListener(self._tf2_buffer)
+        self.tf2_buffer = tf2_ros.Buffer()
+        self._tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
 
         self._tool_subscriber = rospy.Subscriber('/tool', String, self._tool_callback)
         self._mode_subscriber = rospy.Subscriber('/mode', String, self._mode_callback)
@@ -250,15 +250,15 @@ class HelloNode:
         rospy.loginfo('Node ' + self.node_name + ' connected to robot services.')
         self._home_the_robot_service = rospy.ServiceProxy('/home_the_robot', Trigger)
         self._stow_the_robot_service = rospy.ServiceProxy('/stow_the_robot', Trigger)
-        self._stop_the_robot_service = rospy.ServiceProxy('/stop_the_robot', Trigger)
+        self.stop_the_robot_service = rospy.ServiceProxy('/stop_the_robot', Trigger)
 
         if wait_for_first_pointcloud:
             # Do not start until a point cloud has been received
-            point_cloud_msg = self._point_cloud
+            point_cloud_msg = self.point_cloud
             print('Node ' + node_name + ' waiting to receive first point cloud.')
             while point_cloud_msg is None:
                 rospy.sleep(0.1)
-                point_cloud_msg = self._point_cloud
+                point_cloud_msg = self.point_cloud
             print('Node ' + node_name + ' received first point cloud, so continuing.')
 
 

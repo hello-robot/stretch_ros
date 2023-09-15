@@ -53,17 +53,17 @@ class GraspObjectNode(hm.HelloNode):
         self.left_finger_position, _, _, _ = self.get_joint_state('joint_gripper_finger_left')
 
     def look_at_surface(self, scan_time_s=None):
-        self.manipulation_view = mp.ManipulationView(self._tf2_buffer, self.debug_directory, self.get_tool())
+        self.manipulation_view = mp.ManipulationView(self.tf2_buffer, self.debug_directory, self.get_tool())
         manip = self.manipulation_view
         head_settle_time_s = 0.02 #1.0
         manip.move_head(self.move_to_pose)
         rospy.sleep(head_settle_time_s)
         if scan_time_s is None:
-            manip.update(self.get_point_cloud(), self._tf2_buffer)
+            manip.update(self.get_point_cloud(), self.tf2_buffer)
         else:
             start_time_s = time.time()
             while ((time.time() - start_time_s) < scan_time_s):
-                manip.update(self.get_point_cloud(), self._tf2_buffer)
+                manip.update(self.get_point_cloud(), self.tf2_buffer)
         if self.debug_directory is not None:
             dirname = self.debug_directory + 'grasp_object/'
             # If the directory does not already exist, create it.
@@ -99,7 +99,7 @@ class GraspObjectNode(hm.HelloNode):
 
         # 2. Scan surface and find grasp target
         self.look_at_surface(scan_time_s = 4.0)
-        grasp_target = self.manipulation_view.get_grasp_target(self._tf2_buffer)
+        grasp_target = self.manipulation_view.get_grasp_target(self.tf2_buffer)
         if grasp_target is None:
             return TriggerResponse(
                 success=False,
@@ -107,7 +107,7 @@ class GraspObjectNode(hm.HelloNode):
             )
 
         # 3. Move to pregrasp pose
-        pregrasp_lift_m = self.manipulation_view.get_pregrasp_lift(grasp_target, self._tf2_buffer)
+        pregrasp_lift_m = self.manipulation_view.get_pregrasp_lift(grasp_target, self.tf2_buffer)
         if self.tool == "tool_stretch_dex_wrist":
             pregrasp_lift_m += 0.02
         if (self.lift_position is None):
@@ -153,7 +153,7 @@ class GraspObjectNode(hm.HelloNode):
             rospy.loginfo('negative wrist extension for pregrasp, so not extending or retracting.')
 
         # 4. Grasp the object and lift it
-        grasp_mobile_base_m, grasp_lift_m, grasp_wrist_extension_m = self.manipulation_view.get_grasp_from_pregrasp(grasp_target, self._tf2_buffer)
+        grasp_mobile_base_m, grasp_lift_m, grasp_wrist_extension_m = self.manipulation_view.get_grasp_from_pregrasp(grasp_target, self.tf2_buffer)
         rospy.loginfo('grasp_mobile_base_m = {0:3f} m, grasp_lift_m = {1:3f} m, grasp_wrist_extension_m = {2:3f} m'.format(grasp_mobile_base_m, grasp_lift_m, grasp_wrist_extension_m))
         rospy.loginfo('Move the grasp pose from the pregrasp pose.')
 
@@ -201,8 +201,9 @@ class GraspObjectNode(hm.HelloNode):
         )
 
     def visualization_publish_loop(self):
-        self.manip.update(self.get_point_cloud(), self._tf2_buffer)
+        self.manip.update(self.get_point_cloud(), self.tf2_buffer)
 
+        surface_valid = False
         surface_mask = None
         _, _, _, head_tilt_moving = self.get_joint_state('joint_head_tilt')
         _, _, _, head_pan_moving = self.get_joint_state('joint_head_pan')
@@ -217,14 +218,18 @@ class GraspObjectNode(hm.HelloNode):
                 image_copy[surface_mask <= 0] = 0
                 surface_pc = self.manip.max_height_im.to_point_cloud(substitute_image=image_copy)
                 self.surface_marker_pub.publish(surface_pc)
+                surface_valid = True
         else:
             self.surface_marker_pub.publish(self.empty_pc)
             self.surface_search_timeout = time.time() + 2.5
 
+        if surface_valid:
+            pass
+
         self.manip.publish_visualizations(self.voi_marker_pub, self.mhi_marker_pub)
 
     def temp_trigger_grasp_object_service2(self, request):
-        # grasp_target = self.manip.get_grasp_target(self._tf2_buffer)
+        # grasp_target = self.manip.get_grasp_target(self.tf2_buffer)
         grasp_target = True
 
         if grasp_target is not None:
@@ -270,7 +275,7 @@ class GraspObjectNode(hm.HelloNode):
         self.surface_marker_pub = rospy.Publisher(
             '/grasp_object/surface_marker', PointCloud2, queue_size=1)
 
-        self.manip = mp.ManipulationView(self._tf2_buffer, self.debug_directory, self.get_tool())
+        self.manip = mp.ManipulationView(self.tf2_buffer, self.debug_directory, self.get_tool())
         self.manip.move_head(self.move_to_pose, head_settle_time=0.0)
 
         rate = rospy.Rate(self.rate)
