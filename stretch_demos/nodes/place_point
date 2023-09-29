@@ -36,12 +36,14 @@ class PlacePointNode(hm.HelloNode):
         self.placement_target = None
         self.update_perception = True
         self.active = True
+        print(' - place_point enabled')
 
     def disable_callback(self, msg):
         self.active = False
         self.update_perception = False
         self.location_above_surface_m = None
         self.placement_target = None
+        print(' - place_point disabled')
 
     def clicked_point_callback(self, clicked_point_msg):
         self.place_object()
