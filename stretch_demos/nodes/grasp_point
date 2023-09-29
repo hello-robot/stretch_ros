@@ -9,11 +9,10 @@ import numpy as np
 import rospy
 from std_msgs.msg import Empty, Float32
 from geometry_msgs.msg import PointStamped
-from sensor_msgs.msg import PointCloud2, JointState
+from sensor_msgs.msg import PointCloud2
 from visualization_msgs.msg import Marker
 import hello_helpers.hello_misc as hm
 
-import stretch_pyfunmap.navigate as nv
 import stretch_pyfunmap.manipulation_planning as mp
 import stretch_pyfunmap.segment_max_height_image as sm
 
