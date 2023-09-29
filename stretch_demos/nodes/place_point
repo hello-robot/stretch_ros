@@ -75,6 +75,9 @@ class PlacePointNode(hm.HelloNode):
         if surface_mask is None:
             return
 
+        if self.location_above_surface_m is None:
+            print('WARN: cannot find placement target')
+            return
         placement_target = sm.find_placement_target_on_surface(surface_mask, self.location_above_surface_m, self.manip.max_height_im)
         if placement_target is None:
             return
