@@ -7,7 +7,7 @@ import subprocess
 import numpy as np
 
 import rospy
-from std_msgs.msg import Empty
+from std_msgs.msg import Empty, Float32
 from geometry_msgs.msg import PointStamped
 from sensor_msgs.msg import PointCloud2, JointState
 from visualization_msgs.msg import Marker
@@ -133,14 +133,15 @@ class GraspPointNode(hm.HelloNode):
             marker.type = marker.SPHERE
             marker.action = marker.ADD
             marker.lifetime = rospy.Duration(0.2)
-            x_voi = self.best_target['location_xy_pix'][0] * self.manip.max_height_im.m_per_pix
-            y_voi = self.best_target['location_xy_pix'][1] * self.manip.max_height_im.m_per_pix
-            z_voi = self.best_target['location_z_pix'] * self.manip.max_height_im.m_per_height_unit
-            point_in_voi = np.array([x_voi, y_voi, z_voi, 1.0])
-            point_in_world_frame = np.matmul(self.manip.max_height_im.voi.points_in_voi_to_frame_id_mat, point_in_voi)
-            marker.pose.position.x = point_in_world_frame[0]
-            marker.pose.position.y = point_in_world_frame[1]
-            marker.pose.position.z = point_in_world_frame[2]
+            image_to_points_mat, _ = self.manip.max_height_im.get_image_to_points_mat('map', self.tf2_buffer)
+            i_x = self.best_target['location_xy_pix'][0]
+            i_y = self.best_target['location_xy_pix'][1]
+            i_z = self.best_target['location_z_pix']
+            point_pix = np.array([i_x, i_y, i_z, 1.0])
+            point_xyz = np.matmul(image_to_points_mat, point_pix)
+            marker.pose.position.x = point_xyz[0]
+            marker.pose.position.y = point_xyz[1]
+            marker.pose.position.z = point_xyz[2]
             marker.pose.orientation.w = 1.0
             marker.scale.x = 0.05
             marker.scale.y = 0.05
@@ -149,7 +150,7 @@ class GraspPointNode(hm.HelloNode):
             marker.color.g = 0.1
             marker.color.b = 0.9
             marker.color.a = 1.0
-            # self.gtaxes_marker_pub.publish(marker)
+            self.gtaxes_marker_pub.publish(marker)
         else:
             self.gtpc_marker_pub.publish(self.empty_pc)
             marker = Marker()
@@ -166,7 +167,7 @@ class GraspPointNode(hm.HelloNode):
         self.clicked_point_sub = rospy.Subscriber('/clicked_point', PointStamped, self.clicked_point_callback)
         self.trigger_sub = rospy.Subscriber('/grasp_point/trigger_grasp_point', PointStamped, self.grasp_point_callback)
         self.reset_sub = rospy.Subscriber('/grasp_point/reset', Empty, self.reset_callback)
-        self.result_pub = rospy.Publisher('/grasp_point/result', Empty, queue_size=1)
+        self.result_pub = rospy.Publisher('/grasp_point/result', Float32, queue_size=1)
 
         self.manip = mp.ManipulationView(self.tf2_buffer, None, self.get_tool())
 
