@@ -22,6 +22,7 @@ class GraspPointNode(hm.HelloNode):
 
     def __init__(self):
         hm.HelloNode.__init__(self)
+        self.active = True
         self.update_perception = True
 
         self.surface_mask = None
@@ -32,7 +33,16 @@ class GraspPointNode(hm.HelloNode):
         with open(pc_pkl_fpath, 'rb') as inp:
             self.empty_pc = pickle.load(inp)
 
-    def reset_callback(self, msg):
+    def enable_callback(self, msg):
+        self.surface_mask = None
+        self.grasp_targets = None
+        self.best_target = None
+        self.update_perception = True
+        self.active = True
+
+    def disable_callback(self, msg):
+        self.active = False
+        self.update_perception = False
         self.surface_mask = None
         self.grasp_targets = None
         self.best_target = None
@@ -44,6 +54,9 @@ class GraspPointNode(hm.HelloNode):
         self.grasp_point(clicked_point_msg)
 
     def grasp_point(self, point_msg):
+        if not self.active:
+            print('grasp_point not active')
+            return
         if self.grasp_targets is None:
             print('cannot assign point to object because no grasp targets available')
             return
@@ -76,8 +89,10 @@ class GraspPointNode(hm.HelloNode):
             return
         self.best_target = best_target
 
-        rospy.sleep(10)
-        # self.manip.perform_cartesian_grasp(best_target)
+        self.manip.perform_cartesian_grasp(best_target, self, tooltip_frame='link_grasp_center_real')
+        msg = Float32()
+        msg.data = best_target['location_above_surface_m']
+        self.result_pub.publish(msg)
         self.update_perception = True
 
     def perceive_objects(self):
@@ -166,7 +181,8 @@ class GraspPointNode(hm.HelloNode):
 
         self.clicked_point_sub = rospy.Subscriber('/clicked_point', PointStamped, self.clicked_point_callback)
         self.trigger_sub = rospy.Subscriber('/grasp_point/trigger_grasp_point', PointStamped, self.grasp_point_callback)
-        self.reset_sub = rospy.Subscriber('/grasp_point/reset', Empty, self.reset_callback)
+        self.enable_sub = rospy.Subscriber('/grasp_point/enable', Empty, self.enable_callback)
+        self.disable_sub = rospy.Subscriber('/grasp_point/disable', Empty, self.disable_callback)
         self.result_pub = rospy.Publisher('/grasp_point/result', Float32, queue_size=1)
 
         self.manip = mp.ManipulationView(self.tf2_buffer, None, self.get_tool())
