@@ -210,12 +210,21 @@ class HelloNode:
         return self.mode
 
     def get_joint_state(self, joint_name, moving_threshold=0.001):
+        assert(self.joint_states is not None)
         i = self.joint_states.name.index(joint_name)
         joint_position = self.joint_states.position[i]
         joint_velocity = self.joint_states.velocity[i]
         joint_effort = self.joint_states.effort[i]
         joint_is_moving = abs(joint_velocity) > moving_threshold
         return (joint_position, joint_velocity, joint_effort, joint_is_moving)
+
+    def get_point_cloud(self):
+        assert(self.point_cloud is not None)
+        cloud = ros_numpy.point_cloud2.split_rgb_field(ros_numpy.numpify(self.point_cloud))
+        cloud_xyz = ros_numpy.point_cloud2.get_xyz_points(cloud)
+        cloud_time = self.point_cloud.header.stamp
+        cloud_frame = self.point_cloud.header.frame_id
+        return (cloud, cloud_xyz, cloud_time, cloud_frame)
 
     def main(self, node_name, node_topic_namespace, wait_for_first_pointcloud=True):
         rospy.init_node(node_name)
