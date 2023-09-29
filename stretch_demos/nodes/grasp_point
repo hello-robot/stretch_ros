@@ -21,8 +21,8 @@ class GraspPointNode(hm.HelloNode):
 
     def __init__(self):
         hm.HelloNode.__init__(self)
-        self.active = True
-        self.update_perception = True
+        self.active = False
+        self.update_perception = False
 
         self.surface_mask = None
         self.grasp_targets = None
