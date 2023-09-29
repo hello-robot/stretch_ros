@@ -1,0 +1,268 @@
+#!/usr/bin/env python3
+
+import copy
+import numpy as np
+
+import rospy
+from geometry_msgs.msg import PointStamped
+from sensor_msgs.msg import PointCloud2, JointState
+import hello_helpers.hello_misc as hm
+
+import stretch_pyfunmap.navigate as nv
+import stretch_pyfunmap.manipulation_planning as mp
+import stretch_pyfunmap.segment_max_height_image as sm
+
+
+class GraspObjectNode(hm.HelloNode):
+
+    def __init__(self):
+        hm.HelloNode.__init__(self)
+        self.update_perception = True
+        self.publish_markers = True
+
+        self.grasp_targets = None
+        self.is_holding_object = False
+        self.location_above_surface_m = None
+        self.placement_target = None
+
+        self.arm_position = None
+        self.lift_position = None
+        self.left_finger_position = None
+        self.yaw_position = None
+        self.pitch_position = None
+        self.roll_position = None
+
+        # TODO: investigate a better place for these to exist
+        self.yaw_offset = 0.0
+        self.mb_offset = 0.01
+        self.arm_offset = -0.03
+
+    def drive_base(self, delta_m):
+        tolerance_distance_m = 0.005
+        if delta_m > 0:
+            at_goal = self.move_base.forward(delta_m, detect_obstacles=False, tolerance_distance_m=tolerance_distance_m, floor_tf='map')
+        else:
+            at_goal = self.move_base.backward(delta_m, detect_obstacles=False, tolerance_distance_m=tolerance_distance_m, floor_tf='map')
+        return at_goal
+
+    def grasp_object(self, target):
+        target['elongated'] = False
+
+        if self.tool == "tool_stretch_dex_wrist":
+            self.move_to_pose({'joint_wrist_pitch': -0.3, 'joint_wrist_roll': 0.0})
+        self.move_to_pose({'joint_wrist_yaw': 0.0})
+        self.move_to_pose({'gripper_aperture': 0.125})
+
+        pregrasp_lift_m = self.manip.get_pregrasp_lift(target, self.tf2_buffer, tooltip_frame='link_grasp_center_real')
+        lift_to_pregrasp_m = max(self.lift_position + pregrasp_lift_m, 0.1)
+        lift_to_pregrasp_m = min(lift_to_pregrasp_m, 1.1)
+        self.move_to_pose({'joint_lift': lift_to_pregrasp_m})
+
+        pregrasp_base_m, pregrasp_arm_m = self.manip.get_pregrasp_planar_translation(target, self.tf2_buffer)
+        self.drive_base(pregrasp_base_m + self.mb_offset)
+
+        arm_to_pregrasp_m = max(self.arm_position + pregrasp_arm_m, 0.01)
+        arm_to_pregrasp_m = min(arm_to_pregrasp_m, 0.5)
+        self.move_to_pose({'wrist_extension': arm_to_pregrasp_m + self.arm_offset})
+
+        rospy.sleep(1)
+
+        grasp_base_m, grasp_lift_m, grasp_arm_m = self.manip.get_grasp_from_pregrasp(target, self.tf2_buffer)
+        lift_to_grasp_m = max(self.lift_position + grasp_lift_m, 0.1)
+        lift_to_grasp_m = min(lift_to_grasp_m, 1.1)
+        arm_to_grasp_m = max(self.arm_position + grasp_arm_m, 0.01)
+        arm_to_grasp_m = min(arm_to_grasp_m, 0.5)
+        if self.tool == "tool_stretch_dex_wrist":
+            lift_to_grasp_m -= 0.03
+            arm_to_grasp_m += 0.02
+        self.move_to_pose({'translate_mobile_base': grasp_base_m + self.mb_offset, 'joint_lift': lift_to_grasp_m, 'wrist_extension': arm_to_grasp_m + self.arm_offset})
+
+        gripper_to_grasp_m = target['width_m'] - 0.18
+        self.move_to_pose({'gripper_aperture': gripper_to_grasp_m})
+
+        rospy.sleep(1)
+
+        self.move_to_pose({'joint_lift': lift_to_grasp_m + 0.2})
+
+        self.location_above_surface_m = target['location_above_surface_m']
+        self.is_holding_object = True
+
+    def grasp_point_callback(self, point_msg):
+        self.grasp_point(point_msg)
+
+    def grasp_clicked_point_callback(self, clicked_point_msg):
+        if not self.is_holding_object:
+            self.grasp_point(clicked_point_msg)
+        else:
+            self.place_object()
+
+    def grasp_point(self, point_msg):
+        if self.grasp_targets is None:
+            print('cannot assign clicked point to object because no grasp targets available')
+            return
+        self.update_perception = False
+
+        points_to_image_mat, _ = self.manip.max_height_im.get_points_to_image_mat(point_msg.header.frame_id, self.tf2_buffer)
+        p_x = point_msg.point.x
+        p_y = point_msg.point.y
+        p_z = point_msg.point.z
+        point_xyz = np.array([p_x, p_y, p_z, 1.0])
+        point_pix = np.matmul(points_to_image_mat, point_xyz)[:3]
+        i_x, i_y, _ = point_pix
+
+        h, w = self.manip.max_height_im.image.shape
+        if not (i_x >= 0 and i_x < w and i_y >= 0 and i_y < h):
+            print('point does not fall within the max height image')
+            self.update_perception = True
+            return
+
+        min_distance = float('inf')
+        best_target = None
+        for target in self.grasp_targets:
+            dist = np.sqrt((i_x - target['location_xy_pix'][0]) ** 2 + (i_y - target['location_xy_pix'][1]) ** 2)
+            if dist < min_distance:
+                min_distance = dist
+                best_target = target
+        if best_target is None:
+            print('couldnt find grasp target close to point')
+            self.update_perception = True
+            return
+
+        if self.publish_markers: # TODO: doesn't always appear in Rviz
+            image_copy = self.manip.max_height_im.image.copy()
+            image_copy[best_target['object_selector'] <= 0] = 0
+            target_pc = self.manip.max_height_im.to_point_cloud(substitute_image=image_copy)
+            self.grasp_target_marker_pub.publish(target_pc)
+
+        self.grasp_object(best_target)
+        self.update_perception = True
+
+    def place_point_callback(self, point_msg):
+        self.place_object()
+
+    def place_object(self):
+        if self.placement_target is None:
+            print('cannot place object on surface because no placement targets are available')
+            return
+        self.update_perception = False
+
+        target = copy.copy(self.placement_target)
+        pregrasp_lift_m = self.manip.get_pregrasp_lift(target, self.tf2_buffer)
+        lift_to_pregrasp_m = max(self.lift_position + pregrasp_lift_m, 0.1)
+        lift_to_pregrasp_m = min(lift_to_pregrasp_m, 1.1)
+        self.move_to_pose({'joint_lift': lift_to_pregrasp_m})
+
+        if self.tool == "tool_stretch_dex_wrist":
+            self.move_to_pose({'joint_wrist_pitch': -0.3, 'joint_wrist_roll': 0.0})
+
+        pregrasp_yaw = self.manip.get_pregrasp_yaw(target, self.tf2_buffer)
+        self.move_to_pose({'joint_wrist_yaw': pregrasp_yaw})
+
+        pregrasp_base_m, pregrasp_arm_m = self.manip.get_pregrasp_planar_translation(target, self.tf2_buffer)
+        self.drive_base(pregrasp_base_m)
+
+        arm_to_pregrasp_m = max(self.arm_position + pregrasp_arm_m, 0.01)
+        arm_to_pregrasp_m = min(arm_to_pregrasp_m, 0.5)
+        self.move_to_pose({'wrist_extension': arm_to_pregrasp_m})
+
+        rospy.sleep(1)
+
+        grasp_base_m, grasp_lift_m, grasp_arm_m = self.manip.get_grasp_from_pregrasp(target, self.tf2_buffer)
+        lift_to_grasp_m = max(self.lift_position + grasp_lift_m, 0.1)
+        lift_to_grasp_m = min(lift_to_grasp_m, 1.1)
+        arm_to_grasp_m = max(self.arm_position + grasp_arm_m, 0.01)
+        arm_to_grasp_m = min(arm_to_grasp_m, 0.5)
+        if self.tool == "tool_stretch_dex_wrist":
+            lift_to_grasp_m -= 0.03
+            arm_to_grasp_m += 0.02
+        self.move_to_pose({'translate_mobile_base': grasp_base_m, 'joint_lift': lift_to_grasp_m, 'wrist_extension': arm_to_grasp_m})
+
+        self.move_to_pose({'gripper_aperture': 0.125})
+
+        rospy.sleep(1)
+
+        self.move_to_pose({'joint_lift': lift_to_grasp_m + 0.2})
+
+        self.location_above_surface_m = None
+        self.is_holding_object = False
+        self.update_perception = True
+
+    def perceive_objects(self):
+        if not self.update_perception:
+            return
+
+        self.manip.update(self.point_cloud, self.tf2_buffer)
+        surface_mask, plane_parameters = sm.find_closest_flat_surface(self.manip.max_height_im, None)
+        if surface_mask is None:
+            return
+
+        if self.publish_markers:
+            image_copy = self.manip.max_height_im.image.copy()
+            image_copy[surface_mask <= 0] = 0
+            surface_pc = self.manip.max_height_im.to_point_cloud(substitute_image=image_copy)
+            self.surface_marker_pub.publish(surface_pc)
+
+        if not self.is_holding_object:
+            grasp_targets = sm.find_objects_to_grasp(surface_mask, plane_parameters, self.manip.max_height_im)
+            if len(grasp_targets) == 0:
+                return
+
+            if self.publish_markers:
+                objects_mask = grasp_targets[0]['object_selector'].copy()
+                for target in grasp_targets:
+                    objects_mask = objects_mask | target['object_selector']
+
+                image_copy = self.manip.max_height_im.image.copy()
+                image_copy[objects_mask <= 0] = 0
+                objects_pc = self.manip.max_height_im.to_point_cloud(substitute_image=image_copy)
+                self.objects_marker_pub.publish(objects_pc)
+            self.grasp_targets = grasp_targets
+        else:
+            placement_target = sm.find_placement_target_on_surface(surface_mask, self.location_above_surface_m, self.manip.max_height_im)
+            if placement_target is None:
+                return
+
+            if self.publish_markers:
+                image_copy = self.manip.max_height_im.image.copy()
+                image_copy[placement_target['surface_convex_hull_mask'] <= 0] = 0
+                surface_placement_pc = self.manip.max_height_im.to_point_cloud(substitute_image=image_copy)
+                self.surface_placement_marker_pub.publish(surface_placement_pc)
+            self.placement_target = placement_target
+
+    def joint_states_callback(self, joint_states):
+        self.arm_position, _, _ = hm.get_wrist_state(joint_states)
+        self.lift_position, _, _ = hm.get_lift_state(joint_states)
+        self.left_finger_position, _, _ = hm.get_left_finger_state(joint_states)
+        i = joint_states.name.index('joint_wrist_yaw')
+        self.yaw_position = joint_states.position[i]
+        i = joint_states.name.index('joint_wrist_pitch')
+        self.pitch_position = joint_states.position[i]
+        i = joint_states.name.index('joint_wrist_roll')
+        self.roll_position = joint_states.position[i]
+
+    def main(self):
+        hm.HelloNode.main(self, 'grasp_object', 'grasp_object', wait_for_first_pointcloud=True)
+        self.surface_marker_pub = rospy.Publisher('/grasp_object/surface_marker', PointCloud2, queue_size=1)
+        self.surface_placement_marker_pub = rospy.Publisher('/grasp_object/surface_placement_marker', PointCloud2, queue_size=1)
+        self.objects_marker_pub = rospy.Publisher('/grasp_object/objects_marker', PointCloud2, queue_size=1)
+        self.grasp_target_marker_pub = rospy.Publisher('/grasp_object/grasp_target_marker', PointCloud2, queue_size=1)
+        self.grasp_clicked_point_sub = rospy.Subscriber('/clicked_point', PointStamped, self.grasp_clicked_point_callback)
+        self.joint_states_sub = rospy.Subscriber('/stretch/joint_states', JointState, self.joint_states_callback)
+        self.grasp_point_sub = rospy.Subscriber('/grasp_object/grasp_point', PointStamped, self.grasp_point_callback)
+        self.place_point_sub = rospy.Subscriber('/grasp_object/place_point', PointStamped, self.place_point_callback)
+        self.manip = mp.ManipulationView(self.tf2_buffer, None, self.get_tool())
+        self.move_base = nv.MoveBase(self)
+
+        rate = rospy.Rate(10.0)
+        while not rospy.is_shutdown():
+            self.perceive_objects()
+            rate.sleep()
+
+
+if __name__ == "__main__":
+    try:
+        node = GraspObjectNode()
+        node.main()
+    except KeyboardInterrupt:
+        pass
+
