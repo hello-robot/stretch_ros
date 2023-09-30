@@ -56,6 +56,7 @@ class StretchDriverNode:
         if self.robot_mode != 'navigation':
             error_string = '{0} action server must be in navigation mode to receive a twist on cmd_vel. Current mode = {1}.'.format(self.node_name, self.robot_mode)
             rospy.logerr(error_string)
+            self.robot_mode_rwlock.release_read()
             return
         self.linear_velocity_mps = twist.linear.x
         self.angular_velocity_radps = twist.angular.z
