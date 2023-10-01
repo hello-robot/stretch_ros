@@ -583,7 +583,7 @@ class StretchDriverNode:
             # odometry, and publish joint states
             while not rospy.is_shutdown():
                 self.robot.non_dxl_thread.step()
-                self.robot.pimu.set_fan_on()
+                # self.robot.pimu.set_fan_on()
                 self.command_mobile_base_velocity_and_publish_state()
                 self.robot.push_command()
                 self.dirty_command=False

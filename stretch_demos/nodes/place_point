@@ -41,6 +41,7 @@ class PlacePointNode(hm.HelloNode):
     def disable_callback(self, msg):
         self.active = False
         self.update_perception = False
+        rospy.sleep(1)
         self.location_above_surface_m = None
         self.placement_target = None
         print(' - place_point disabled')
@@ -83,6 +84,8 @@ class PlacePointNode(hm.HelloNode):
             return
         self.placement_target = placement_target
 
+        self.ready_pub.publish(Empty())
+
     def publish_markers(self):
         if self.placement_target is not None:
             image_copy = self.manip.max_height_im.image.copy()
@@ -99,6 +102,7 @@ class PlacePointNode(hm.HelloNode):
         self.clicked_point_sub = rospy.Subscriber('/clicked_point', PointStamped, self.clicked_point_callback)
         self.trigger_sub = rospy.Subscriber('/place_point/trigger_place_point', PointStamped, self.place_point_callback)
         self.enable_sub = rospy.Subscriber('/place_point/enable', Float32, self.enable_callback)
+        self.ready_pub = rospy.Publisher('/grasp_point/ready', Empty, queue_size=1)
         self.disable_sub = rospy.Subscriber('/place_point/disable', Empty, self.disable_callback)
         self.result_pub = rospy.Publisher('/place_point/result', Empty, queue_size=1)
 

@@ -43,6 +43,7 @@ class GraspPointNode(hm.HelloNode):
     def disable_callback(self, msg):
         self.active = False
         self.update_perception = False
+        rospy.sleep(1)
         self.surface_mask = None
         self.grasp_targets = None
         self.best_target = None
@@ -110,6 +111,8 @@ class GraspPointNode(hm.HelloNode):
         if len(grasp_targets) == 0:
             return
         self.grasp_targets = grasp_targets
+
+        self.ready_pub.publish(Empty())
 
     def publish_markers(self):
         if self.surface_mask is not None:
@@ -183,6 +186,7 @@ class GraspPointNode(hm.HelloNode):
         self.clicked_point_sub = rospy.Subscriber('/clicked_point', PointStamped, self.clicked_point_callback)
         self.trigger_sub = rospy.Subscriber('/grasp_point/trigger_grasp_point', PointStamped, self.grasp_point_callback)
         self.enable_sub = rospy.Subscriber('/grasp_point/enable', Empty, self.enable_callback)
+        self.ready_pub = rospy.Publisher('/grasp_point/ready', Empty, queue_size=1)
         self.disable_sub = rospy.Subscriber('/grasp_point/disable', Empty, self.disable_callback)
         self.result_pub = rospy.Publisher('/grasp_point/result', Float32, queue_size=1)
 
