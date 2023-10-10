@@ -241,24 +241,36 @@ class HelloNode:
             rospy.signal_shutdown('Unable to connect to arm action server. Timeout exceeded.')
             sys.exit()
 
-        self._joint_states_subscriber = rospy.Subscriber('/stretch/joint_states', JointState, self._joint_states_callback)
-
+        if self.robot_name == None:
+            self._joint_states_subscriber = rospy.Subscriber('/stretch/joint_states', JointState, self._joint_states_callback)
+        else:
+            self._joint_states_subscriber = rospy.Subscriber('/'+self.robot_name+'/joint_states', JointState, self._joint_states_callback)
+        
         self.tf2_buffer = tf2_ros.Buffer()
         self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
+        if self.robot_name == None:
+            self._tool_subscriber = rospy.Subscriber('/tool', String, self._tool_callback)
+            self._mode_subscriber = rospy.Subscriber('/mode', String, self._mode_callback)
+            self.point_cloud_subscriber = rospy.Subscriber('/camera/depth/color/points', PointCloud2, self._point_cloud_callback)
+        else:
+            self._tool_subscriber = rospy.Subscriber('/'+self.robot_name+'/tool', String, self._tool_callback)
+            self._mode_subscriber = rospy.Subscriber('/'+self.robot_name+'/mode', String, self._mode_callback)
+            self.point_cloud_subscriber = rospy.Subscriber('/'+self.robot_name+'/camera/depth/color/points', PointCloud2, self._point_cloud_callback)
 
-        self._tool_subscriber = rospy.Subscriber('/tool', String, self._tool_callback)
-        self._mode_subscriber = rospy.Subscriber('/mode', String, self._mode_callback)
-
-        self.point_cloud_subscriber = rospy.Subscriber('/camera/depth/color/points', PointCloud2, self._point_cloud_callback)
         self.point_cloud_pub = rospy.Publisher('/' + node_topic_namespace + '/point_cloud2', PointCloud2, queue_size=1)
 
         rospy.wait_for_service('/home_the_robot')
         rospy.wait_for_service('/stow_the_robot')
         rospy.wait_for_service('/stop_the_robot')
         rospy.loginfo('Node ' + self.node_name + ' connected to robot services.')
-        self.home_the_robot_service = rospy.ServiceProxy('/home_the_robot', Trigger)
-        self.stow_the_robot_service = rospy.ServiceProxy('/stow_the_robot', Trigger)
-        self.stop_the_robot_service = rospy.ServiceProxy('/stop_the_robot', Trigger)
+        if self.robot_name == None:
+            self.home_the_robot_service = rospy.ServiceProxy('/home_the_robot', Trigger)
+            self.stow_the_robot_service = rospy.ServiceProxy('/stow_the_robot', Trigger)
+            self.stop_the_robot_service = rospy.ServiceProxy('/stop_the_robot', Trigger)
+        else:
+            self.home_the_robot_service = rospy.ServiceProxy('/'+self.robot_name+'/home_the_robot', Trigger)
+            self.stow_the_robot_service = rospy.ServiceProxy('/'+self.robot_name+'/stow_the_robot', Trigger)
+            self.stop_the_robot_service = rospy.ServiceProxy('/'+self.robot_name+'/stop_the_robot', Trigger)
 
         if wait_for_first_pointcloud:
             # Do not start until a point cloud has been received

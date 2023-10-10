@@ -2,10 +2,12 @@
 
 import yaml
 import copy
+import argparse
 import numpy as np
 import threading
 from rwlock import RWLock
 import stretch_body.robot as rb
+import stretch_body.hello_utils as hu
 from stretch_body.hello_utils import ThreadServiceExit
 import stretch_body
 
@@ -34,7 +36,7 @@ from stretch_diagnostics import StretchDiagnostics
 
 class StretchDriverNode:
 
-    def __init__(self):
+    def __init__(self, robot_name = None):
         self.default_goal_timeout_s = 10.0
         self.default_goal_timeout_duration = rospy.Duration(self.default_goal_timeout_s)
 
@@ -48,6 +50,8 @@ class StretchDriverNode:
         self.voltage_history = []
         self.charging_state_history = [BatteryState.POWER_SUPPLY_STATUS_UNKNOWN] * 10
         self.charging_state = BatteryState.POWER_SUPPLY_STATUS_UNKNOWN
+        
+        self.robot_name = robot_name
 
     ###### MOBILE BASE VELOCITY METHODS #######
 
@@ -538,7 +542,10 @@ class StretchDriverNode:
         self.odom_frame_id = 'odom'
         rospy.loginfo("{0} odom_frame_id = {1}".format(self.node_name, self.odom_frame_id))
 
-        self.joint_state_pub = rospy.Publisher('joint_states', JointState, queue_size=1)
+        if self.robot_name==None:
+            self.joint_state_pub = rospy.Publisher('joint_states', JointState, queue_size=1)
+        else:
+            self.joint_state_pub = rospy.Publisher('/'+self.robot_name+'joint_states', JointState, queue_size=1)
 
         command_base_velocity_and_publish_joint_state_rate = rospy.Rate(self.joint_state_rate)
         self.last_twist_time = rospy.get_time()
@@ -594,5 +601,10 @@ class StretchDriverNode:
 
 
 if __name__ == '__main__':
-    node = StretchDriverNode()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--enable_multi_robot', action='store_true', help='Turn on namespacing of topics/services/actions to the robots unique name, thereby allowing control of multiple robots simultaneously.')
+
+    args, unknown = parser.parse_known_args()
+    robot_name = hu.get_fleet_id() if args.enable_multi_robot else None
+    node = StretchDriverNode(robot_name)
     node.main()

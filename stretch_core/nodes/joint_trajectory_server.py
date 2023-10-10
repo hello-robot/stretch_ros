@@ -19,7 +19,11 @@ class JointTrajectoryAction:
 
     def __init__(self, node):
         self.node = node
-        self.server = actionlib.SimpleActionServer('/stretch_controller/follow_joint_trajectory',
+        if self.node.robot_name==None:
+            servername = '/stretch_controller/follow_joint_trajectory'
+        else:
+            servername = '/'+self.node.robot_name+'/follow_joint_trajectory'
+        self.server = actionlib.SimpleActionServer(servername,
                                                    FollowJointTrajectoryAction,
                                                    execute_cb=self.execute_cb,
                                                    auto_start=False)
