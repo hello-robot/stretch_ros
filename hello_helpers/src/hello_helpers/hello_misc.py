@@ -67,12 +67,13 @@ def get_left_finger_state(joint_states):
     return [left_finger_position, left_finger_velocity, left_finger_effort]
 
 class HelloNode:
-    def __init__(self):
+    def __init__(self, robot_name=None):
         self.joint_states = None
         self.point_cloud = None
         self.tool = None
         self.mode = None
         self.dryrun = False
+        self.robot_name = robot_name
 
     @classmethod
     def quick_create(cls, name, wait_for_first_pointcloud=False):
@@ -231,7 +232,10 @@ class HelloNode:
         self.node_name = rospy.get_name()
         rospy.loginfo("{0} started".format(self.node_name))
 
-        self.trajectory_client = actionlib.SimpleActionClient('/stretch_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
+        if self.robot_name == None:
+            self.trajectory_client = actionlib.SimpleActionClient('/stretch_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
+        else:
+            self.trajectory_client = actionlib.SimpleActionClient('/'+self.robot_name+'/follow_joint_trajectory', FollowJointTrajectoryAction)
         server_reached = self.trajectory_client.wait_for_server(timeout=rospy.Duration(60.0))
         if not server_reached:
             rospy.signal_shutdown('Unable to connect to arm action server. Timeout exceeded.')
