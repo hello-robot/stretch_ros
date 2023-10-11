@@ -240,19 +240,16 @@ class HelloNode:
         if not server_reached:
             rospy.signal_shutdown('Unable to connect to arm action server. Timeout exceeded.')
             sys.exit()
-
-        if self.robot_name == None:
-            self._joint_states_subscriber = rospy.Subscriber('/stretch/joint_states', JointState, self._joint_states_callback)
-        else:
-            self._joint_states_subscriber = rospy.Subscriber('/'+self.robot_name+'/joint_states', JointState, self._joint_states_callback)
-        
+            
         self.tf2_buffer = tf2_ros.Buffer()
         self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
         if self.robot_name == None:
+            self._joint_states_subscriber = rospy.Subscriber('/stretch/joint_states', JointState, self._joint_states_callback)
             self._tool_subscriber = rospy.Subscriber('/tool', String, self._tool_callback)
             self._mode_subscriber = rospy.Subscriber('/mode', String, self._mode_callback)
             self.point_cloud_subscriber = rospy.Subscriber('/camera/depth/color/points', PointCloud2, self._point_cloud_callback)
         else:
+            self._joint_states_subscriber = rospy.Subscriber('/'+self.robot_name+'/joint_states', JointState, self._joint_states_callback)
             self._tool_subscriber = rospy.Subscriber('/'+self.robot_name+'/tool', String, self._tool_callback)
             self._mode_subscriber = rospy.Subscriber('/'+self.robot_name+'/mode', String, self._mode_callback)
             self.point_cloud_subscriber = rospy.Subscriber('/'+self.robot_name+'/camera/depth/color/points', PointCloud2, self._point_cloud_callback)
