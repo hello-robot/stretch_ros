@@ -243,6 +243,7 @@ class HelloNode:
             
         self.tf2_buffer = tf2_ros.Buffer()
         self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
+        
         if self.robot_name == None:
             self._joint_states_subscriber = rospy.Subscriber('/stretch/joint_states', JointState, self._joint_states_callback)
             self._tool_subscriber = rospy.Subscriber('/tool', String, self._tool_callback)
