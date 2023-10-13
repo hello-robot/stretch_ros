@@ -17,8 +17,47 @@
   <!-- MAP SERVER -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_yaml)" />
 
+  <node name="imu_filter_madgwick" pkg="imu_filter_madgwick" type="imu_filter_node" output="screen" respawn="false">
+    <param name="use_mag" value="true" />
+    <remap from="imu/data_raw" to="imu_mobile_base" />
+    <remap from="imu/mag" to="magnetometer_mobile_base" />
+  </node>
+
+  <include file="$(find stretch_core)/launch/stretch_ekf.launch"></include>
+  
   <!-- LOCALIZATION -->
-  <include file="$(find amcl)/examples/amcl_diff.launch" />
+  <node pkg="amcl" type="amcl" name="amcl" output="screen">
+    <param name="odom_model_type" value="diff-corrected"/>
+    <param name="gui_publish_rate" value="10.0"/>
+    <param name="laser_max_beams" value="60"/>
+    <param name="min_particles" value="500"/>
+    <param name="max_particles" value="2000"/>
+    <param name="kld_err" value="0.05"/>
+    <param name="kld_z" value="0.99"/>
+    <param name="odom_alpha1" value="0.045"/>
+    <param name="odom_alpha2" value="0.045"/>
+    <param name="robot_model_type" value="differential"/>
+    <param name="odom_alpha3" value="0.045"/>
+    <param name="odom_alpha4" value="0.045"/>
+    <param name="laser_z_hit" value="0.5"/>
+    <param name="laser_z_short" value="0.05"/>
+    <param name="laser_z_max" value="0.05"/>
+    <param name="laser_z_rand" value="0.5"/>
+    <param name="laser_sigma_hit" value="0.2"/>
+    <param name="laser_lambda_short" value="0.1"/>
+    <param name="laser_model_type" value="likelihood_field_prob"/>
+    <param name="laser_likelihood_max_dist" value="2.0"/>
+    <param name="update_min_d" value="0.2"/>
+    <param name="update_min_a" value="0.25"/>
+    <param name="odom_frame_id" value="odom"/>
+    <param name="resample_interval" value="1"/>
+    <param name="selective_resampling" value="false"/>
+    <param name="transform_tolerance" value="0.1"/>
+    <param name="recovery_alpha_slow" value="0.0001"/>
+    <param name="recovery_alpha_fast" value="0.01"/>
+
+    <remap from="scan" to="scan_filtered" />
+  </node>
 
   <!-- NAVIGATION -->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
@@ -27,9 +66,10 @@
     <rosparam file="$(find stretch_navigation)/config/local_costmap_params.yaml" command="load" />
     <rosparam file="$(find stretch_navigation)/config/global_costmap_params_withmap.yaml" command="load" />
     <rosparam file="$(find stretch_navigation)/config/base_local_planner_params.yaml" command="load" />
-
+    <remap from="odom" to="odometry/filtered" />
+    <param name="planner_frequency" value="1" />
     <remap from="/cmd_vel" to="/stretch/cmd_vel" />
-  </node>
+  </node> 
 
   <!-- VISUALIZE -->
   <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find stretch_navigation)/rviz/navigation.rviz" if="$(arg rviz)" />
