@@ -198,10 +198,15 @@ def detect_cliff(image, m_per_pix, m_per_height_unit, robot_xy_pix, display_text
     
 
 class ManipulationView():
-    def __init__(self, tf2_buffer, debug_directory=None):
+    def __init__(self, tf2_buffer, debug_directory=None, tool='tool_stretch_gripper'):
         self.debug_directory = debug_directory
         print('ManipulationView __init__: self.debug_directory =', self.debug_directory)
-        
+        self.gripper_links = {
+            'tool_stretch_gripper': 'link_gripper',
+            'tool_stretch_dex_wrist': 'link_straight_gripper_aligned'
+        }
+        self.tool = tool
+
         # Define the volume of interest for planning using the current
         # view.
         
@@ -420,7 +425,7 @@ class ManipulationView():
         # The planar component of the link gripper x_axis is parallel
         # to the middle of the gripper, but points in the opposite
         # direction.
-        gripper_frame = 'link_gripper'
+        gripper_frame = self.gripper_links[self.tool]
         gripper_points_to_image_mat, ip_timestamp = h.get_points_to_image_mat(gripper_frame, tf2_buffer)
         #
         # forward_direction = np.array([1.0, 0.0, 0.0])
@@ -469,7 +474,7 @@ class ManipulationView():
         # The planar component of the link gripper x_axis is parallel
         # to the middle of the gripper, but points in the opposite
         # direction.
-        gripper_frame = 'link_gripper'
+        gripper_frame = self.gripper_links[self.tool]
         gripper_points_to_image_mat, ip_timestamp = h.get_points_to_image_mat(gripper_frame, tf2_buffer)
 
         # Obtain the gripper yaw axis location in the image by
@@ -582,7 +587,7 @@ class ManipulationView():
         # The planar component of the link gripper x_axis is parallel
         # to the middle of the gripper, but points in the opposite
         # direction.
-        gripper_frame = 'link_gripper'
+        gripper_frame = self.gripper_links[self.tool]
         gripper_points_to_image_mat, ip_timestamp = h.get_points_to_image_mat(gripper_frame, tf2_buffer)
 
         # Obtain the gripper yaw axis location in the image by

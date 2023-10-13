@@ -1,0 +1,27 @@
+name: Auto Deploy Docs
+run-name: Edit by ${{ github.actor }} triggered docs deployment
+on:
+  push:
+    branches:
+      - 'noetic'
+    paths:
+      - '**.md'
+jobs:
+  Dispatch-Deploy-Workflow:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Print out debug info
+        run: echo "Repo ${{ github.repository }} | Branch ${{ github.ref }} | Runner ${{ runner.os }} | Event ${{ github.event_name }}"
+
+      - name: Dispatch deploy workflow
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GHA_CROSSREPO_WORKFLOW_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'hello-robot',
+              repo: 'hello-robot.github.io',
+              workflow_id: 'auto_deploy.yaml',
+              ref: '0.3',
+            })

@@ -98,6 +98,21 @@ class GetKeyboardCommands:
         print('                                           ')
         print('  step size:  b BIG, m MEDIUM, s SMALL     ')
         print('                                           ')
+        if self.mapping_on:
+            print('                                           ')
+            print('     = GLOBAL LOCALIZATION                 ')
+            print('     - LOCAL LOCALIZATION                  ')
+            print('     \ EXPLORE                             ')
+            print('     <spacebar> HEAD SCAN                  ')
+            print('     [ ALIGN CLIFF                         ')
+            print('     ] REACH UNTIL CONTACT                 ')
+            print('     ; LOWER UNTIL CONTACT                 ')
+            print('     ! HEAD SCAN + EXPLORE (x4)            ')
+            print('                                           ')
+        if self.grasp_object_on:
+            print('                                           ')
+            print('     \' GRASP OBJECT            ')
+            print('                                           ')
         print('              q QUIT                       ')
         print('                                           ')
         print('-------------------------------------------')
@@ -126,48 +141,56 @@ class GetKeyboardCommands:
                 trigger_request = TriggerRequest() 
                 trigger_result = node.trigger_drive_to_scan_service(trigger_request)
                 rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+                command = 'service_occurred'
                 
         # Trigger localizing the robot to a new pose anywhere on the current map
         if ((c == '+') or (c == '=')) and self.mapping_on:
             trigger_request = TriggerRequest() 
             trigger_result = node.trigger_global_localization_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+            command = 'service_occurred'
 
         # Trigger localizing the robot to a new pose that is near its current pose on the map
         if ((c == '-') or (c == '_')) and self.mapping_on:
             trigger_request = TriggerRequest() 
             trigger_result = node.trigger_local_localization_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+            command = 'service_occurred'
 
         # Trigger driving the robot to the estimated next best place to perform a 3D scan
         if ((c == '\\') or (c == '|')) and self.mapping_on:
             trigger_request = TriggerRequest() 
             trigger_result = node.trigger_drive_to_scan_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+            command = 'service_occurred'
 
         # Trigger performing a 3D scan using the D435i
         if (c == ' ') and self.mapping_on:
             trigger_request = TriggerRequest() 
             trigger_result = node.trigger_head_scan_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+            command = 'service_occurred'
 
         # Trigger rotating the mobile base to align with the nearest 3D cliff detected visually
         if ((c == '[') or (c == '{')) and self.mapping_on:
             trigger_request = TriggerRequest() 
             trigger_result = node.trigger_align_with_nearest_cliff_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+            command = 'service_occurred'
 
         # DEPRECATED: Trigger extend arm until contact
         if ((c == ']') or (c == '}')) and self.mapping_on:
             trigger_request = TriggerRequest() 
             trigger_result = node.trigger_reach_until_contact_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+            command = 'service_occurred'
 
         # DEPRECATED: Trigger lower arm until contact
         if ((c == ':') or (c == ';')) and self.mapping_on:
             trigger_request = TriggerRequest() 
             trigger_result = node.trigger_lower_until_contact_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+            command = 'service_occurred'
             
         
         ####################################################
@@ -179,36 +202,42 @@ class GetKeyboardCommands:
             trigger_request = TriggerRequest() 
             trigger_result = node.trigger_write_hello_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+            command = 'service_occurred'
 
         # Trigger open drawer demo with downward hook motion
         if ((c == 'z') or (c == 'Z')) and self.open_drawer_on:
             trigger_request = TriggerRequest() 
             trigger_result = node.trigger_open_drawer_down_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+            command = 'service_occurred'
 
         # Trigger open drawer demo with upward hook motion
         if ((c == '.') or (c == '>')) and self.open_drawer_on:
             trigger_request = TriggerRequest() 
             trigger_result = node.trigger_open_drawer_up_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+            command = 'service_occurred'
 
         # Trigger clean surface demo
         if ((c == '/') or (c == '?')) and self.clean_surface_on:
             trigger_request = TriggerRequest() 
             trigger_result = node.trigger_clean_surface_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+            command = 'service_occurred'
             
         # Trigger grasp object demo    
         if ((c == '\'') or (c == '\"')) and self.grasp_object_on:
             trigger_request = TriggerRequest() 
             trigger_result = node.trigger_grasp_object_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+            command = 'service_occurred'
 
         # Trigger deliver object demo    
         if ((c == 'y') or (c == 'Y')) and self.deliver_object_on:
             trigger_request = TriggerRequest() 
             trigger_result = node.trigger_deliver_object_service(trigger_request)
             rospy.loginfo('trigger_result = {0}'.format(trigger_result))
+            command = 'service_occurred'
 
             
         ####################################################
@@ -311,7 +340,7 @@ class KeyboardTeleopNode(hm.HelloNode):
 
     def send_command(self, command):
         joint_state = self.joint_state
-        if (joint_state is not None) and (command is not None):
+        if (joint_state is not None) and (command is not None) and (isinstance(command, dict)):
             point = JointTrajectoryPoint()
             point.time_from_start = rospy.Duration(0.0)
             trajectory_goal = FollowJointTrajectoryGoal()

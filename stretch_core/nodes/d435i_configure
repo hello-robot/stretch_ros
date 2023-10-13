@@ -10,21 +10,21 @@ class D435iConfigureNode:
         self.rate = 1.0
         self.visual_preset = None
         self.mode_lock = threading.Lock()
-        
+
     def turn_on_default_mode(self):
-        with self.mode_lock: 
+        with self.mode_lock:
             self.locked_mode_id = 1
             self.locked_mode_name = 'Default'
             self.parameter_client.update_configuration({'visual_preset' : self.locked_mode_name})
             rospy.loginfo("Set D435i to {0} mode".format(self.locked_mode_name))
-        
+
     def turn_on_high_accuracy_mode(self):
-        with self.mode_lock: 
+        with self.mode_lock:
             self.locked_mode_id = 3
             self.locked_mode_name = 'High Accuracy'
             self.parameter_client.update_configuration({'visual_preset' : self.locked_mode_name})
             rospy.loginfo("Set D435i to {0} mode".format(self.locked_mode_name))
-        
+
     def default_mode_service_callback(self, request):
         self.turn_on_default_mode()
         return TriggerResponse(
@@ -58,9 +58,9 @@ class D435iConfigureNode:
         while not rospy.is_shutdown():
             rate.sleep()
 
-            
+
 if __name__ == '__main__':
-    try: 
+    try:
         node = D435iConfigureNode()
         node.main()
     except KeyboardInterrupt:

@@ -18,8 +18,9 @@ from control_msgs.msg import FollowJointTrajectoryAction
 from control_msgs.msg import FollowJointTrajectoryGoal
 from trajectory_msgs.msg import JointTrajectoryPoint
 import tf2_ros
-from sensor_msgs.msg import PointCloud2
+from sensor_msgs.msg import PointCloud2, JointState
 from std_srvs.srv import Trigger, TriggerRequest
+from std_msgs.msg import String
 
 
 #######################
@@ -67,8 +68,11 @@ def get_left_finger_state(joint_states):
 
 class HelloNode:
     def __init__(self):
-        self.joint_state = None
+        self.joint_states = None
         self.point_cloud = None
+        self.tool = None
+        self.mode = None
+        self.dryrun = False
 
     @classmethod
     def quick_create(cls, name, wait_for_first_pointcloud=False):
@@ -76,13 +80,22 @@ class HelloNode:
         i.main(name, name, wait_for_first_pointcloud)
         return i
 
-    def joint_states_callback(self, joint_state):
-        self.joint_state = joint_state
+    def _joint_states_callback(self, joint_states):
+        self.joint_states = joint_states
 
-    def point_cloud_callback(self, point_cloud):
+    def _point_cloud_callback(self, point_cloud):
         self.point_cloud = point_cloud
-    
+
+    def _tool_callback(self, tool_string):
+        self.tool = tool_string.data
+
+    def _mode_callback(self, mode_string):
+        self.mode = mode_string.data
+
     def move_to_pose(self, pose, return_before_done=False, custom_contact_thresholds=False, custom_full_goal=False):
+        if self.dryrun:
+            return
+
         point = JointTrajectoryPoint()
         point.time_from_start = rospy.Duration(0.0)
         trajectory_goal = FollowJointTrajectoryGoal()
@@ -164,6 +177,55 @@ class HelloNode:
                 continue
             rate.sleep()
 
+    def home_the_robot(self):
+        if self.dryrun:
+            return
+
+        trigger_request = TriggerRequest()
+        trigger_result = self.home_the_robot_service(trigger_request)
+        rospy.logdebug(f"{self.node_name}'s HelloNode.home_the_robot: got message {trigger_result.message}")
+        return trigger_result.success
+
+    def stow_the_robot(self):
+        if self.dryrun:
+            return
+
+        trigger_request = TriggerRequest()
+        trigger_result = self.stow_the_robot_service(trigger_request)
+        rospy.logdebug(f"{self.node_name}'s HelloNode.stow_the_robot: got message {trigger_result.message}")
+        return trigger_result.success
+
+    def stop_the_robot(self):
+        trigger_request = TriggerRequest()
+        trigger_result = self.stop_the_robot_service(trigger_request)
+        rospy.logdebug(f"{self.node_name}'s HelloNode.stop_the_robot: got message {trigger_result.message}")
+        return trigger_result.success
+
+    def get_tool(self):
+        assert(self.tool is not None)
+        return self.tool
+
+    def get_mode(self):
+        assert(self.mode is not None)
+        return self.mode
+
+    def get_joint_state(self, joint_name, moving_threshold=0.001):
+        assert(self.joint_states is not None)
+        i = self.joint_states.name.index(joint_name)
+        joint_position = self.joint_states.position[i]
+        joint_velocity = self.joint_states.velocity[i]
+        joint_effort = self.joint_states.effort[i]
+        joint_is_moving = abs(joint_velocity) > moving_threshold
+        return (joint_position, joint_velocity, joint_effort, joint_is_moving)
+
+    def get_point_cloud(self):
+        assert(self.point_cloud is not None)
+        cloud = ros_numpy.point_cloud2.split_rgb_field(ros_numpy.numpify(self.point_cloud))
+        cloud_xyz = ros_numpy.point_cloud2.get_xyz_points(cloud)
+        cloud_time = self.point_cloud.header.stamp
+        cloud_frame = self.point_cloud.header.frame_id
+        return (cloud, cloud_xyz, cloud_time, cloud_frame)
+
     def main(self, node_name, node_topic_namespace, wait_for_first_pointcloud=True):
         rospy.init_node(node_name)
         self.node_name = rospy.get_name()
@@ -174,17 +236,26 @@ class HelloNode:
         if not server_reached:
             rospy.signal_shutdown('Unable to connect to arm action server. Timeout exceeded.')
             sys.exit()
-        
+
+        self._joint_states_subscriber = rospy.Subscriber('/stretch/joint_states', JointState, self._joint_states_callback)
+
         self.tf2_buffer = tf2_ros.Buffer()
         self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
-        
-        self.point_cloud_subscriber = rospy.Subscriber('/camera/depth/color/points', PointCloud2, self.point_cloud_callback)
+
+        self._tool_subscriber = rospy.Subscriber('/tool', String, self._tool_callback)
+        self._mode_subscriber = rospy.Subscriber('/mode', String, self._mode_callback)
+
+        self.point_cloud_subscriber = rospy.Subscriber('/camera/depth/color/points', PointCloud2, self._point_cloud_callback)
         self.point_cloud_pub = rospy.Publisher('/' + node_topic_namespace + '/point_cloud2', PointCloud2, queue_size=1)
 
+        rospy.wait_for_service('/home_the_robot')
+        rospy.wait_for_service('/stow_the_robot')
         rospy.wait_for_service('/stop_the_robot')
-        rospy.loginfo('Node ' + self.node_name + ' connected to /stop_the_robot service.')
+        rospy.loginfo('Node ' + self.node_name + ' connected to robot services.')
+        self.home_the_robot_service = rospy.ServiceProxy('/home_the_robot', Trigger)
+        self.stow_the_robot_service = rospy.ServiceProxy('/stow_the_robot', Trigger)
         self.stop_the_robot_service = rospy.ServiceProxy('/stop_the_robot', Trigger)
-        
+
         if wait_for_first_pointcloud:
             # Do not start until a point cloud has been received
             point_cloud_msg = self.point_cloud

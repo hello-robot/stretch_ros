@@ -1,0 +1,1263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.5.1-0-g916b5db  Build Version: 1.5.7152.31018
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="stretch_description_S2.SLDASM">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.087526 -0.001626 0.081009"
+        rpy="0 0 0" />
+      <mass
+        value="17.384389" />
+      <inertia
+        ixx="0.160002"
+        ixy="0.006758"
+        ixz="0.004621"
+        iyy="0.138068"
+        iyz="0.002208"
+        izz="0.228992" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="link_right_wheel">
+    <inertial>
+      <origin
+        xyz="0 0 0.02765"
+        rpy="0 0 0" />
+      <mass
+        value="0.20773" />
+      <inertia
+        ixx="5.4E-05"
+        ixy="0"
+        ixz="0"
+        iyy="5.4E-05"
+        iyz="0"
+        izz="5.1E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_right_wheel.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_right_wheel.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_right_wheel"
+    type="revolute">
+    <origin
+      xyz="0 -0.17035 0.0508"
+      rpy="-1.570796327 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="link_right_wheel" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="link_left_wheel">
+    <inertial>
+      <origin
+        xyz="0 0 -0.02765"
+        rpy="0 0 0" />
+      <mass
+        value="0.20773" />
+      <inertia
+        ixx="5.4E-05"
+        ixy="0"
+        ixz="0"
+        iyy="5.4E-05"
+        iyz="0"
+        izz="5.1E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_left_wheel.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_left_wheel.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_left_wheel"
+    type="revolute">
+    <origin
+      xyz="0 0.17035 0.0508"
+      rpy="-1.570796327 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="link_left_wheel" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="link_aruco_right_base">
+    <inertial>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <mass
+        value="0.000917" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_aruco_right_base.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_aruco_right_base.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_aruco_right_base"
+    type="fixed">
+    <origin
+      xyz="-0.001502848 -0.1304972 0.1598472"
+      rpy="0 0 -1.570796327" />
+    <parent
+      link="base_link" />
+    <child
+      link="link_aruco_right_base" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="link_aruco_left_base">
+    <inertial>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <mass
+        value="0.000917" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_aruco_left_base.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_aruco_left_base.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_aruco_left_base"
+    type="fixed">
+    <origin
+      xyz="-0.001502848 0.1304972 0.1598472"
+      rpy="0 0 -1.570796327" />
+    <parent
+      link="base_link" />
+    <child
+      link="link_aruco_left_base" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="laser">
+    <inertial>
+      <origin
+        xyz="0.011979 -0.000523 -0.01998"
+        rpy="0 0 0" />
+      <mass
+        value="0.216007" />
+      <inertia
+        ixx="9.5E-05"
+        ixy="2E-06"
+        ixz="-1.9E-05"
+        iyy="0.000184"
+        iyz="-1E-06"
+        izz="0.000216" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/laser.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/laser.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_laser"
+    type="fixed">
+    <origin
+      xyz="0.003999952 0 0.1664"
+      rpy="0 0 3.141592654" />
+    <parent
+      link="base_link" />
+    <child
+      link="laser" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="link_mast">
+    <inertial>
+      <origin
+        xyz="0.000337 0.722201 0.002652"
+        rpy="0 0 0" />
+      <mass
+        value="1.764017" />
+      <inertia
+        ixx="0.291286"
+        ixy="0.004149"
+        ixz="-0.000174"
+        iyy="0.001226"
+        iyz="0.000354"
+        izz="0.291429" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_mast.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_mast.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_mast"
+    type="fixed">
+    <origin
+      xyz="-0.067 0.135 0.0284"
+      rpy="1.570796327 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="link_mast" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="link_lift">
+    <inertial>
+      <origin
+        xyz="-0.020369 0.03438 0.02236"
+        rpy="0 0 0" />
+      <mass
+        value="1.987167" />
+      <inertia
+        ixx="0.006518"
+        ixy="-0.001539"
+        ixz="0.000371"
+        iyy="0.004464"
+        iyz="0.000392"
+        izz="0.008092" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_lift.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_lift.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_lift"
+    type="prismatic">
+    <origin
+      xyz="-0.037385437 0.1665972 0"
+      rpy="1.570796327 1.570796327 0" />
+    <parent
+      link="link_mast" />
+    <child
+      link="link_lift" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="1.1"
+      effort="1"
+      velocity="1" />
+  </joint>
+  <link
+    name="link_aruco_shoulder">
+    <inertial>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <mass
+        value="0.000917" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_aruco_shoulder.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_aruco_shoulder.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_aruco_shoulder"
+    type="fixed">
+    <origin
+      xyz="-0.013376888 0.055391903 0.086390827"
+      rpy="0 0 0" />
+    <parent
+      link="link_lift" />
+    <child
+      link="link_aruco_shoulder" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="link_arm_l4">
+    <inertial>
+      <origin
+        xyz="-0.000168 -0.000254 -0.125235"
+        rpy="0 0 0" />
+      <mass
+        value="0.235626" />
+      <inertia
+        ixx="0.001518"
+        ixy="-1E-06"
+        ixz="3E-06"
+        iyy="0.001519"
+        iyz="3E-06"
+        izz="0.000176" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_arm_l4.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_arm_l4.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_arm_l4"
+    type="fixed">
+    <origin
+      xyz="-0.2547027 0 0"
+      rpy="1.570796327 0 -1.570796327" />
+    <parent
+      link="link_lift" />
+    <child
+      link="link_arm_l4" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="link_arm_l3">
+    <inertial>
+      <origin
+        xyz="-1E-06 -0.000146 -0.11908"
+        rpy="0 0 0" />
+      <mass
+        value="0.146817" />
+      <inertia
+        ixx="0.001081"
+        ixy="0"
+        ixz="0"
+        iyy="0.001081"
+        iyz="-1E-06"
+        izz="7.7E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_arm_l3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_arm_l3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_arm_l3"
+    type="prismatic">
+    <origin
+      xyz="0 0 0.013"
+      rpy="0 0 0" />
+    <parent
+      link="link_arm_l4" />
+    <child
+      link="link_arm_l3" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="1"
+      effort="1"
+      velocity="1" />
+  </joint>
+  <link
+    name="link_arm_l2">
+    <inertial>
+      <origin
+        xyz="0 -7.1E-05 -0.115635"
+        rpy="0 0 0" />
+      <mass
+        value="0.130565" />
+      <inertia
+        ixx="0.000943"
+        ixy="0"
+        ixz="0"
+        iyy="0.000943"
+        iyz="0"
+        izz="5.7E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_arm_l2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_arm_l2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_arm_l2"
+    type="prismatic">
+    <origin
+      xyz="0 0 0.013"
+      rpy="0 0 0" />
+    <parent
+      link="link_arm_l3" />
+    <child
+      link="link_arm_l2" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="1"
+      effort="1"
+      velocity="1" />
+  </joint>
+  <link
+    name="link_arm_l1">
+    <inertial>
+      <origin
+        xyz="-1E-06 -0.000121 -0.113457"
+        rpy="0 0 0" />
+      <mass
+        value="0.113658" />
+      <inertia
+        ixx="0.0008"
+        ixy="0"
+        ixz="0"
+        iyy="0.0008"
+        iyz="0"
+        izz="4E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_arm_l1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_arm_l1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_arm_l1"
+    type="prismatic">
+    <origin
+      xyz="0 0 0.013"
+      rpy="0 0 0" />
+    <parent
+      link="link_arm_l2" />
+    <child
+      link="link_arm_l1" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="1"
+      effort="1"
+      velocity="1" />
+  </joint>
+  <link
+    name="link_arm_l0">
+    <inertial>
+      <origin
+        xyz="0.033681 -0.000847 -0.031723"
+        rpy="0 0 0" />
+      <mass
+        value="0.427734" />
+      <inertia
+        ixx="0.001689"
+        ixy="-2.8E-05"
+        ixz="0.000483"
+        iyy="0.002107"
+        iyz="-1.1E-05"
+        izz="0.000571" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_arm_l0.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_arm_l0.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_arm_l0"
+    type="prismatic">
+    <origin
+      xyz="0 0 -0.01375"
+      rpy="0 0 0" />
+    <parent
+      link="link_arm_l1" />
+    <child
+      link="link_arm_l0" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="1"
+      effort="1"
+      velocity="1" />
+  </joint>
+  <link
+    name="link_aruco_top_wrist">
+    <inertial>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0.000229 0" />
+      <mass
+        value="0.000917" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_aruco_top_wrist.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_aruco_top_wrist.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_aruco_top_wrist"
+    type="fixed">
+    <origin
+      xyz="0.04725 0.029285 0"
+      rpy="1.570796327 0 3.141592654" />
+    <parent
+      link="link_arm_l0" />
+    <child
+      link="link_aruco_top_wrist" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="link_aruco_inner_wrist">
+    <inertial>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0.000229 0" />
+      <mass
+        value="0.000917" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_aruco_inner_wrist.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_aruco_inner_wrist.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_aruco_inner_wrist"
+    type="fixed">
+    <origin
+      xyz="0.04725 -0.0119 -0.02725"
+      rpy="3.141592654 0 3.141592654" />
+    <parent
+      link="link_arm_l0" />
+    <child
+      link="link_aruco_inner_wrist" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="link_wrist_yaw">
+    <inertial>
+      <origin
+        xyz="0 -3.9E-05 -0.016495"
+        rpy="0 0 0" />
+      <mass
+        value="0.054422" />
+      <inertia
+        ixx="9E-06"
+        ixy="0"
+        ixz="0"
+        iyy="9E-06"
+        iyz="0"
+        izz="7E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_wrist_yaw.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_wrist_yaw.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_wrist_yaw"
+    type="revolute">
+    <origin
+      xyz="0.083 -0.03075 0"
+      rpy="-1.570796327 0 3.141592654" />
+    <parent
+      link="link_arm_l0" />
+    <child
+      link="link_wrist_yaw" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="3.1416"
+      effort="1"
+      velocity="1" />
+  </joint>
+  <link
+    name="respeaker_base">
+    <inertial>
+      <origin
+        xyz="-0.001594 -0.001282 -0.008098"
+        rpy="0 0 0" />
+      <mass
+        value="0.025175" />
+      <inertia
+        ixx="1E-05"
+        ixy="2E-06"
+        ixz="1E-06"
+        iyy="1.2E-05"
+        iyz="0"
+        izz="1.5E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/respeaker_base.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/respeaker_base.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_respeaker_base"
+    type="fixed">
+    <origin
+      xyz="0 1.372364089 0.003030659"
+      rpy="-1.570796327 -0.698131701 0" />
+    <parent
+      link="link_mast" />
+    <child
+      link="respeaker_base" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="link_head">
+    <inertial>
+      <origin
+        xyz="0.047462 0.04451 0.016376"
+        rpy="0 0 0" />
+      <mass
+        value="0.681871" />
+      <inertia
+        ixx="0.001023"
+        ixy="0.000641"
+        ixz="6.6E-05"
+        iyy="0.002097"
+        iyz="6.5E-05"
+        izz="0.00281" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_head.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_head.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_head"
+    type="fixed">
+    <origin
+      xyz="0 1.33 0"
+      rpy="1.5708 -1.5708 0" />
+    <parent
+      link="link_mast" />
+    <child
+      link="link_head" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="link_head_pan">
+    <inertial>
+      <origin
+        xyz="-0.000422 0.013934 -0.0161"
+        rpy="0 0 0" />
+      <mass
+        value="0.062462" />
+      <inertia
+        ixx="4.1E-05"
+        ixy="-1E-06"
+        ixz="1E-06"
+        iyy="3.2E-05"
+        iyz="-1.5E-05"
+        izz="2.2E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_head_pan.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_head_pan.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_head_pan"
+    type="revolute">
+    <origin
+      xyz="0.135 0.0731 -0.0031962"
+      rpy="0 0 1.5708" />
+    <parent
+      link="link_head" />
+    <child
+      link="link_head_pan" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="1"
+      effort="1"
+      velocity="1" />
+  </joint>
+  <link
+    name="link_head_tilt">
+    <inertial>
+      <origin
+        xyz="0.003907 -0.02418 0.030154"
+        rpy="0 0 0" />
+      <mass
+        value="0.283548" />
+      <inertia
+        ixx="0.000316"
+        ixy="-6E-06"
+        ixz="1E-06"
+        iyy="0.000143"
+        iyz="-2E-06"
+        izz="0.00031" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_head_tilt.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_head_tilt.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_head_tilt"
+    type="revolute">
+    <origin
+      xyz="-0.0013 0.0277625 -0.053310792"
+      rpy="1.570796327 0 0" />
+    <parent
+      link="link_head_pan" />
+    <child
+      link="link_head_tilt" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="3.1416"
+      effort="1"
+      velocity="1" />
+  </joint>
+  <link
+    name="link_camera">
+    <inertial>
+      <origin
+        xyz="-2E-06 -0.024182 -0.011778"
+        rpy="0 0 0" />
+      <mass
+        value="0.072" />
+      <inertia
+        ixx="4.7E-05"
+        ixy="0"
+        ixz="0"
+        iyy="7E-06"
+        iyz="0"
+        izz="4.7E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_camera.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/link_camera.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_camera"
+    type="fixed">
+    <origin
+      xyz="0.02025 -0.03425 0.0317625"
+      rpy="3.141592654 1.570796327 0" />
+    <parent
+      link="link_head_tilt" />
+    <child
+      link="link_camera" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="base_imu">
+    <inertial>
+      <origin
+        xyz="0.003003 0.001498 -0.001931"
+        rpy="0 0 0" />
+      <mass
+        value="0.00092" />
+      <inertia
+        ixx="3E-08"
+        ixy="0"
+        ixz="0"
+        iyy="5E-08"
+        iyz="0"
+        izz="8E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/base_imu.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S2.SLDASM/meshes/base_imu.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_base_imu"
+    type="fixed">
+    <origin
+      xyz="-0.128380258 0.003159225 0.147398695"
+      rpy="-3.141592654 0 -1.570794351" />
+    <parent
+      link="base_link" />
+    <child
+      link="base_imu" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+</robot>
