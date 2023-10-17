@@ -59,7 +59,7 @@ class PlacePointNode(hm.HelloNode):
         self.update_perception = False
 
         target = copy.copy(self.placement_target)
-        self.manip.perform_cartesian_grasp(target, self, tooltip_frame='link_grasp_center_real', placing=True)
+        self.manip.perform_cartesian_grasp(target, self, tooltip_frame='link_grasp_center', placing=True)
         msg = Empty()
         self.result_pub.publish(msg)
 

@@ -96,7 +96,7 @@ class GraspPointNode(hm.HelloNode):
             return
         self.best_target = best_target
 
-        self.manip.perform_cartesian_grasp(best_target, self, tooltip_frame='link_grasp_center_real')
+        self.manip.perform_cartesian_grasp(best_target, self, tooltip_frame='link_grasp_center')
         msg = Float32()
         msg.data = best_target['location_above_surface_m']
         self.result_pub.publish(msg)
