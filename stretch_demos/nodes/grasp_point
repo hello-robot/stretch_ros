@@ -40,6 +40,11 @@ class GraspPointNode(hm.HelloNode):
         self.active = True
         print(' - grasp_point enabled')
 
+    def mhi_save_callback(self, msg):
+        with open('/home/hello-robot/mhi_save.pickle', 'wb') as outp:
+            pickle.dump(self.manip.max_height_im, outp, protocol=pickle.HIGHEST_PROTOCOL)
+        print(' - grasp_point mhi_save')
+
     def disable_callback(self, msg):
         self.active = False
         self.update_perception = False
@@ -187,6 +192,7 @@ class GraspPointNode(hm.HelloNode):
         self.trigger_sub = rospy.Subscriber('/grasp_point/trigger_grasp_point', PointStamped, self.grasp_point_callback)
         self.enable_sub = rospy.Subscriber('/grasp_point/enable', Empty, self.enable_callback)
         self.ready_pub = rospy.Publisher('/grasp_point/ready', Empty, queue_size=1)
+        self.mhi_save_sub = rospy.Subscriber('/grasp_point/mhi_save', Empty, self.mhi_save_callback)
         self.disable_sub = rospy.Subscriber('/grasp_point/disable', Empty, self.disable_callback)
         self.result_pub = rospy.Publisher('/grasp_point/result', Float32, queue_size=1)
 
