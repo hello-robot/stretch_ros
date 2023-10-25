@@ -1,6 +1,10 @@
-![](./images/banner.png)
+# Melodic Deprecated
 
-# Overview
+This branch of *stretch_ros* is DEPRECATED. Please use the [Robot Install upgrade guide](https://github.com/hello-robot/stretch_install/blob/master/docs/robot_install.md) to upgrade to Ubuntu 20.04/[ROS Noetic](https://github.com/hello-robot/stretch_ros/tree/noetic) or Ubuntu 22.04/[ROS2 Humble](https://github.com/hello-robot/stretch_ros2/tree/humble). The Melodic README is saved below.
+
+---
+
+### Overview
 
 The *stretch_ros* repository holds ROS related code for the Stretch RE1 mobile manipulator from Hello Robot Inc. 
 For an overview of the capabilities in this repository, we recommend you look at the [following forum post](https://forum.hello-robot.com/t/autonomy-video-details).
@@ -23,7 +27,7 @@ For an overview of the capabilities in this repository, we recommend you look at
 
 
 
-## Code Status & Development Plans
+#### Code Status & Development Plans
 
 We intend for the following high-level summary to provide guidance about the current state of the code and planned development activities.
 
@@ -40,7 +44,7 @@ stretch_gazebo | FAIR | differs from stretch_core in its underlying controllers
 stretch_moveit_config | FAIR | does not support mobile base planning in ROS 1
 stretch_navigation | GOOD |
 
-## Licenses
+#### Licenses
 
 This software is intended for use with the Stretch RE1 mobile manipulator, which is a robot produced and sold by Hello Robot Inc. For further information, including inquiries about dual licensing, please contact Hello Robot Inc.
 
