@@ -1,0 +1,670 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.5.1-0-g916b5db  Build Version: 1.5.7152.31018
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="stretch_description_S3_collision">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.11400004837072 0.000500000000002998 0.0804985999999998"
+        rpy="0 0 0" />
+      <mass
+        value="17.8942374283071" />
+      <inertia
+        ixx="0.213061120009461"
+        ixy="-2.10678538191478E-17"
+        ixz="4.68125202565575E-18"
+        iyy="0.19615284074807"
+        iyz="-6.45475890002455E-17"
+        izz="0.331910561578368" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="link_mast">
+    <inertial>
+      <origin
+        xyz="2.77555756156289E-17 0.7075 -2.77555756156289E-17"
+        rpy="0 0 0" />
+      <mass
+        value="1.8678067708306" />
+      <inertia
+        ixx="0.257240348204921"
+        ixy="-1.10228377351677E-18"
+        ixz="-3.10682858140655E-20"
+        iyy="0.000452490549048072"
+        iyz="2.55168464362254E-18"
+        izz="0.257240348204921" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_mast.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_mast.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_mast"
+    type="fixed">
+    <origin
+      xyz="-0.0669999999989439 0.135000000000006 0.0283999999999986"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="link_mast" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="link_lift">
+    <inertial>
+      <origin
+        xyz="-0.0495999999999985 0.0391055571636557 0.0263204136207454"
+        rpy="0 0 0" />
+      <mass
+        value="4.73654413512218" />
+      <inertia
+        ixx="0.0265523544770934"
+        ixy="4.3603911959983E-18"
+        ixz="1.9452653164428E-17"
+        iyy="0.0172864951059097"
+        iyz="-2.69087210511415E-17"
+        izz="0.0323494072137015" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_lift.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_lift.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_lift"
+    type="prismatic">
+    <origin
+      xyz="-0.0373854368624716 0.166597200000001 0"
+      rpy="1.5707963267949 1.5707963267949 0" />
+    <parent
+      link="link_mast" />
+    <child
+      link="link_lift" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="1.1"
+      effort="1"
+      velocity="1" />
+  </joint>
+  <link
+    name="link_arm_l4">
+    <inertial>
+      <origin
+        xyz="1.31145094783847E-15 1.38777878078145E-15 -0.111250000000003"
+        rpy="0 0 0" />
+      <mass
+        value="0.78638230625" />
+      <inertia
+        ixx="0.00347584599997702"
+        ixy="5.42895268456038E-20"
+        ixz="1.88755031660467E-19"
+        iyy="0.00347584599997702"
+        iyz="5.45500739372154E-20"
+        izz="0.000463218825155857" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_arm_l4.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_arm_l4.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_arm_l4"
+    type="fixed">
+    <origin
+      xyz="-0.254702700000004 0 0"
+      rpy="1.5707963267949 0 -1.5707963267949" />
+    <parent
+      link="link_lift" />
+    <child
+      link="link_arm_l4" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="link_arm_l3">
+    <inertial>
+      <origin
+        xyz="1.29583843655467E-15 1.36002320516582E-15 -0.113250000000003"
+        rpy="0 0 0" />
+      <mass
+        value="0.69140540625" />
+      <inertia
+        ixx="0.00313176760151709"
+        ixy="1.37421883375393E-21"
+        ixz="1.2417568515994E-19"
+        iyy="0.00313176760151709"
+        iyz="-5.62600837089042E-20"
+        izz="0.000351759702569336" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_arm_l3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_arm_l3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_arm_l3"
+    type="prismatic">
+    <origin
+      xyz="0 0 0.013"
+      rpy="0 0 0" />
+    <parent
+      link="link_arm_l4" />
+    <child
+      link="link_arm_l3" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="1"
+      effort="1"
+      velocity="1" />
+  </joint>
+  <link
+    name="link_arm_l2">
+    <inertial>
+      <origin
+        xyz="1.3235940121703E-15 1.38777878078145E-15 -0.113250000000003"
+        rpy="0 0 0" />
+      <mass
+        value="0.597240296250001" />
+      <inertia
+        ixx="0.00268454896994585"
+        ixy="-2.20304947481381E-20"
+        ixz="1.65250429579797E-20"
+        iyy="0.00268454896994585"
+        iyz="-2.43635469477148E-20"
+        izz="0.000262469441843111" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_arm_l2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_arm_l2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_arm_l2"
+    type="prismatic">
+    <origin
+      xyz="0 0 0.013"
+      rpy="0 0 0" />
+    <parent
+      link="link_arm_l3" />
+    <child
+      link="link_arm_l2" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="1"
+      effort="1"
+      velocity="1" />
+  </joint>
+  <link
+    name="link_arm_l1">
+    <inertial>
+      <origin
+        xyz="1.33573707650214E-15 1.33226762955019E-15 -0.113250000000002"
+        rpy="0 0 0" />
+      <mass
+        value="0.50781809625" />
+      <inertia
+        ixx="0.0022658958771701"
+        ixy="1.02241667596953E-20"
+        ixz="1.18035557554568E-20"
+        iyy="0.0022658958771701"
+        iyz="5.09058387024662E-20"
+        izz="0.000189756599616611" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_arm_l1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_arm_l1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_arm_l1"
+    type="prismatic">
+    <origin
+      xyz="0 0 0.0129999999999981"
+      rpy="0 0 0" />
+    <parent
+      link="link_arm_l2" />
+    <child
+      link="link_arm_l1" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="1"
+      effort="1"
+      velocity="1" />
+  </joint>
+  <link
+    name="link_arm_l0">
+    <inertial>
+      <origin
+        xyz="0.0306371125003669 -0.000255002893144701 -0.0332543343274891"
+        rpy="0 0 0" />
+      <mass
+        value="0.541496991463441" />
+      <inertia
+        ixx="0.00200001508428477"
+        ixy="1.70041718844323E-06"
+        ixz="-0.000535096318028993"
+        iyy="0.00258685232494381"
+        iyz="4.4537849056297E-06"
+        izz="0.000836410819689304" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_arm_l0.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_arm_l0.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_arm_l0"
+    type="prismatic">
+    <origin
+      xyz="0 0 -0.0137499999991968"
+      rpy="0 0 0" />
+    <parent
+      link="link_arm_l1" />
+    <child
+      link="link_arm_l0" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="1"
+      effort="1"
+      velocity="1" />
+  </joint>
+  <link
+    name="link_wrist_yaw">
+    <inertial>
+      <origin
+        xyz="-1.29063426612674E-15 4.19109191795997E-15 -0.0190000000000012"
+        rpy="0 0 0" />
+      <mass
+        value="0.0923399999999999" />
+      <inertia
+        ixx="1.803708E-05"
+        ixy="8.90347399579394E-22"
+        ixz="3.88874985447859E-21"
+        iyy="1.803708E-05"
+        iyz="-1.78677337138613E-21"
+        izz="1.3851E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_wrist_yaw.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_wrist_yaw.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_wrist_yaw"
+    type="revolute">
+    <origin
+      xyz="0.0830000000000654 -0.0307500000000129 0"
+      rpy="-1.5707963267949 0 3.14159265358978" />
+    <parent
+      link="link_arm_l0" />
+    <child
+      link="link_wrist_yaw" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="3.1416"
+      effort="1"
+      velocity="1" />
+  </joint>
+  <link
+    name="link_head">
+    <inertial>
+      <origin
+        xyz="0.0611392022099394 0.0287000000193147 0.0255640887445199"
+        rpy="0 0 0" />
+      <mass
+        value="1.33572254312489" />
+      <inertia
+        ixx="0.00229139640231229"
+        ixy="-5.99325419161402E-19"
+        ixz="-3.26749734422614E-19"
+        iyy="0.00443291287224681"
+        iyz="4.76482985670774E-20"
+        izz="0.00612696524845671" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_head.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_head.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_head"
+    type="fixed">
+    <origin
+      xyz="0 1.33 0"
+      rpy="1.5707963267949 -1.5707963267949 0" />
+    <parent
+      link="link_mast" />
+    <child
+      link="link_head" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="link_head_pan">
+    <inertial>
+      <origin
+        xyz="2.77555756156289E-17 0.00801031176389815 -0.0135000000000001"
+        rpy="0 0 0" />
+      <mass
+        value="0.296560230345136" />
+      <inertia
+        ixx="0.000380277119700896"
+        ixy="9.92854868294564E-21"
+        ixz="2.54377581086815E-20"
+        iyy="0.000338301082766222"
+        iyz="1.79656578255297E-20"
+        izz="0.000142065114676175" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_head_pan.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_head_pan.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_head_pan"
+    type="revolute">
+    <origin
+      xyz="0.135 0.0731000000000001 -0.00319621125547975"
+      rpy="0 0 1.5707963267949" />
+    <parent
+      link="link_head" />
+    <child
+      link="link_head_pan" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="1"
+      effort="1"
+      velocity="1" />
+  </joint>
+  <link
+    name="link_head_tilt">
+    <inertial>
+      <origin
+        xyz="0.0108465972636136 -0.022972712336035 0.0318092059684025"
+        rpy="0 0 0" />
+      <mass
+        value="0.530742044146659" />
+      <inertia
+        ixx="0.000835699277225503"
+        ixy="1.38912684335748E-17"
+        ixz="3.62079586230494E-06"
+        iyy="0.000386462475100045"
+        iyz="2.62299828937405E-19"
+        izz="0.000863980911720213" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_head_tilt.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description_S3_collision/meshes/link_head_tilt.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_head_tilt"
+    type="revolute">
+    <origin
+      xyz="-0.00130000001785262 0.0277624999926072 -0.0533107920897029"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="link_head_pan" />
+    <child
+      link="link_head_tilt" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="3.1416"
+      effort="1"
+      velocity="1" />
+  </joint>
+</robot>
