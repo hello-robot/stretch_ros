@@ -3,12 +3,12 @@
   <xacro:arg name="gpu_lidar" default="false" />
   <xacro:arg name="visualize_lidar" default="false" />
 
-  <xacro:include filename="$(find stretch_description)/urdf/stretch_main.xacro" />
-  <xacro:include filename="$(find stretch_description)/urdf/stretch_aruco.xacro" />
-  <xacro:include filename="$(find stretch_description)/urdf/stretch_d435i.xacro" />
-  <xacro:include filename="$(find stretch_description)/urdf/stretch_laser_range_finder.xacro" />
-  <xacro:include filename="$(find stretch_description)/urdf/stretch_respeaker.xacro" />
-  <xacro:include filename="$(find stretch_description)/urdf/stretch_gripper.xacro" />
+  <xacro:include filename="$(find stretch_gazebo)/urdf/stretch_main.xacro" />
+  <xacro:include filename="$(find stretch_gazebo)/urdf/stretch_aruco.xacro" />
+  <xacro:include filename="$(find stretch_gazebo)/urdf/stretch_d435i.xacro" />
+  <xacro:include filename="$(find stretch_gazebo)/urdf/stretch_laser_range_finder.xacro" />
+  <xacro:include filename="$(find stretch_gazebo)/urdf/stretch_respeaker.xacro" />
+  <xacro:include filename="$(find stretch_gazebo)/urdf/stretch_gripper.xacro" />
 
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
