@@ -5,17 +5,17 @@
     name="respeaker_base">
     <inertial>
       <origin
-        xyz="-0.001594 -0.001282 -0.008098"
+        xyz="-0.003809 -0.0023075 -0.012854"
         rpy="0 0 0" />
       <mass
-        value="0.025175" />
+        value="0.015643" />
       <inertia
-        ixx="1E-05"
-        ixy="2E-06"
-        ixz="1E-06"
-        iyy="1.2E-05"
-        iyz="0"
-        izz="1.5E-05" />
+        ixx="1.0075E-06"
+        ixy="-5.4396E-08"
+        ixz="-2.8652E-07"
+        iyy="1.0569E-06"
+        iyz="-1.8463E-07"
+        izz="1.1947E-07" />
     </inertial>
     <visual>
       <origin

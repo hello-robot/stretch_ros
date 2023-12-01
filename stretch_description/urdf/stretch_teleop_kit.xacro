@@ -1,0 +1,215 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="stretch_teleop_kit">
+  <link
+    name="link_gripper_teleop_mount">
+    <inertial>
+      <origin
+        xyz="3.8266E-05 -0.0044089 0.014934"
+        rpy="0 0 0" />
+      <mass
+        value="0.032535" />
+      <inertia
+        ixx="1.0206E-05"
+        ixy="7.894E-09"
+        ixz="-8.5844E-11"
+        iyy="7.437E-06"
+        iyz="-2.9587E-06"
+        izz="2.8384E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description/meshes/link_gripper_teleop_mount.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description/meshes/link_gripper_teleop_mount.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_gripper_teleop_mount"
+    type="fixed">
+    <origin
+      xyz="-0.10807 0 -0.069789"
+      rpy="-0.5236 -4.3792E-15 1.5708" />
+    <parent
+      link="link_gripper" />
+    <child
+      link="link_gripper_teleop_mount" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="link_gripper_teleop_camera">
+    <inertial>
+      <origin
+        xyz="0.0040022 5.9321E-05 -0.00011952"
+        rpy="0 0 0" />
+      <mass
+        value="0.0056257" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description/meshes/link_gripper_teleop_camera.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.25098 0.25098 0.25098 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description/meshes/link_gripper_teleop_camera.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_gripper_teleop_camera"
+    type="fixed">
+    <origin
+      xyz="0 0.0025 0.029"
+      rpy="1.8934E-15 5.5511E-17 1.5708" />
+    <parent
+      link="link_gripper_teleop_mount" />
+    <child
+      link="link_gripper_teleop_camera" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="link_head_teleop_mount">
+    <inertial>
+      <origin
+        xyz="0.032675 0.036403 -0.0035184"
+        rpy="0 0 0" />
+      <mass
+        value="0.072645" />
+      <inertia
+        ixx="9.371E-05"
+        ixy="-3.7238E-05"
+        ixz="1.2184E-05"
+        iyy="2.7972E-05"
+        iyz="2.6994E-05"
+        izz="9.9358E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description/meshes/link_head_teleop_mount.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description/meshes/link_head_teleop_mount.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_head_teleop_mount"
+    type="fixed">
+    <origin
+      xyz="0.079 0.0731 0.052"
+      rpy="0 0 0" />
+    <parent
+      link="link_head" />
+    <child
+      link="link_head_teleop_mount" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="link_head_teleop_camera">
+    <inertial>
+      <origin
+        xyz="0.0040022 5.9321E-05 -0.00011952"
+        rpy="0 0 0" />
+      <mass
+        value="0.0056257" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description/meshes/link_head_teleop_camera.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.25098 0.25098 0.25098 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description/meshes/link_head_teleop_camera.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_head_teleop_camera"
+    type="fixed">
+    <origin
+      xyz="0.055997 0.088091 -0.0245"
+      rpy="${-M_PI/2} ${M_PI/2} 0" />
+    <parent
+      link="link_head_teleop_mount" />
+    <child
+      link="link_head_teleop_camera" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+</robot>

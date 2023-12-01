@@ -9,6 +9,7 @@
   <xacro:include filename="$(find stretch_gazebo)/urdf/stretch_laser_range_finder.xacro" />
   <xacro:include filename="$(find stretch_gazebo)/urdf/stretch_respeaker.xacro" />
   <xacro:include filename="$(find stretch_gazebo)/urdf/stretch_gripper.xacro" />
+  <xacro:include filename="$(find stretch_gazebo)/urdf/stretch_teleop_kit_standard_gripper.xacro" /> 
 
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">

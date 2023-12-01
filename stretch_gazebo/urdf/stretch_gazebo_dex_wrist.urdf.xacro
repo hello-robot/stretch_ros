@@ -9,6 +9,7 @@
   <xacro:include filename="$(find stretch_gazebo)/urdf/stretch_laser_range_finder.xacro" />
   <xacro:include filename="$(find stretch_gazebo)/urdf/stretch_respeaker.xacro" />
   <xacro:include filename="$(find stretch_gazebo)/urdf/stretch_dex_wrist.xacro" />
+  <!-- <xacro:include filename="$(find stretch_gazebo)/urdf/stretch_teleop_kit_dex_wrist.xacro" />  -->
 
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
@@ -68,6 +69,83 @@
 		</transmission>
 
   <!-- Sensors -->
+
+<!--Teleop Cameras-->
+
+  <gazebo reference="link_gripper_teleop_camera">
+    <sensor type="camera" name="gripper_teleop_camera">
+      <update_rate>30.0</update_rate>
+      <camera name="gripper_teleop_camera">
+        <horizontal_fov>2.26</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>teleop/gripper_camera</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>camera_link</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="link_head_teleop_camera">
+    <sensor type="camera" name="head_teleop_camera">
+      <update_rate>30.0</update_rate>
+      <camera name="head_teleop_camera">
+        <horizontal_fov>2.26</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>teleop/head_camera</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>camera_link</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+
 
   <!-- Realsense D435i -->
   <gazebo reference="camera_color_frame">
