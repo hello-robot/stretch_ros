@@ -269,6 +269,9 @@ class StretchDriverNode:
         m = MagneticField()
         m.header.stamp = current_time
         m.header.frame_id = 'imu_mobile_base'
+        m.magnetic_field.x = mx
+        m.magnetic_field.y = my
+        m.magnetic_field.z = mz
         self.magnetometer_mobile_base_pub.publish(m)
 
         accel_status = robot_status['wacc']
