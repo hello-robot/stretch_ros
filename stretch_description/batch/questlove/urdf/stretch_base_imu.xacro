@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="stretch_base_imu">
+
+<link
+    name="base_imu">
+    <inertial>
+      <origin
+        xyz="0.00300349280517617 0.00149777182047641 -0.00193103885249443"
+        rpy="0 0 0" />
+      <mass
+        value="0.000901473198307758" />
+      <inertia
+        ixx="2.83324000746358E-08"
+        ixy="-2.10106175504755E-10"
+        ixz="1.86717014516205E-10"
+        iyy="5.35315990744214E-08"
+        iyz="9.31114208976591E-11"
+        izz="8.13221670783358E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description/meshes/base_imu.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0 0.772549019607843 0.207843137254902 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://stretch_description/meshes/base_imu.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_base_imu"
+    type="fixed">
+    <origin
+      xyz="-0.12838 0.0031592 0.1474"
+      rpy="-3.1416 0 -1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="base_imu" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+
+</robot>
+
+
+
