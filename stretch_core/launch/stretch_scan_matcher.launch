@@ -16,6 +16,7 @@
     <param name="max_linear_correction" value="0.2"/>
 
     <param name="use_imu" value="false"/>
+    <param name="use_tf" value="false"/>
 
   </node>
   <!-- -->
