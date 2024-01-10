@@ -919,7 +919,7 @@ class FunmapNode(hm.HelloNode):
         # Reduce the occlusion due to the arm and grabber. This is
         # intended to be run when the standard grabber is not holding
         # an object.
-        ma.stow_and_lower_arm(node)
+        self.stow_the_robot()
 
         # Create and perform a new full scan of the environment using
         # the head.
