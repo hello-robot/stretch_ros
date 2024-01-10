@@ -36,7 +36,7 @@ import hello_helpers.hello_ros_viz as hr
 
 import stretch_funmap.merge_maps as mm
 import stretch_funmap.navigate as nv
-import stretch_funmap.mapping as ma
+import stretch_pyfunmap.ros_mapping as rmap
 import stretch_funmap.segment_max_height_image as sm
 import stretch_funmap.navigation_planning as na
 import stretch_funmap.manipulation_planning as mp
@@ -923,8 +923,8 @@ class FunmapNode(hm.HelloNode):
 
         # Create and perform a new full scan of the environment using
         # the head.
-        head_scan = ma.HeadScan(voi_side_m=16.0)
-        head_scan.execute_full(node, fast_scan=fast_scan)
+        head_scan = rmap.ROSHeadScan(node, voi_side_m=16.0)
+        head_scan.execute_full(fast_scan=fast_scan)
 
         scaled_scan = None
         scaled_merged_map = None
