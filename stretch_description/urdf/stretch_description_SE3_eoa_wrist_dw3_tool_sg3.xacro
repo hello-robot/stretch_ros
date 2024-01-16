@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="stretch">
+
+  <xacro:include filename="stretch_main.xacro" />
+  <xacro:include filename="stretch_aruco.xacro" />
+  <xacro:include filename="stretch_d435i.xacro" />
+  <xacro:include filename="stretch_laser_range_finder.xacro" />
+  <xacro:include filename="stretch_base_imu.xacro" />
+  <xacro:include filename="stretch_respeaker.xacro" />
+  <xacro:include filename="stretch_wrist_dw3.xacro" />
+  <xacro:include filename="stretch_tool_sg3.xacro" />
+</robot>
+
+  
+
