@@ -4,19 +4,6 @@
 
 *stretch_navigation* provides the standard ROS navigation stack as two launch files. This package utilizes gmapping, move_base, and AMCL to drive the stretch RE1 around a mapped space. Running this code will require the robot to be untethered.
 
-## Setup
-
-These set up instructions are already performed on Stretch RE1 robots. Follow these instructions if *stretch_navigation* is not present in your ROS workspace or you are simulating Stretch on external hardware. Clone stretch_ros to your catkin workspace. Then install dependencies and build the packages, with the following set of commands:
-
-```bash
-mkdir -p ~/catkin_ws/src
-cd ~/catkin_ws/src
-git clone https://github.com/hello-robot/stretch_ros
-cd ~/catkin_ws
-rosdep install --from-paths src --ignore-src -r -y
-catkin_make
-```
-
 ## Quickstart
 
 The first step is to map the space that the robot will navigate in. The `mapping.launch` will enable you to do this. First run:
