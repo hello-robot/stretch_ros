@@ -1,10 +1,10 @@
-The following license applies to the entire contents of this directory (the "Contents"). The Contents consist of software and data used with the Stretch RE1 mobile manipulator, which is a robot produced and sold by Hello Robot Inc.
+The following license applies to the entire contents of this directory (the "Contents"), which contains software and data for use with the Stretch mobile manipulators, which are robots produced and sold by Hello Robot Inc.
 
 ---
 
 The Clear BSD License
 
-Copyright (c) 2021 Hello Robot Inc.
+Copyright (c) 2021-2024 Hello Robot Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

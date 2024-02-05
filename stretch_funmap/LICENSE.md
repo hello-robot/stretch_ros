@@ -1,6 +1,6 @@
-The following license applies to the entire contents of this directory (the "Contents"), which contains software for use with the Stretch RE1 mobile manipulator, which is a robot produced and sold by Hello Robot Inc.
+The following license applies to the entire contents of this directory (the "Contents"), which contains software for use with the Stretch mobile manipulators, which are robots produced and sold by Hello Robot Inc.
 
-Copyright 2020 Hello Robot Inc.
+Copyright 2020-2024 Hello Robot Inc.
  
 This software is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License v3.0 (GNU LGPLv3) as published by the Free Software Foundation.
 

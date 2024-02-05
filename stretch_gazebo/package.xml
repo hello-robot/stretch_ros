@@ -4,8 +4,6 @@
   <version>0.0.0</version>
   <description>The stretch_gazebo package</description>
 
-  <maintainer email="davidvlu@gmail.com">David V. Lu!!</maintainer>
-  <maintainer email="vatan@picknik.ai">Vatan Aksoy Tezer</maintainer>
   <maintainer email="support@hello-robot.com">Hello Robot Inc.</maintainer>
 
   <license>Apache License 2.0</license>
