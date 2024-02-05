@@ -2,7 +2,7 @@
 
 ## Getting Started
 
-This repository holds ROS Noetic code for the Stretch mobile manipulator from Hello Robot Inc. To get started with this code, take a look at the [Stretch ROS Tutorials](https://docs.hello-robot.com/0.2/stretch-tutorials/ros1/).
+This repository holds ROS Noetic packages for the Stretch mobile manipulators from Hello Robot Inc. To get started with this code, take a look at the [Stretch ROS Tutorials](https://docs.hello-robot.com/0.2/stretch-tutorials/ros1/).
 
 ## Directories
 
@@ -17,14 +17,13 @@ This repository holds ROS Noetic code for the Stretch mobile manipulator from He
 [stretch_description](stretch_description/README.md) | Generate and export URDFs
 [stretch_funmap](stretch_funmap/README.md) | Demonstrations of Fast Unified Navigation, Manipulation And Planning (FUNMAP)
 [stretch_gazebo](stretch_gazebo/README.md) | Support for simulation of Stretch in the Gazebo simulator
-[stretch_moveit_config](stretch_gazebo/README.md) | Config files to use Stretch with the MoveIt Motion Planning Framework
 [stretch_navigation](stretch_navigation/README.md) | Support for the ROS navigation stack, including move_base, gmapping, and AMCL
 [stretch_octomap](stretch_octomap/README.md) | Support for mapping using OctoMap: efficient probabilistic 3D Mapping based on Octrees
 [stretch_rtabmap](stretch_rtabmap/README.md) | Support for mapping using Real-Time Appearance-Based Mapping (RTAB-Map)
 
 ## Licenses
 
-This software is intended for use with the Stretch mobile manipulators, which is a robot produced and sold by Hello Robot Inc. For further information, including inquiries about dual licensing, please contact Hello Robot Inc.
+This software is intended for use with the Stretch mobile manipulators, which are robots produced and sold by Hello Robot Inc. For further information, including inquiries about dual licensing, please contact Hello Robot Inc.
 
 For license details for this repository, see the LICENSE files found in the directories. A summary of the licenses follows:
 
