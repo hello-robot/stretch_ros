@@ -53,7 +53,7 @@ class JointTrajectoryAction:
             # Escape stopped mode to execute trajectory
             self.node.stop_the_robot = False
         self.node.robot_mode_rwlock.acquire_read()
-        if self.node.robot_mode not in ['position', 'manipulation', 'navigation']:
+        if self.node.robot_mode not in ['position', 'manipulation', 'navigation', 'velocity']:
             self.invalid_goal_callback("Cannot execute goals while in mode={0}".format(self.node.robot_mode))
             self.node.robot_mode_rwlock.release_read()
             return
@@ -96,7 +96,8 @@ class JointTrajectoryAction:
             rospy.logdebug(("{0} joint_traj action: "
                             "target point #{1} = <{2}>").format(self.node.node_name, pointi, point))
 
-            valid_goals = [c.set_goal(point, self.invalid_goal_callback, self.node.fail_out_of_range_goal)
+            valid_goals = [c.set_goal(point, self.invalid_goal_callback, self.node.fail_out_of_range_goal,
+                           robot_mode=self.node.robot_mode)
                            for c in self.command_groups]
             if not all(valid_goals):
                 # At least one of the goals violated the requirements
@@ -115,7 +116,7 @@ class JointTrajectoryAction:
                 self.node.robot.push_command()
 
             for c in self.command_groups:
-                c.init_execution(self.node.robot, robot_status)
+                c.init_execution(self.node.robot, robot_status, robot_mode=self.node.robot_mode)
 
             #self.node.robot.push_command() #Moved to an asynchronous call in stretch_driver
             self.node.dirty_command=True
@@ -144,7 +145,8 @@ class JointTrajectoryAction:
                         return
 
                 robot_status = self.node.robot.get_status()
-                named_errors = [c.update_execution(robot_status, success_callback=self.success_callback)
+                named_errors = [c.update_execution(robot_status, success_callback=self.success_callback,
+                                robot_mode=self.node.robot_mode)
                                 for c in self.command_groups]
                 # It's not clear how this could ever happen. The
                 # groups in command_groups.py seem to return

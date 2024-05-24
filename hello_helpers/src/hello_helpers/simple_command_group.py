@@ -103,21 +103,28 @@ class SimpleCommandGroup:
         bool
             False if commanded goal invalid, else True
         """
+        robot_mode = kwargs['robot_mode']
         self.goal = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
         if self.active:
             goal_pos = point.positions[self.index] if len(point.positions) > self.index else None
-            if goal_pos is None:
+            if robot_mode == 'position' and goal_pos is None:
                 err_str = ("Received goal point with positions array length={0}. "
                            "This joint ({1})'s index is {2}. Length of array must cover all joints listed "
                            "in commanded_joint_names.").format(len(point.positions), self.name, self.index)
                 invalid_goal_callback(err_str)
                 return False
+            elif robot_mode == 'velocity' and goal_pos is not None:
+                err_str = (f"Received goal point with position for joint {self.name} (index {self.index}) "
+                           "during velocity mode, which is not allowed.")
+                invalid_goal_callback(err_str)
+                return False
 
-            self.goal['position'] = hm.bound_ros_command(self.range, goal_pos, fail_out_of_range_goal)
+            if goal_pos is not None:
+                self.goal['position'] = hm.bound_ros_command(self.range, goal_pos, fail_out_of_range_goal)
             self.goal['velocity'] = point.velocities[self.index] if len(point.velocities) > self.index else None
             self.goal['acceleration'] = point.accelerations[self.index] if len(point.accelerations) > self.index else None
             self.goal['contact_threshold'] = point.effort[self.index] if len(point.effort) > self.index else None
-            if self.goal['position'] is None:
+            if robot_mode == 'position' and self.goal['position'] is None:
                 err_str = ("Received {0} goal point that is out of bounds. "
                             "Range = {1}, but goal point = {2}.").format(self.name, self.range, goal_pos)
                 invalid_goal_callback(err_str)

@@ -124,7 +124,7 @@ class HelloNode:
         else:
             pose_correct = all([isinstance(joint_position, numbers.Real) for joint_position in pose.values()])
             if not pose_correct:
-                rospy.logerr(f"{self.node_name}'s HelloNode.move_to_pose: Not sending trajectory due to improper pose. The default option requires 1 value, pose_target as integer, for each joint name, but pose = {pose}")
+                rospy.logerr(f"{self.node_name}'s HelloNode.move_to_pose: Not sending trajectory due to improper pose. The default option requires 1 value, pose_target as integer/float, for each joint name, but pose = {pose}")
                 return
             point.positions = [joint_position for joint_position in pose.values()]
 
@@ -133,6 +133,35 @@ class HelloNode:
         if not return_before_done:
             self.trajectory_client.wait_for_result()
             rospy.logdebug(f"{self.node_name}'s HelloNode.move_to_pose: got result {self.trajectory_client.get_result()}")
+
+    def move_at_speed(self, speed, return_before_done=False, custom_contact_thresholds=False, custom_full_goal=False):
+        if self.dryrun:
+            return
+
+        point = JointTrajectoryPoint()
+        point.time_from_start = rospy.Duration(0.0)
+        trajectory_goal = FollowJointTrajectoryGoal()
+        trajectory_goal.goal_time_tolerance = rospy.Time(1.0)
+        trajectory_goal.trajectory.header.stamp = rospy.Time.now()
+        trajectory_goal.trajectory.joint_names = list(speed.keys())
+        trajectory_goal.trajectory.points = [point]
+
+        # populate goal
+        if custom_full_goal:
+            raise NotImplementedError # TODO
+        elif custom_contact_thresholds:
+            raise NotImplementedError # TODO
+        else:
+            speed_correct = all([isinstance(joint_velocity, numbers.Real) for joint_velocity in speed.values()])
+            if not speed_correct:
+                rospy.logerr(f"{self.node_name}'s HelloNode.move_at_speed: Not sending trajectory due to improper speed goal. The default option requires 1 value, speed_target as interger/float, for each joint name, but speed = {speed}")
+                return
+            point.velocities = [joint_velocity for joint_velocity in speed.values()]
+
+        self.trajectory_client.send_goal(trajectory_goal)
+        if not return_before_done:
+            self.trajectory_client.wait_for_result()
+            rospy.logdebug(f"{self.node_name}'s HelloNode.move_at_speed: got result {self.trajectory_client.get_result()}")
 
     def get_robot_floor_pose_xya(self, floor_frame='odom'):
         # Returns the current estimated x, y position and angle of the
