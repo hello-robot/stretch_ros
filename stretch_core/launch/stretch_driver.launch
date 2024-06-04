@@ -2,6 +2,8 @@
   
   <param name="robot_description" textfile="$(find stretch_description)/urdf/stretch.urdf" />
   <arg name="calibrated_controller_yaml_file" value="$(find stretch_core)/config/controller_calibration_head.yaml"/>
+  <arg name="enable_multi_robot" default="false" doc="Turn on namespacing of topics/services/actions to the robots unique name, thereby allowing control of multiple robots simultaneously." />
+  <arg name="__enable_multi_robot_arg" value="$(eval '--enable_multi_robot' if arg('enable_multi_robot') else '')" />
 
   <node
       name="joint_state_publisher"
@@ -33,7 +35,7 @@
     <param name="publish_frequency" value="30.0"/>
   </node>
 
-  <node name="stretch_driver" pkg="stretch_core" type="stretch_driver" output="screen">
+  <node name="stretch_driver" pkg="stretch_core" type="stretch_driver" output="screen" args='$(arg __enable_multi_robot_arg)'>
     <param name="rate" type="double" value="30.0"/>
     <param name="timeout" type="double" value="0.5"/>
     <remap from="cmd_vel" to="/stretch/cmd_vel" />
